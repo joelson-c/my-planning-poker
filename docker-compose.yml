@@ -1,0 +1,21 @@
+services:
+  client:
+    ports:
+      - "3001:5173"
+    working_dir: /home/node/app
+    user: "node"
+    command: "npm run dev -- --host 0.0.0.0 --port 5173"
+    volumes:
+      - ./client:/home/node/app
+      - ./shared:/home/node/shared
+    image: "node:lts"
+  server:
+    ports:
+      - "3000:3000"
+    working_dir: /home/node/app
+    user: "node"
+    command: "npm run dev"
+    volumes:
+      - ./server:/home/node/app
+      - ./shared:/home/node/shared
+    image: "node:lts"
