@@ -2,22 +2,17 @@ version: 0.0
 os: linux
 files:
   - source: ./server
-    destination: /home/ec2-user/server
+    destination: /home/ec2-user/my-planit-poker/server
+  - source: ./shared
+    destination: /home/ec2-user/my-planit-poker/shared
 permissions:
-  - object: /home/ec2-user
-    pattern: "server"
+  - object: /home/ec2-user/my-planit-poker
     owner: ec2-user
     group: ec2-user
     mode: 744
     type:
       - directory
-  - object: /home/ec2-user/server
-    owner: ec2-user
-    group: ec2-user
-    mode: 744
-    type:
-      - directory
-  - object: /home/ec2-user/server
+  - object: /home/ec2-user/my-planit-poker
     pattern: "**"
     owner: ec2-user
     group: ec2-user
@@ -25,6 +20,10 @@ permissions:
     type:
       - file
 hooks:
+  BeforeInstall:
+    - location: scripts/before_install.sh
+      timeout: 300
+      runas: ec2-user
   AfterInstall:
     - location: scripts/after_install.sh
       timeout: 300
