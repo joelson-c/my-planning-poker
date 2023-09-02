@@ -1,3 +1,4 @@
 #!/bin/bash
 
-pm2 stop all
+cd /home/ec2-user/my-planit-poker/server
+pm2 stop ecosystem.config.js
