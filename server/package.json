@@ -2,10 +2,11 @@
   "name": "my-planit-poker-server",
   "version": "1.0.0",
   "description": "",
-  "main": "main.ts",
+  "main": "dist/main.js",
   "scripts": {
     "dev": "npx nodemon main.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx tsc",
+    "start": "node dist/main.js"
   },
   "author": "Joelson Carvalho",
   "license": "ISC",

@@ -8,7 +8,7 @@ export default class SystemUserRepository {
     constructor(
         private users: Map<SystemUser['id'], SystemUser> = new Map(),
         private randomIdGenerator: RandomIdGenerator
-    ) { console.log('a'); }
+    ) { }
 
     create(data: Omit<SystemUser, 'id'>): string {
         const id = this.randomIdGenerator.generateRandomId(8);
