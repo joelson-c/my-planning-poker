@@ -3,7 +3,7 @@ name: Deploy main branch front-end to S3
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'client/**'
 
