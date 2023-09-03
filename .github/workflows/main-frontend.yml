@@ -16,6 +16,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      VITE_SOCKET_URL: ${{ vars.PROD_SOCKET_URL }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -41,3 +43,6 @@ jobs:
 
       - name: Deploy static site to S3 bucket
         run: aws s3 sync ./dist/ s3://${{ vars.PROD_AWS_BUCKET_NAME }} --delete
+
+      - name: Invalidate cloudfront
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.PROD_AWS_CLOUDFRONT_DIST_ID }} --paths "/*"
