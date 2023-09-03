@@ -26,19 +26,19 @@ export default class Logger implements ILogger {
         });
     }
 
-    info(message: string, data: object): void {
+    info(message: string, data?: object): void {
         this.logger.info(message, data);
     }
 
-    warn(message: string, data: object): void {
+    warn(message: string, data?: object): void {
         this.logger.warn(message, data);
     }
 
-    error(message: string, data: object): void {
+    error(message: string, data?: object): void {
         this.logger.error(message, data);
     }
 
-    debug(message: string, data: object): void {
+    debug(message: string, data?: object): void {
         this.logger.debug(message, data);
     }
 }

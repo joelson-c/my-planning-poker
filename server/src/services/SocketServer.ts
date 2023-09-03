@@ -18,10 +18,17 @@ export default class SocketServer {
         if (this.server) {
             return;
         }
+
+        const corsOrigin = process.env.CORS_ORIGIN || '*';
+        if (corsOrigin === '*') {
+            this.logger.warn('Using "*" as CORS Origin.');
+        } else {
+            this.logger.info(`Using "${corsOrigin}" as CORS Origin.`);
+        }
+
         this.server = new Server({
             cors: {
-                origin: "*", // TODO: Implement properly CORS for prod
-                methods: ["GET", "POST"]
+                origin: corsOrigin
             }
         }) as UserServer;
 

@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import 'dotenv/config';
 import './src/DIRegistry';
 
 import { container } from 'tsyringe';
