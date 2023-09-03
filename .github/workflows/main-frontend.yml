@@ -22,13 +22,16 @@ jobs:
         with:
             node-version: 18
             cache: "npm"
-            cache-dependency-path: client/package-lock.json
+            cache-dependency-path: |
+              client/package-lock.json
+              shared/package-lock.json
 
-      - name: Install dependencies
+      - name: Install dependencies for shared lib
+        working-directory: shared
         run: npm install
 
-      - name: Build static content
-        run: npm run build
+      - name: Install dependencies and build front-end
+        run: npm install && npm run build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -37,4 +40,4 @@ jobs:
             aws-region: ${{ vars.PROD_AWS_REGION }}
 
       - name: Deploy static site to S3 bucket
-        run: aws s3 sync ./dist/ s3://BUCKET_NAME --delete
+        run: aws s3 sync ./dist/ s3://${{ vars.PROD_AWS_BUCKET_NAME }} --delete
