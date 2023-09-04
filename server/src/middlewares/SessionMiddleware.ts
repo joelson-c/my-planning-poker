@@ -1,9 +1,9 @@
-import { UserSocket } from "my-planit-poker-shared/typings/ServerTypes";
-import IMiddleware from "../contracts/IMiddleware";
 import { inject, injectable } from "tsyringe";
+import { UserSocket } from "my-planit-poker-shared/typings/ServerTypes";
 import { UserSession } from "my-planit-poker-shared/typings/UserSession";
+import IMiddleware from "../contracts/IMiddleware";
 import ISessionStorage from "../contracts/ISessionStorage";
-import SystemUserRepository from "../services/data/SystemUserRepository";
+import SystemUserRepository, { CreateUserProps } from "../services/data/SystemUserRepository";
 import RandomIdGenerator from "../services/RandomIdGenerator";
 
 @injectable()
@@ -18,8 +18,16 @@ export default class SessionMiddleware implements IMiddleware {
         const sessionId = socket.handshake.auth.sessionId;
         let session = this.getUserSession(sessionId);
         if (!session) {
-            const username = socket.handshake.auth.username || 'TESTE';
-            session = this.openUserSession(username);
+            const username = socket.handshake.auth.username as string | undefined;
+            if (!username) {
+                throw new Error("Invalid username");
+            }
+
+            session = this.openUserSession({
+                username,
+                isObserver: socket.handshake.auth.isObserver || false
+            });
+
             this.sessionStorage.save(session);
         }
 
@@ -36,13 +44,9 @@ export default class SessionMiddleware implements IMiddleware {
         return this.sessionStorage.getById(sessionId);
     }
 
-    private openUserSession(username?: string): UserSession
+    private openUserSession(data: CreateUserProps): UserSession
     {
-        if (!username) {
-            throw new Error("Invalid username");
-        }
-
-        const userId = this.systemUserRepo.create({ username });
+        const userId = this.systemUserRepo.create(data);
 
         return {
             id: this.randomIdGenerator.generateRandomId(8),

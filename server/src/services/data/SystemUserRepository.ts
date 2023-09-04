@@ -1,6 +1,8 @@
-import { inject, injectable, singleton } from 'tsyringe';
+import { injectable, singleton } from 'tsyringe';
 import { SystemUser } from 'my-planit-poker-shared/typings/SystemUser';
 import RandomIdGenerator from '../RandomIdGenerator';
+
+export type CreateUserProps = Omit<SystemUser, 'id'>;
 
 @injectable()
 @singleton()
@@ -10,7 +12,7 @@ export default class SystemUserRepository {
         private randomIdGenerator: RandomIdGenerator
     ) { }
 
-    create(data: Omit<SystemUser, 'id'>): string {
+    create(data: CreateUserProps): string {
         const id = this.randomIdGenerator.generateRandomId(8);
         this.users.set(id, {...data, id});
         return id;

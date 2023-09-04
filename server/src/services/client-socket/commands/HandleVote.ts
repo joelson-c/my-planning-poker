@@ -16,7 +16,6 @@ type CommandArgs = {
 @injectable()
 export default class HandleVote implements ICommand<CommandArgs> {
     constructor(
-        private roomRepository: VotingRoomRepository,
         private roomUserRepo: RoomUserRepository,
         private commandUtils: CommandUtils,
         @inject('ILogger') private logger: ILogger
@@ -41,21 +40,5 @@ export default class HandleVote implements ICommand<CommandArgs> {
         this.roomUserRepo.update(roomUser);
         this.logger.info('Client voted', { roomUser });
         callback();
-    }
-
-    private getSocketRoom(socket: UserSocket): VotingRoom {
-        const { roomId } = socket.data;
-        if (!roomId) {
-            this.logger.warn('Missing room ID for client', { client: socket.data });
-            throw new Error('Missing Room ID');
-        }
-
-        const room = this.roomRepository.getById(roomId);
-        if (!room) {
-            this.logger.warn('Voting room not found', { roomId });
-            throw new Error('Voting room not found');
-        }
-
-        return room;
     }
 }

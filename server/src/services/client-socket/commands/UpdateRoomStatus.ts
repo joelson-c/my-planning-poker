@@ -41,6 +41,7 @@ export default class UpdateRoomStatus implements ICommand<CommandArgs, Promise<v
             acc.push({
                 id: userData.id,
                 username: userData.username,
+                isObserver: userData.isObserver,
                 hasVoted: !!roomUser.votingValue,
                 votingValue: room?.hasRevealedCards ? roomUser.votingValue : undefined
             });

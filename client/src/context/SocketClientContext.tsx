@@ -14,14 +14,15 @@ type SocketClient = {
 export const SocketContext = createContext<SocketClient>({} as SocketClient);
 
 export default function SocketClientContext({ children }: PropsWithChildren) {
-    const { username } = useUserData();
+    const { username, isObserver } = useUserData();
 
     const socket = useMemo<UserSocket>(() => io(import.meta.env.VITE_SOCKET_URL, {
         autoConnect: false,
         auth: {
-            username
+            username,
+            isObserver
         }
-    }), [username]);
+    }), [username, isObserver]);
 
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [hasError, setHasError] = useState(false);

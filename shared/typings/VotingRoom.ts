@@ -2,11 +2,9 @@ import { UserSession } from "./UserSession";
 import { SystemUser } from "./SystemUser";
 
 export type RoomStatusUsers = {
-    id: SystemUser['id'];
-    username: SystemUser['username'];
     votingValue?: string;
     hasVoted: boolean;
-}
+} & SystemUser;
 
 export type RoomStatusEvent = {
     room: VotingRoom;

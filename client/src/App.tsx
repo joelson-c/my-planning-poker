@@ -1,4 +1,4 @@
-import UsernameEntry from "./pages/UsernameEntry";
+import RoomJoin from "./pages/RoomJoin";
 import Vote from "./pages/Vote";
 import useUserData from "./hooks/useUserData";
 
@@ -7,7 +7,7 @@ export default function App() {
 
     return (
         <main className="h-screen dark:bg-black">
-            {username ? <Vote /> : <UsernameEntry />}
+            {username ? <Vote /> : <RoomJoin />}
         </main>
     );
 }
