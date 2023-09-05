@@ -1,7 +1,13 @@
 import PokerCard, { PokerCardsProps } from '../components/PokerCard';
 
+export type PokerListItems = {
+    key: string;
+    value: string;
+    description: string;
+};
+
 type PokerCardListProps = {
-    listItems: Record<string, string | null>;
+    listItems: PokerListItems[];
     currentVote?: PokerCardsProps['value'];
     onVote: PokerCardsProps['onVote'];
 }
@@ -13,14 +19,14 @@ export default function PokerCardList({ listItems, onVote, currentVote }: PokerC
         }
     }
 
-    return Object.entries(listItems).map(([value, description]) => (
-        <div className='flex flex-col items-center gap-3' key={value}>
+    return listItems.map(({ key, value, description }) => (
+        <div className='flex flex-col items-center gap-3' key={key}>
             <h3 className='text-bold text-2xl'>{description}</h3>
             <PokerCard
-                value={value.toString()}
+                value={value}
                 onVote={onCardClick}
                 key={value}
-                isActive={currentVote?.toString() === value.toString()}
+                isActive={currentVote?.toString() === value}
             />
         </div>
     ));

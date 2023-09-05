@@ -3,14 +3,14 @@ import { Button, Divider } from '@nextui-org/react';
 import useSocketClient from '../hooks/useSocketClient';
 import UserList from '../components/UserList';
 import useFibonacciSequence from '../hooks/useFibonacciSequence';
-import PokerCardList from '../components/PokerCardList';
+import PokerCardList, { PokerListItems } from '../components/PokerCardList';
 import useRoomData from '../hooks/useRoomData';
 import useUserData from '../hooks/useUserData';
 
 export default function Vote() {
     const [vote, setVote] = useState<string>();
     const { isConnected, socket } = useSocketClient();
-    const { roomMeta, users } = useRoomData();
+    const { roomMeta, users: roomUsers } = useRoomData();
     const { isObserver } = useUserData();
     const fibSeq = useFibonacciSequence(89);
 
@@ -31,14 +31,19 @@ export default function Vote() {
 
     const cardList = useMemo(() => {
         if (roomMeta?.hasRevealedCards) {
-            return (users || []).reduce((acc, roomUser) => {
-                if (!roomUser.votingValue || roomUser.isObserver) {
+            return (roomUsers || []).reduce((acc, roomUser) => {
+                if (roomUser.isObserver) {
                     return acc;
                 }
 
-                acc[roomUser.votingValue] = roomUser.username;
+                acc.push({
+                    key: roomUser.id,
+                    description: roomUser.username,
+                    value: roomUser.votingValue || 'N/A'
+                });
+
                 return acc;
-            }, {} as Record<string, string | null>)
+            }, [] as PokerListItems[])
         }
 
         return [
@@ -46,11 +51,14 @@ export default function Vote() {
             '?',
             '☕'
         ].reduce((acc, card) => {
-            acc[card] = null;
+            acc.push({
+                key: card.toString(),
+                description: card.toString(),
+                value: card.toString()
+            });
             return acc;
-        }, {} as Record<string, string | null>);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [fibSeq, roomMeta?.hasRevealedCards]);
+        }, [] as PokerListItems[]);
+    }, [fibSeq, roomMeta, roomUsers]);
 
     useEffect(() => {
         function onRoomReseted() {
@@ -76,11 +84,9 @@ export default function Vote() {
             }
         }
 
-        if (!roomMeta?.hasRevealedCards) {
-            sendVote();
-        }
+        sendVote();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [socket, vote]);
+    }, [vote]);
 
     return (
         <div className='container grid grid-cols-2 xl:grid-cols-3 mx-auto pt-10 xl:py-40 h-full'>
