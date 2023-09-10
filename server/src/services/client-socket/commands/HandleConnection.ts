@@ -28,24 +28,37 @@ export default class HandleConnection implements ICommand<CommandArgs, string> {
         return roomUser.roomId;
     }
 
-    private joinClientToRoom(socket: UserSocket, roomId?: string): RoomUser {
+    private joinClientToRoom(socket: UserSocket, targetRoom?: string): RoomUser {
         let roomToJoin;
-        if (roomId) {
-            roomToJoin = this.roomRepository.getById(roomId)?.id;
+        if (targetRoom) {
+            roomToJoin = this.roomRepository.getById(targetRoom);
         }
 
         if (!roomToJoin) {
-            roomToJoin = this.roomRepository.create({} as VotingRoom);
+            const createdRoomId = this.roomRepository.create({} as VotingRoom);
+            roomToJoin = this.roomRepository.getById(createdRoomId)!;
         }
 
-        socket.join(roomToJoin);
-        socket.data.roomId = roomToJoin;
+        const { id: roomId } = roomToJoin;
+        socket.join(roomId);
+        socket.data.roomId = roomId;
 
         const { userId } = socket.data.session;
-        const roomUser: RoomUser = { userId, roomId: roomToJoin, hasVoted: false };
+
+        const roomUser: RoomUser = {
+            userId,
+            roomId,
+            hasVoted: false,
+            isModerator: this.isClientModerator(roomId)
+        };
+
         this.roomUserRepo.create(roomUser);
 
         this.logger.info('Client joined in room', { roomUser });
         return roomUser;
+    }
+
+    private isClientModerator(roomId: string): boolean {
+        return !this.roomUserRepo.getByRoomId(roomId).length;
     }
 }

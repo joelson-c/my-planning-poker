@@ -33,7 +33,7 @@ export default class ClientSocketHandler {
     }
 
     private setUpSocketEvents(socket: UserSocket): void {
-        socket.on('disconnect', async () => {
+        socket.on('disconnect', () => {
             this.handleDisconnect.handle({ socket });
             this.updateRoomStatus.handle({ socket });
         });
@@ -51,6 +51,10 @@ export default class ClientSocketHandler {
         socket.on('resetRoom', () => {
             this.handleRoomReset.handle({ socket });
             this.updateRoomStatus.handle({ socket });
+        });
+
+        socket.on('ping', (callback) => {
+            callback();
         });
     }
 }

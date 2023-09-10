@@ -11,8 +11,19 @@ export default {
   theme: {
     container: {
       center: true,
+      padding: {
+        DEFAULT: '1rem',
+        sm: '2rem',
+        lg: '4rem',
+        xl: '5rem',
+      },
     },
-    extend: {},
+    extend: {
+      gridTemplateColumns: {
+        'card-list': 'repeat(auto-fill, 100px)',
+        'card-list-lg': 'repeat(auto-fill, 115px)',
+      }
+    },
   },
   plugins: [
     nextui()

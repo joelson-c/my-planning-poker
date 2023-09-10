@@ -3,11 +3,14 @@ import { VotingRoom } from "my-planit-poker-shared/typings/VotingRoom";
 import { inject, injectable } from "tsyringe";
 import VotingRoomRepository from "../../data/VotingRoomRepository";
 import ILogger from "../../../contracts/ILogger";
+import RoomUserRepository from "../../data/RoomUserRepository";
+import UnauthorizedAccess from "../../../errors/UnauthorizedAccess";
 
 @injectable()
 export default class CommandUtils {
     constructor(
         private roomRepository: VotingRoomRepository,
+        private roomUserRepository: RoomUserRepository,
         @inject('ILogger') private logger: ILogger
     ) { }
 
@@ -25,5 +28,13 @@ export default class CommandUtils {
         }
 
         return room;
+    }
+
+    throwIfUserIsNotModerator(socket: UserSocket): void {
+        const { userId } = socket.data.session;
+        const roomUser = this.roomUserRepository.getByUserId(userId);
+        if (!roomUser || !roomUser.isModerator) {
+            throw new UnauthorizedAccess();
+        }
     }
 }

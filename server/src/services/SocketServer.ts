@@ -29,6 +29,10 @@ export default class SocketServer {
         this.server = new Server({
             cors: {
                 origin: corsOrigin
+            },
+            connectionStateRecovery: {
+                // the backup duration of the sessions and the packets
+                maxDisconnectionDuration: 2 * 60 * 1000,
             }
         }) as UserServer;
 

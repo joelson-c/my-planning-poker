@@ -9,7 +9,7 @@ type UserData = {
 
 export const UserContext = createContext<UserData>({} as UserData);
 
-export default function UserDataContext({ children }: PropsWithChildren) {
+export default function LocalUserDataContext({ children }: PropsWithChildren) {
     const [username, setUsername] = useState<string | undefined>();
     const [isObserver, setIsObserver] = useState(false);
 

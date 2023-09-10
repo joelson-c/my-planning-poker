@@ -18,6 +18,7 @@ export default class HandleCardReveal implements ICommand<CommandArgs> {
     ) { }
 
     handle({ socket }: CommandArgs): void {
+        this.commandUtils.throwIfUserIsNotModerator(socket);
         const room = this.commandUtils.getSocketRoom(socket);
         room.hasRevealedCards = true;
         this.roomRepository.update(room);

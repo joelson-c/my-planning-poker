@@ -1,20 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Button, Divider } from '@nextui-org/react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Divider } from '@nextui-org/react';
 import useSocketClient from '../hooks/useSocketClient';
 import UserList from '../components/UserList';
 import useFibonacciSequence from '../hooks/useFibonacciSequence';
-import PokerCardList, { PokerListItems } from '../components/PokerCardList';
+import PokerCardList, { PokerCardListItems } from '../components/PokerCardList';
 import useRoomData from '../hooks/useRoomData';
 import useUserData from '../hooks/useUserData';
+import ServerInfo from '../components/ServerInfo';
+import RoomActions from '../components/RoomActions';
 
 export default function Vote() {
     const [vote, setVote] = useState<string>();
-    const { isConnected, socket } = useSocketClient();
-    const { roomMeta, users: roomUsers } = useRoomData();
+    const { socket } = useSocketClient();
+    const { meta: roomMeta, users: roomUsers, currentUserData: currentRoomUser } = useRoomData();
     const { isObserver } = useUserData();
     const fibSeq = useFibonacciSequence(89);
 
-    async function onCardRevealClick() {
+    async function onCardReveal() {
         setVote('');
         await socket.emitWithAck('revealCards');
     }
@@ -23,11 +25,11 @@ export default function Vote() {
         socket.emit('resetRoom');
     }
 
-    function onVoteChanged(value: string) {
+    const onVoteChanged = useCallback(function onVoteChanged(value: string) {
         if (!roomMeta?.hasRevealedCards && !isObserver) {
             setVote(value);
         }
-    }
+    }, [isObserver, roomMeta]);
 
     const cardList = useMemo(() => {
         if (roomMeta?.hasRevealedCards) {
@@ -39,11 +41,12 @@ export default function Vote() {
                 acc.push({
                     key: roomUser.id,
                     description: roomUser.username,
-                    value: roomUser.votingValue || 'N/A'
+                    value: roomUser.votingValue || 'N/A',
+                    onVote: onVoteChanged
                 });
 
                 return acc;
-            }, [] as PokerListItems[])
+            }, [] as PokerCardListItems);
         }
 
         return [
@@ -53,12 +56,13 @@ export default function Vote() {
         ].reduce((acc, card) => {
             acc.push({
                 key: card.toString(),
-                description: card.toString(),
-                value: card.toString()
+                value: card.toString(),
+                isActive: vote === card.toString(),
+                onVote: onVoteChanged
             });
             return acc;
-        }, [] as PokerListItems[]);
-    }, [fibSeq, roomMeta, roomUsers]);
+        }, [] as PokerCardListItems);
+    }, [fibSeq, roomMeta, roomUsers, vote, onVoteChanged]);
 
     useEffect(() => {
         function onRoomReseted() {
@@ -89,20 +93,20 @@ export default function Vote() {
     }, [vote]);
 
     return (
-        <div className='container grid grid-cols-2 xl:grid-cols-3 mx-auto pt-10 xl:py-40 h-full'>
-            <div className='flex flex-wrap gap-2 col-span-full xl:col-span-2'>
-                <PokerCardList listItems={cardList} currentVote={vote} onVote={onVoteChanged} />
+        <div className='container grid grid-cols-1 lg:grid-cols-3 justify-items-center gap-5 pt-10 xl:py-24 xl:h-full'>
+            <div className='w-full lg:col-span-2'>
+                <PokerCardList listItems={cardList} />
             </div>
-            <div className='xl:justify-self-end'>
-                <p>Conectado no servidor? {isConnected ? 'Sim' : 'Não'}</p>
-                <Divider className='my-3' />
+            <div className='lg:justify-self-end'>
                 <UserList />
+                <Divider className='my-3' />
+                <ServerInfo />
             </div>
-            <div className='justify-self-end xl:justify-self-center col-span-1 xl:col-span-3'>
-                {roomMeta?.hasRevealedCards ?
-                    <Button type='button' onClick={onResetRequested}>Resetar</Button> :
-                    <Button type='button' onClick={onCardRevealClick}>Revelar votos</Button>}
-            </div>
+            {currentRoomUser?.isModerator && (
+                <div className='justify-self-end lg:justify-self-center col-span-1 lg:col-span-3'>
+                    <RoomActions onResetRequested={onResetRequested} onCardReveal={onCardReveal} />
+                </div>
+            )}
         </div>
     );
 }

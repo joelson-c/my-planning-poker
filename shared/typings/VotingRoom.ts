@@ -4,6 +4,7 @@ import { SystemUser } from "./SystemUser";
 export type RoomStatusUsers = {
     votingValue?: string;
     hasVoted: boolean;
+    isModerator: boolean;
 } & SystemUser;
 
 export type RoomStatusEvent = {
@@ -16,6 +17,7 @@ export type RoomUser = {
     roomId: VotingRoom['id'];
     votingValue?: string;
     hasVoted: boolean;
+    isModerator: boolean;
 };
 
 export type VotingRoom = {

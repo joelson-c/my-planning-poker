@@ -14,6 +14,7 @@ export type ClientToServerEvents = {
     revealCards: () => void;
     resetRoom: () => void;
     setUsername: (value: string) => void;
+    ping: (callback: () => void) => void;
 }
 
 export type InterServerEvents = {}

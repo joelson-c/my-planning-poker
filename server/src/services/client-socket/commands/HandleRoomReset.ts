@@ -21,6 +21,7 @@ export default class HandleRoomReset implements ICommand<CommandArgs> {
     ) { }
 
     handle({ socket }: CommandArgs): void {
+        this.commandUtils.throwIfUserIsNotModerator(socket);
         const { roomId } = socket.data;
         const room = this.commandUtils.getSocketRoom(socket);
 
