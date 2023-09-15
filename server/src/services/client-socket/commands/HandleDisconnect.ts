@@ -26,6 +26,11 @@ export default class HandleDisconnect implements ICommand<CommandArgs> {
 
         const { userId } = socket.data.session;
         const { roomId } = socket.data;
+        const currentUserData = this.roomUserRepo.getByUserId(userId);
+        if (!currentUserData) {
+            return;
+        }
+
         this.roomUserRepo.deleteByUserId(userId);
         this.systemUserRepo.deleteById(userId);
 
@@ -37,5 +42,17 @@ export default class HandleDisconnect implements ICommand<CommandArgs> {
             this.roomRepository.deleteById(roomId);
             return;
         }
+
+        if (!currentUserData.isModerator) {
+            return;
+        }
+
+        const orderedUsers = roomUsers.sort((a, b) => {
+            return a.userId.localeCompare(b.userId);
+        });
+
+        const newModerator = orderedUsers[0];
+        newModerator.isModerator = true;
+        this.roomUserRepo.update(newModerator);
     }
 }
