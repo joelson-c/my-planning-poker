@@ -2,9 +2,7 @@ import { inject, injectable } from "tsyringe";
 import ICommand from "../../../contracts/ICommand";
 import { UserSocket } from "my-planit-poker-shared/typings/ServerTypes";
 import ILogger from "../../../contracts/ILogger";
-import VotingRoomRepository from "../../data/VotingRoomRepository";
 import RoomUserRepository from "../../data/RoomUserRepository";
-import { VotingRoom } from "my-planit-poker-shared/typings/VotingRoom";
 import CommandUtils from "./CommandUtils";
 
 type CommandArgs = {
@@ -38,7 +36,7 @@ export default class HandleVote implements ICommand<CommandArgs> {
         roomUser.votingValue = value;
         roomUser.hasVoted = true;
         this.roomUserRepo.update(roomUser);
-        this.logger.info('Client voted', { roomUser });
+        this.logger.debug('Client voted', { roomUser });
         callback();
     }
 }

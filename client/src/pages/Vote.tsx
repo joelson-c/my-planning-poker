@@ -1,20 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Divider } from '@nextui-org/react';
 import useSocketClient from '../hooks/useSocketClient';
 import UserList from '../components/UserList';
-import useFibonacciSequence from '../hooks/useFibonacciSequence';
-import PokerCardList, { PokerCardListItems } from '../components/PokerCardList';
+import PokerCardList from '../components/PokerCardList';
 import useRoomData from '../hooks/useRoomData';
 import useUserData from '../hooks/useUserData';
 import ServerInfo from '../components/ServerInfo';
 import RoomActions from '../components/RoomActions';
+import useRoomCards from '../hooks/useRoomCards';
 
 export default function Vote() {
     const [vote, setVote] = useState<string>();
     const { socket } = useSocketClient();
-    const { meta: roomMeta, users: roomUsers, currentUserData: currentRoomUser } = useRoomData();
+    const { meta: roomMeta, currentUserData: currentRoomUser } = useRoomData();
     const { isObserver } = useUserData();
-    const fibSeq = useFibonacciSequence(89);
 
     async function onCardReveal() {
         setVote('');
@@ -31,38 +30,7 @@ export default function Vote() {
         }
     }, [isObserver, roomMeta]);
 
-    const cardList = useMemo(() => {
-        if (roomMeta?.hasRevealedCards) {
-            return (roomUsers || []).reduce((acc, roomUser) => {
-                if (roomUser.isObserver) {
-                    return acc;
-                }
-
-                acc.push({
-                    key: roomUser.id,
-                    description: roomUser.username,
-                    value: roomUser.votingValue || 'N/A',
-                    onVote: onVoteChanged
-                });
-
-                return acc;
-            }, [] as PokerCardListItems);
-        }
-
-        return [
-            ...fibSeq,
-            '?',
-            '☕'
-        ].reduce((acc, card) => {
-            acc.push({
-                key: card.toString(),
-                value: card.toString(),
-                isActive: vote === card.toString(),
-                onVote: onVoteChanged
-            });
-            return acc;
-        }, [] as PokerCardListItems);
-    }, [fibSeq, roomMeta, roomUsers, vote, onVoteChanged]);
+    const cardList = useRoomCards(onVoteChanged, vote);
 
     useEffect(() => {
         function onRoomReseted() {

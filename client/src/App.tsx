@@ -1,13 +1,13 @@
-import RoomJoin from "./pages/RoomJoin";
-import Vote from "./pages/Vote";
-import useUserData from "./hooks/useUserData";
+import { Outlet } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 
 export default function App() {
-    const { username } = useUserData();
-
     return (
-        <main className="h-screen dark:bg-black">
-            {username ? <Vote /> : <RoomJoin />}
-        </main>
+        <>
+            <main className="h-screen dark:bg-black">
+                <Outlet />
+            </main>
+            <Toaster />
+        </>
     );
 }

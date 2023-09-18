@@ -35,6 +35,6 @@ export default class HandleRoomReset implements ICommand<CommandArgs> {
 
         socket.to(roomId!).emit('roomReset');
 
-        this.logger.info('Room reset', { room });
+        this.logger.debug('Room reset', { room });
     }
 }

@@ -55,7 +55,7 @@ export default class UpdateRoomStatus implements ICommand<CommandArgs, Promise<v
             users: roomStatusUsers
         }
 
-        this.logger.info('Sending room users data', { eventData });
+        this.logger.debug('Sending room users data', { eventData });
         // TODO: Implement proper user connect/disconnect events
         socket.to(roomId).emit('roomStatus', eventData);
         socket.emit('roomStatus', eventData);

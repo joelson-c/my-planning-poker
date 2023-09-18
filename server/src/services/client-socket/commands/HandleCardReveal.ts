@@ -22,6 +22,6 @@ export default class HandleCardReveal implements ICommand<CommandArgs> {
         const room = this.commandUtils.getSocketRoom(socket);
         room.hasRevealedCards = true;
         this.roomRepository.update(room);
-        this.logger.info('Sending room voting data', { room });
+        this.logger.debug('Sending room voting data', { room });
     }
 }

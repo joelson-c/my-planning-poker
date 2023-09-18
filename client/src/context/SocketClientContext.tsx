@@ -54,7 +54,6 @@ export default function SocketClientContext({ children }: PropsWithChildren) {
             socket.connect();
         }
 
-
         return () => {
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);

@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { RoomStatusEvent } from "./VotingRoom";
+import { RoomStatusEvent, RoomUser, VotingRoom } from "./VotingRoom";
 import { UserSession } from "./UserSession";
 import { SystemUser } from "./SystemUser";
 
@@ -15,6 +15,8 @@ export type ClientToServerEvents = {
     resetRoom: () => void;
     setUsername: (value: string) => void;
     ping: (callback: () => void) => void;
+    joinRoom: (roomId: VotingRoom['id'], callback: (userData?: RoomUser) => void) => void;
+    createRoom: (callback: (room: VotingRoom) => void) => void;
 }
 
 export type InterServerEvents = {}

@@ -34,7 +34,7 @@ export default class HandleDisconnect implements ICommand<CommandArgs> {
         this.roomUserRepo.deleteByUserId(userId);
         this.systemUserRepo.deleteById(userId);
 
-        this.logger.info('Client disconnected', { userId });
+        this.logger.debug('Client disconnected', { userId });
 
         const roomUsers = this.roomUserRepo.getByRoomId(roomId);
         if (!roomUsers.length) {

@@ -15,7 +15,9 @@
     "my-planit-poker-shared": "file:../shared",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
     "react-icons": "^4.10.1",
+    "react-router-dom": "^6.16.0",
     "socket.io-client": "^4.7.2",
     "usehooks-ts": "^2.9.1"
   },
