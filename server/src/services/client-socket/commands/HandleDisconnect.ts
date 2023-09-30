@@ -37,7 +37,10 @@ export default class HandleDisconnect implements ICommand<CommandArgs> {
         this.logger.debug('Client disconnected', { userId });
 
         const roomUsers = this.roomUserRepo.getByRoomId(roomId);
-        if (!roomUsers.length) {
+        if (
+            !roomUsers.length &&
+            (!process.env.DISABLE_EMPTY_ROOM_CLEANUP && process.env.NODE_ENV === 'development')
+        ) {
             this.logger.info('Empty room will be deleted', { roomId });
             this.roomRepository.deleteById(roomId);
             return;
@@ -52,6 +55,10 @@ export default class HandleDisconnect implements ICommand<CommandArgs> {
         });
 
         const newModerator = orderedUsers[0];
+        if (!newModerator) {
+            return;
+        }
+
         newModerator.isModerator = true;
         this.roomUserRepo.update(newModerator);
     }

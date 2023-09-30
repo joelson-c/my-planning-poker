@@ -30,10 +30,13 @@ export default class HandleJoinRoom implements ICommand<CommandArgs, RoomUser> {
         socket.data.roomId = roomId;
 
         const { userId } = socket.data.session;
+        const { username, isObserver } = socket.handshake.auth;
 
         const roomUser: RoomUser = {
             userId,
             roomId,
+            username,
+            isObserver,
             hasVoted: false,
             isModerator: this.isClientModerator(roomId)
         };
