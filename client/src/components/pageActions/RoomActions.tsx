@@ -1,7 +1,7 @@
 import { Button } from "@nextui-org/react";
-import useRoomData from "../../hooks/useRoomData";
 import { useState } from "react";
 import useDelayedPromise from "../../hooks/useDelayedPromise";
+import { useRootStore } from "../../state/rootStore";
 
 type RoomActionsProps = {
     onResetRequested: () => void;
@@ -11,7 +11,7 @@ type RoomActionsProps = {
 const ACTION_DELAY_MS = 1000;
 
 export default function RoomActions({ onResetRequested, onCardReveal }: RoomActionsProps) {
-    const { meta: roomMeta } = useRoomData();
+    const roomMeta = useRootStore((state) => state.roomMeta);
     const [isLoading, setIsLoading] = useState(false);
     const delayedPromise = useDelayedPromise(ACTION_DELAY_MS);
 

@@ -1,10 +1,10 @@
 import { FaBinoculars } from "react-icons/fa";
 import { MdQuestionMark, MdCheckCircle, MdSecurity } from "react-icons/md";
 import { Tooltip } from "@nextui-org/react";
-import useRoomData from "../hooks/useRoomData";
-import { RoomStatusUsers } from "my-planit-poker-shared/typings/VotingRoom";
+import { RoomUser } from "my-planit-poker-shared/typings/VotingRoom";
+import { useRootStore } from "../state/rootStore";
 
-function getUserIcon(user: RoomStatusUsers) {
+function getUserIcon(user: RoomUser) {
     switch (true) {
         case user.hasVoted:
             return <MdCheckCircle className="text-green-600 w-5 h-5" />;
@@ -15,7 +15,7 @@ function getUserIcon(user: RoomStatusUsers) {
     }
 }
 
-function getBorderStyle(user: RoomStatusUsers) {
+function getBorderStyle(user: RoomUser) {
     switch (true) {
         case user.hasVoted:
             return 'border-green-600';
@@ -26,7 +26,7 @@ function getBorderStyle(user: RoomStatusUsers) {
     }
 }
 
-function getTooltip(user: RoomStatusUsers) {
+function getTooltip(user: RoomUser) {
     switch (true) {
         case user.hasVoted:
             return `${user.username} já votou`;
@@ -38,7 +38,8 @@ function getTooltip(user: RoomStatusUsers) {
 }
 
 export default function UserList() {
-    const { users: roomUsers } = useRoomData();
+    const roomUsers = useRootStore((state) => state.roomUsers);
+
     return (
         <>
             <h2 className="text-bold text-xl mb-3">Usuários</h2>
@@ -46,7 +47,7 @@ export default function UserList() {
                 {roomUsers?.map((user) => (
                     <li
                         className={`relative flex items-center gap-1 p-2 border-2 rounded-lg ${getBorderStyle(user)}`}
-                        key={user.id}
+                        key={user.userId}
                     >
                         {user.isModerator && (
                             <Tooltip content="Moderador" placement="left" color="warning" showArrow={true}>

@@ -3,17 +3,21 @@ import { Divider } from '@nextui-org/react';
 import useSocketClient from '../hooks/useSocketClient';
 import UserList from '../components/UserList';
 import PokerCardList from '../components/PokerCardList';
-import useRoomData from '../hooks/useRoomData';
-import useUserData from '../hooks/useUserData';
 import ServerInfo from '../components/ServerInfo';
 import RoomActions from '../components/pageActions/RoomActions';
 import useRoomCards from '../hooks/useRoomCards';
+import { useRootStore } from '../state/rootStore';
 
 export default function Vote() {
     const [vote, setVote] = useState<string>();
     const { socket } = useSocketClient();
-    const { meta: roomMeta, currentUserData: currentRoomUser } = useRoomData();
-    const { userData: { isObserver } } = useUserData();
+    const {
+        meta: roomMeta, currentUserData: currentRoomUser, userData
+    } = useRootStore((state) => ({
+        meta: state.roomMeta,
+        currentUserData: state.getMyRemoteUser(),
+        userData: state.remoteUserData
+    }));
 
     async function onCardReveal() {
         setVote('');
@@ -25,10 +29,10 @@ export default function Vote() {
     }
 
     const onVoteChanged = useCallback(function onVoteChanged(value: string) {
-        if (!roomMeta?.hasRevealedCards && !isObserver) {
+        if (!roomMeta?.hasRevealedCards && !userData?.isObserver) {
             setVote(value);
         }
-    }, [isObserver, roomMeta]);
+    }, [userData, roomMeta]);
 
     const cardList = useRoomCards(onVoteChanged, vote);
 

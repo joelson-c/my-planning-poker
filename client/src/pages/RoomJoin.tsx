@@ -5,15 +5,15 @@ import useSocketConnect from "../hooks/socket/useSocketConnect";
 import useCreateRoom from "../hooks/socket/useCreateRoom";
 import { useParams } from "react-router-dom";
 import useJoinRoom from "../hooks/socket/useJoinRoom";
-import useUserData from "../hooks/useUserData";
+import { useRootStore } from "../state/rootStore";
 
 export default function RoomJoin() {
     const formRef = useRef<HTMLFormElement>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const { userData } = useUserData();
+    const localUserData = useRootStore((state) => state.localUserData);
     const [formAction, setFormAction] = useState<FormAction | null>(null);
     const { roomId: urlRoomId } = useParams();
-    const [connect] = useSocketConnect();
+    const connect = useSocketConnect(onSocketConnected);
     const createRoom = useCreateRoom();
     const joinRoom = useJoinRoom();
 
@@ -24,14 +24,15 @@ export default function RoomJoin() {
         const username = formData.get('username') as string;
         const isObserver = formData.get('isObserver') === 'true';
 
-        await connect({
+        connect({
             username,
             isObserver
         });
+    }
 
-        const action = formData.get('action') as FormAction;
+    async function onSocketConnected() {
         let roomId = '';
-        switch (action) {
+        switch (formAction) {
             case 'createRoom':
                 roomId = await createRoom();
                 break;
@@ -43,7 +44,7 @@ export default function RoomJoin() {
                 roomId = urlRoomId;
                 break;
             default:
-                throw new Error('Unknown action: ' + action);
+                throw new Error('Unknown action: ' + formAction);
         }
 
         await joinRoom(roomId);
@@ -83,7 +84,7 @@ export default function RoomJoin() {
                     type="text"
                     name="username"
                     label="Insira um nome de usuário"
-                    defaultValue={userData.username}
+                    defaultValue={localUserData?.username}
                     required
                 />
                 <Checkbox name="isObserver" color="default" value="true">Observador?</Checkbox>

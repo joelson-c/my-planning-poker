@@ -1,11 +1,14 @@
 import { useMemo } from "react";
 import useFibonacciSequence from "./useFibonacciSequence";
-import useRoomData from "./useRoomData";
 import { PokerCardListItems } from "../components/PokerCardList";
+import { useRootStore } from "../state/rootStore";
 
 export default function useRoomCards(onVoteChanged: (value: string) => void, vote?: string): PokerCardListItems {
     const fibSeq = useFibonacciSequence(89);
-    const { meta: roomMeta, users: roomUsers } = useRoomData();
+    const { meta: roomMeta, users: roomUsers } = useRootStore((state) => ({
+        meta: state.roomMeta,
+        users: state.roomUsers
+    }));
 
     return useMemo(() => {
         if (roomMeta?.hasRevealedCards) {
@@ -15,7 +18,7 @@ export default function useRoomCards(onVoteChanged: (value: string) => void, vot
                 }
 
                 acc.push({
-                    key: roomUser.id,
+                    key: roomUser.userId,
                     description: roomUser.username,
                     value: roomUser.votingValue || 'N/A',
                     onVote: onVoteChanged

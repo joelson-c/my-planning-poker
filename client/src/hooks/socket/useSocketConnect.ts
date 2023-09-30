@@ -1,16 +1,13 @@
 import { SystemUser } from "my-planit-poker-shared/typings/SystemUser";
-import useUserData from "../useUserData";
 import useSocketClient from "../useSocketClient";
+import { useEffect } from "react";
+import { useRootStore } from "../../state/rootStore";
 
-type SocketConnectResult = [(userData: Omit<SystemUser, 'id'>) => Promise<void>, () => void];
+export default function useSocketConnect(callback?: () => {}): (userData: Omit<SystemUser, 'id'>) => void {
+    const { socket, isConnected } = useSocketClient();
+    const setUserData = useRootStore((state) => state.setLocalUserData);
 
-const POLLING_DELAY_MS = 250;
-
-export default function useSocketConnect(): SocketConnectResult {
-    const { socket } = useSocketClient();
-    const { setUserData } = useUserData();
-
-    async function connectSocket(userData: Omit<SystemUser, 'id'>): Promise<void> {
+    function connectSocket(userData: Omit<SystemUser, 'id'>): void {
         setUserData({
             username: userData.username,
             isObserver: userData.isObserver
@@ -22,24 +19,15 @@ export default function useSocketConnect(): SocketConnectResult {
         };
 
         socket.disconnect().connect();
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                if (!socket.connected) {
-                    return;
-                }
-
-                resolve();
-                clearInterval(interval);
-            }, POLLING_DELAY_MS);
-        });
     }
 
-    function disconnectSocket() {
-        socket.disconnect();
-    }
+    useEffect(() => {
+        if (!isConnected) {
+            return;
+        }
 
-    return [
-        connectSocket,
-        disconnectSocket
-    ];
+        callback && callback();
+    }, [isConnected]);
+
+    return connectSocket;
 }

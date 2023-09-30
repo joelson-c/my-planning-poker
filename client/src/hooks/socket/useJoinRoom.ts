@@ -1,12 +1,15 @@
-import useUserData from "../useUserData";
 import useSocketClient from "../useSocketClient";
 import { VotingRoom } from "my-planit-poker-shared/typings/VotingRoom";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useRootStore } from "../../state/rootStore";
 
 export default function useJoinRoom(): (roomId: VotingRoom['id']) => Promise<void> {
     const { socket } = useSocketClient();
-    const { setRoomId } = useUserData();
+    const { setRoomId, setRemoteUserData } = useRootStore((state) => ({
+        setRoomId: state.setRoomId,
+        setRemoteUserData: state.setRemoteUserData
+    }));
     const navigate = useNavigate();
 
     async function joinRoom(roomId: VotingRoom['id']) {
@@ -21,6 +24,7 @@ export default function useJoinRoom(): (roomId: VotingRoom['id']) => Promise<voi
             return;
         }
 
+        setRemoteUserData(roomUser);
         navigate(`/room/${roomId}`);
     }
 

@@ -1,8 +1,8 @@
 import { useCallback } from "react";
-import useRoomData from "./useRoomData";
+import { useRootStore } from "../state/rootStore";
 
 export default function useDelayedPromise(delayMs: number): () => Promise<void> {
-    const { ping } = useRoomData();
+    const ping = useRootStore((state) => state.connectionPing);
 
     const getActionDelay = useCallback(() => Math.max(0, delayMs - ping), [delayMs, ping]);
 
