@@ -6,7 +6,7 @@ import PokerCardList from '../components/PokerCardList';
 import useRoomData from '../hooks/useRoomData';
 import useUserData from '../hooks/useUserData';
 import ServerInfo from '../components/ServerInfo';
-import RoomActions from '../components/RoomActions';
+import RoomActions from '../components/pageActions/RoomActions';
 import useRoomCards from '../hooks/useRoomCards';
 
 export default function Vote() {

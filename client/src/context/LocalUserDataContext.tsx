@@ -1,40 +1,44 @@
+import { SystemUser } from "my-planit-poker-shared/typings/SystemUser";
 import { VotingRoom } from "my-planit-poker-shared/typings/VotingRoom";
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
+type SystemUserWithoutId = Omit<SystemUser, 'id'>;
+
 type UserData = {
-    username?: string;
-    setUsername: (value: string) => void;
-    isObserver: boolean;
-    setIsObserver: (value: boolean) => void;
+    userData: SystemUserWithoutId;
+    setUserData: (data: SystemUserWithoutId) => void;
     roomId?: VotingRoom['id'];
     setRoomId: (roomId?: VotingRoom['id']) => void;
+}
+
+type SavedUserData = {
+    username: SystemUser['username'];
+    isObserver: SystemUser['isObserver'];
 }
 
 export const UserContext = createContext<UserData>({} as UserData);
 
 export default function LocalUserDataContext({ children }: PropsWithChildren) {
-    const [savedUsername, setSavedUsername] = useLocalStorage<string | undefined>('username', undefined);
+    const [savedData, setSavedData] = useLocalStorage<SavedUserData | undefined>('savedData', undefined);
 
-    const [username, setUsername] = useState<string | undefined>(savedUsername);
-    const [isObserver, setIsObserver] = useState(false);
+    const [userData, setUserData] = useState<SystemUserWithoutId>({
+        username: savedData?.username || '',
+        isObserver: (savedData && savedData.isObserver) || false
+    });
     const [roomId, setRoomId] = useState<VotingRoom['id'] | undefined>();
 
     useEffect(() => {
-        if (!username) {
-            return;
-        }
-
-        setSavedUsername(username);
-    }, [setSavedUsername, username]);
-
+        setSavedData({
+            username: userData.username || '',
+            isObserver: userData.isObserver
+        });
+    }, [setSavedData, userData]);
 
     return (
         <UserContext.Provider value={{
-            username,
-            setUsername,
-            isObserver,
-            setIsObserver,
+            userData,
+            setUserData,
             roomId,
             setRoomId
         }}>
