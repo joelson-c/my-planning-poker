@@ -13,7 +13,7 @@ export default function Vote() {
     const [vote, setVote] = useState<string>();
     const { socket } = useSocketClient();
     const { meta: roomMeta, currentUserData: currentRoomUser } = useRoomData();
-    const { isObserver } = useUserData();
+    const { userData: { isObserver } } = useUserData();
 
     async function onCardReveal() {
         setVote('');
@@ -61,7 +61,7 @@ export default function Vote() {
     }, [vote]);
 
     return (
-        <div className='container grid grid-cols-1 lg:grid-cols-3 justify-items-center gap-5 pt-10 xl:py-24 xl:h-full'>
+        <div className='grid grid-cols-1 lg:grid-cols-3 justify-items-center gap-5 pt-10 xl:py-24 xl:h-full'>
             <div className='w-full lg:col-span-2'>
                 <PokerCardList listItems={cardList} />
             </div>

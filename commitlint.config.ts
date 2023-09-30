@@ -1,5 +1,5 @@
-import type {UserConfig} from '@commitlint/types';
-import {RuleConfigSeverity} from '@commitlint/types';
+import type { UserConfig } from '@commitlint/types';
+import { RuleConfigSeverity } from '@commitlint/types';
 
 const Config: UserConfig = {
     extends: ['@commitlint/config-conventional', '@commitlint/config-lerna-scopes'],

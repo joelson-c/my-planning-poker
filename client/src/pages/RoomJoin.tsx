@@ -71,7 +71,7 @@ export default function RoomJoin() {
     }
 
     return (
-        <div className="container flex flex-col h-full justify-center items-center">
+        <div className="flex flex-col h-full justify-center items-center">
             <form className="flex flex-col gap-5 w-full xl:w-2/3" onSubmit={onFormSubmit} ref={formRef}>
                 <Card classNames={{ base: 'bg-yellow-600', body: 'text-black' }}>
                     <CardBody>
