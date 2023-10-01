@@ -1,8 +1,8 @@
-import { Server } from 'socket.io';
 import { inject, injectAll, injectable, singleton } from 'tsyringe';
 import { UserServer } from 'my-planit-poker-shared/typings/ServerTypes';
 import IMiddleware from '../contracts/IMiddleware';
 import ILogger from '../contracts/ILogger';
+import ServerFactory from '../factories/ServerFactory';
 
 @injectable()
 @singleton()
@@ -11,6 +11,7 @@ export default class SocketServer {
 
     constructor(
         @injectAll('IMiddleware') private middlewares: IMiddleware[],
+        private serverFactory: ServerFactory,
         @inject('ILogger') private logger: ILogger
     ) { }
 
@@ -26,7 +27,7 @@ export default class SocketServer {
             this.logger.info(`Using "${corsOrigin}" as CORS Origin.`);
         }
 
-        this.server = new Server({
+        this.server = this.serverFactory.build({
             cors: {
                 origin: corsOrigin
             },
@@ -34,7 +35,7 @@ export default class SocketServer {
                 // the backup duration of the sessions and the packets
                 maxDisconnectionDuration: 2 * 60 * 1000,
             }
-        }) as UserServer;
+        });
 
         this.middlewares.forEach((middleware) => {
             this.server!.use((socket, next) => middleware.execute(socket, next));
