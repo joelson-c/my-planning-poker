@@ -1,8 +1,10 @@
-import { FaBinoculars } from "react-icons/fa";
-import { MdQuestionMark, MdCheckCircle, MdSecurity } from "react-icons/md";
-import { Tooltip } from "@nextui-org/react";
-import { RoomUser } from "my-planit-poker-shared/typings/VotingRoom";
-import { useRootStore } from "../state/rootStore";
+import { MdCheckCircle, MdQuestionMark, MdSecurity } from 'react-icons/md';
+import { FaBinoculars } from 'react-icons/fa';
+import { RoomUser } from 'my-planit-poker-shared/typings/VotingRoom';
+
+import { Tooltip } from '@nextui-org/react';
+
+import { useRootStore } from '../state/rootStore';
 
 function getUserIcon(user: RoomUser) {
     switch (true) {
@@ -43,7 +45,7 @@ export default function UserList() {
     return (
         <>
             <h2 className="text-bold text-xl mb-3">Usuários</h2>
-            <ul className="space-y-4">
+            <ul className="space-y-4 h-full max-h-[148px] md:max-h-[196px] overflow-y-auto overflow-x-hidden">
                 {roomUsers?.map((user) => (
                     <li
                         className={`relative flex items-center gap-1 p-2 border-2 rounded-lg ${getBorderStyle(user)}`}

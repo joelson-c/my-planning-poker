@@ -1,10 +1,13 @@
-import { Outlet } from "react-router-dom";
+import { Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import Footer from "./components/Footer";
+
+import Header from './components/Header';
+import Footer from './components/Footer';
 
 export default function App() {
     return (
         <div className="flex flex-col dark:bg-black md:h-screen">
+            <Header />
             <main className="container md:h-full">
                 <Outlet />
             </main>

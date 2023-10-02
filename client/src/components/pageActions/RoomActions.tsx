@@ -1,7 +1,9 @@
-import { Button } from "@nextui-org/react";
-import { useState } from "react";
-import useDelayedPromise from "../../hooks/useDelayedPromise";
-import { useRootStore } from "../../state/rootStore";
+import { useState } from 'react';
+
+import { Button, Divider } from '@nextui-org/react';
+
+import { useRootStore } from '../../state/rootStore';
+import useDelayedPromise from '../../hooks/useDelayedPromise';
 
 type RoomActionsProps = {
     onResetRequested: () => void;
@@ -12,6 +14,7 @@ const ACTION_DELAY_MS = 1000;
 
 export default function RoomActions({ onResetRequested, onCardReveal }: RoomActionsProps) {
     const roomMeta = useRootStore((state) => state.roomMeta);
+    const currentRoomUser = useRootStore((state) => state.getMyRemoteUser());
     const [isLoading, setIsLoading] = useState(false);
     const delayedPromise = useDelayedPromise(ACTION_DELAY_MS);
 
@@ -22,28 +25,37 @@ export default function RoomActions({ onResetRequested, onCardReveal }: RoomActi
         setIsLoading(false);
     }
 
+    if (!currentRoomUser?.isModerator) {
+        return null;
+    }
+
     return (
         <>
-            {roomMeta?.hasRevealedCards ?
-                (
-                    <Button
-                        type='button'
-                        onClick={() => onActionClick(onResetRequested)}
-                        isLoading={isLoading}
-                        color="primary"
-                    >
-                        Resetar
-                    </Button>
-                ) : (
-                    <Button
-                        type='button'
-                        onClick={() => onActionClick(onCardReveal)}
-                        isLoading={isLoading}
-                        color="primary"
-                    >
-                        Revelar votos
-                    </Button>
-                )}
+
+            <Divider className='my-4' />
+            <div className='justify-self-center'>
+                {roomMeta?.hasRevealedCards ?
+                    (
+                        <Button
+                            type='button'
+                            onClick={() => onActionClick(onResetRequested)}
+                            isLoading={isLoading}
+                            color="primary"
+                        >
+                            Resetar
+                        </Button>
+                    ) : (
+                        <Button
+                            type='button'
+                            onClick={() => onActionClick(onCardReveal)}
+                            isLoading={isLoading}
+                            color="primary"
+                        >
+                            Revelar votos
+                        </Button>
+                    )}
+            </div>
+
         </>
     );
 }

@@ -1,11 +1,11 @@
-import { Divider, Link } from "@nextui-org/react";
+import { Divider, Link } from '@nextui-org/react';
 
 export default function Footer() {
     return (
-        <footer className="mx-2">
+        <footer>
             <Divider />
-            <div className="flex gap-5 py-3 justify-center">
-                <p>Feito com ❤️ do 🇧🇷 por&nbsp;
+            <div className="flex gap-5 py-3 px-4 justify-center">
+                <p>Feito com ❤️ por&nbsp;
                     <Link href="https://github.com/joelson-c" target="_blank" rel="noopner">
                         @joelson-c
                     </Link>
