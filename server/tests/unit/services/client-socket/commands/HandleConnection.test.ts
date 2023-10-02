@@ -1,38 +1,35 @@
 import { beforeEach, expect, test } from 'vitest';
-import HandleConnection from '../../../../../src/services/client-socket/commands/HandleConnection';
 import { Mock, mock } from 'ts-jest-mocker';
-import SystemUserRepository from '../../../../../src/services/data/SystemUserRepository';
 import { Socket } from 'socket.io';
 import { SocketData } from 'my-planit-poker-shared/typings/ServerTypes';
 
+import { testCommand } from './commandFixtures';
+import SystemUserRepository from '../../../../../src/services/data/SystemUserRepository';
+import HandleConnection from '../../../../../src/services/client-socket/commands/HandleConnection';
+
 let command: HandleConnection;
-let userSocketMock: Mock<Socket>;
+let socketMock: Mock<Socket>;
 let systemUserRepoMock: Mock<SystemUserRepository>;
 
 beforeEach(() => {
-    userSocketMock = mock<Socket>();
+    socketMock = mock<Socket>();
     systemUserRepoMock = mock<SystemUserRepository>();
     command = new HandleConnection(
         systemUserRepoMock
     );
 });
 
-test('sends the user data upon connection', () => {
+testCommand('sends the user data upon connection', ({ systemUser }) => {
     const testUserId = '1';
-    const testUserData = {
-        id: testUserId,
-        username: 'abc',
-        isObserver: false
-    };
 
-    (userSocketMock.data as SocketData).session = {
+    (socketMock.data as SocketData).session = {
         id: '1',
         userId: testUserId
     };
 
-    systemUserRepoMock.getById.mockImplementation(() => testUserData);
+    systemUserRepoMock.getById.mockImplementation(() => systemUser);
 
-    command.handle({ socket: userSocketMock });
+    command.handle({ socket: socketMock });
 
-    expect(userSocketMock.emit).toHaveBeenCalledWith('connected', testUserData);
+    expect(socketMock.emit).toHaveBeenCalledWith('connected', systemUser);
 });

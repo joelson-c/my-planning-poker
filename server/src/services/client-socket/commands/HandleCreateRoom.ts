@@ -14,6 +14,7 @@ export default class HandleCreateRoom implements ICommand<{}, VotingRoom> {
     handle(): VotingRoom {
         const createdRoomId = this.roomRepository.create({} as VotingRoom);
         const roomData = this.roomRepository.getById(createdRoomId)!;
+        this.logger.debug('Created new voting room', { roomId: createdRoomId });
         return roomData;
     }
 }

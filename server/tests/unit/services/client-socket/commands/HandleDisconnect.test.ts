@@ -1,13 +1,15 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { Mock, mock } from 'ts-jest-mocker';
 import { Socket } from 'socket.io';
-import SystemUserRepository from '../../../../../src/services/data/SystemUserRepository';
+import { RoomUser } from 'my-planit-poker-shared/typings/VotingRoom';
+import { SocketData } from 'my-planit-poker-shared/typings/ServerTypes';
+
+import { testCommand } from './commandFixtures';
 import VotingRoomRepository from '../../../../../src/services/data/VotingRoomRepository';
+import SystemUserRepository from '../../../../../src/services/data/SystemUserRepository';
 import RoomUserRepository from '../../../../../src/services/data/RoomUserRepository';
 import HandleDisconnect from '../../../../../src/services/client-socket/commands/HandleDisconnect';
 import ILogger from '../../../../../src/contracts/ILogger';
-import { SocketData } from 'my-planit-poker-shared/typings/ServerTypes';
-import { RoomUser } from 'my-planit-poker-shared/typings/VotingRoom';
 
 let command: HandleDisconnect;
 let socketMock: Mock<Socket>;
@@ -43,21 +45,12 @@ beforeEach(() => {
     setupBasicMocks();
 });
 
-test('remove user from room when it disconnects', () => {
-    const testRoomUser: RoomUser = {
-        userId: testUserId,
-        roomId: testRoomId,
-        hasVoted: false,
-        isModerator: false,
-        isObserver: false,
-        username: 'TEST'
-    };
-
+testCommand('remove user from room when it disconnects', ({ currentRoomUser }) => {
     vi.stubEnv('DISABLE_EMPTY_ROOM_CLEANUP', 'true');
     vi.stubEnv('NODE_ENV', 'development');
 
-    roomUserRepoMock.getByUserId.mockImplementation(() => testRoomUser);
-    roomUserRepoMock.getByRoomId.mockImplementation(() => [testRoomUser]);
+    roomUserRepoMock.getByUserId.mockImplementation(() => currentRoomUser);
+    roomUserRepoMock.getByRoomId.mockImplementation(() => [currentRoomUser]);
 
     command.handle({ socket: socketMock });
 
@@ -66,17 +59,8 @@ test('remove user from room when it disconnects', () => {
     expect(roomUserRepoMock.update).toHaveBeenCalledTimes(0);
 });
 
-test('deletes the room if there are no more users in it', () => {
-    const testRoomUser: RoomUser = {
-        userId: testUserId,
-        roomId: testRoomId,
-        hasVoted: false,
-        isModerator: false,
-        isObserver: false,
-        username: 'TEST'
-    };
-
-    roomUserRepoMock.getByUserId.mockImplementation(() => testRoomUser);
+testCommand('deletes the room if there are no more users in it', ({ currentRoomUser }) => {
+    roomUserRepoMock.getByUserId.mockImplementation(() => currentRoomUser);
     roomUserRepoMock.getByRoomId.mockImplementation(() => []);
 
     command.handle({ socket: socketMock });
@@ -86,28 +70,11 @@ test('deletes the room if there are no more users in it', () => {
     expect(roomRepoMock.deleteById).toHaveBeenCalledWith(testRoomId);
 });
 
-test('assigns a new moderator when the current one disconnects', () => {
-    const testRoomUsers: RoomUser[] = [
-        {
-            userId: testUserId,
-            roomId: testRoomId,
-            hasVoted: false,
-            isModerator: true,
-            isObserver: false,
-            username: 'TEST MOD'
-        },
-        {
-            userId: 'user 2',
-            roomId: testRoomId,
-            hasVoted: false,
-            isModerator: false,
-            isObserver: false,
-            username: 'TEST'
-        }
-    ];
+testCommand('assigns a new moderator when the current one disconnects', ({ currentRoomUser, existingRoomUsers }) => {
+    currentRoomUser.isModerator = true;
 
-    roomUserRepoMock.getByUserId.mockImplementation(() => testRoomUsers[0]);
-    roomUserRepoMock.getByRoomId.mockImplementation(() => [testRoomUsers[1]]);
+    roomUserRepoMock.getByUserId.mockImplementation(() => currentRoomUser);
+    roomUserRepoMock.getByRoomId.mockImplementation(() => [existingRoomUsers[0]]);
 
     command.handle({ socket: socketMock });
 
@@ -115,7 +82,7 @@ test('assigns a new moderator when the current one disconnects', () => {
     expect(systemUserRepoMock.deleteById).toHaveBeenCalledWith(testUserId);
     expect(roomRepoMock.deleteById).toHaveBeenCalledTimes(0);
     expect(roomUserRepoMock.update).toHaveBeenCalledWith({
-        ...testRoomUsers[1],
+        ...existingRoomUsers[0],
         isModerator: true
     });
 });

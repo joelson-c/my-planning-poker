@@ -1,9 +1,10 @@
-import { inject, injectable } from "tsyringe";
-import ICommand from "../../../contracts/ICommand";
-import { UserSocket } from "my-planit-poker-shared/typings/ServerTypes";
-import ILogger from "../../../contracts/ILogger";
-import RoomUserRepository from "../../data/RoomUserRepository";
-import CommandUtils from "./CommandUtils";
+import { inject, injectable } from 'tsyringe';
+import { UserSocket } from 'my-planit-poker-shared/typings/ServerTypes';
+
+import CommandUtils from './CommandUtils';
+import RoomUserRepository from '../../data/RoomUserRepository';
+import ILogger from '../../../contracts/ILogger';
+import ICommand from '../../../contracts/ICommand';
 
 type CommandArgs = {
     socket: UserSocket;
@@ -29,8 +30,7 @@ export default class HandleVote implements ICommand<CommandArgs> {
         const roomUser = this.roomUserRepo.getByUserId(userId);
         if (!roomUser) {
             this.logger.warn('Room user data not found for User Id', { userId });
-            callback('Invalid User ID.');
-            return;
+            throw new Error('Invalid User Id');
         }
 
         roomUser.votingValue = value;
