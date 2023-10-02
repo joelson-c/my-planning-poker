@@ -5,6 +5,7 @@ import SystemUserRepository from "../../data/SystemUserRepository";
 import ILogger from "../../../contracts/ILogger";
 import VotingRoomRepository from "../../data/VotingRoomRepository";
 import RoomUserRepository from "../../data/RoomUserRepository";
+import { RoomUser } from "my-planit-poker-shared/typings/VotingRoom";
 
 type CommandArgs = {
     socket: UserSocket;
@@ -37,10 +38,7 @@ export default class HandleDisconnect implements ICommand<CommandArgs> {
         this.logger.debug('Client disconnected', { userId });
 
         const roomUsers = this.roomUserRepo.getByRoomId(roomId);
-        if (
-            !roomUsers.length &&
-            (!process.env.DISABLE_EMPTY_ROOM_CLEANUP && process.env.NODE_ENV === 'development')
-        ) {
+        if (this.shouldDeleteEmptyRoom(roomUsers)) {
             this.logger.info('Empty room will be deleted', { roomId });
             this.roomRepository.deleteById(roomId);
             return;
@@ -61,5 +59,19 @@ export default class HandleDisconnect implements ICommand<CommandArgs> {
 
         newModerator.isModerator = true;
         this.roomUserRepo.update(newModerator);
+    }
+
+    private shouldDeleteEmptyRoom(roomUsers: RoomUser[]): boolean {
+        if (roomUsers.length) {
+            return false;
+        }
+
+        if (process.env.DISABLE_EMPTY_ROOM_CLEANUP &&
+            process.env.NODE_ENV === 'development'
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }

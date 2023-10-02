@@ -3,6 +3,7 @@ import HandleConnection from '../../../../../src/services/client-socket/commands
 import { Mock, mock } from 'ts-jest-mocker';
 import SystemUserRepository from '../../../../../src/services/data/SystemUserRepository';
 import { Socket } from 'socket.io';
+import { SocketData } from 'my-planit-poker-shared/typings/ServerTypes';
 
 let command: HandleConnection;
 let userSocketMock: Mock<Socket>;
@@ -24,7 +25,8 @@ test('sends the user data upon connection', () => {
         isObserver: false
     };
 
-    userSocketMock.data.session = {
+    (userSocketMock.data as SocketData).session = {
+        id: '1',
         userId: testUserId
     };
 
