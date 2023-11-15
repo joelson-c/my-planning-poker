@@ -14,14 +14,9 @@ const clientHandler = container.resolve(ClientSocketHandler);
 const port = +(process.env.NODE_PORT || 3000);
 const logger = container.resolve('ILogger') as Logger;
 
-let server: UserServer | null = null;
-
 try {
     socketHandler.initializeServer(port);
-    server = socketHandler.getServer();
-    clientHandler.setUpServerEvents(server);
+    clientHandler.setUpServerEvents(socketHandler.getServer());
 } catch (error) {
     logger.error('Unhandled exception has been thrown', { error });
 }
-
-export const viteNodeApp = server;

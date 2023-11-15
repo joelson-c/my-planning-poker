@@ -22,7 +22,7 @@ jobs:
           node-version: 18
           cache: "npm"
 
-      - name: Install dependencies for shared lib
+      - name: Install dependencies
         run: npm install
 
       - name: Install dependencies and build front-end
