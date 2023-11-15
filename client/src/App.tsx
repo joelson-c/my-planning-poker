@@ -1,13 +1,19 @@
-import RoomJoin from "./pages/RoomJoin";
-import Vote from "./pages/Vote";
-import useUserData from "./hooks/useUserData";
+import { Outlet } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+
+import Footer from './components/Footer';
 
 export default function App() {
-    const { username } = useUserData();
-
     return (
-        <main className="h-screen dark:bg-black">
-            {username ? <Vote /> : <RoomJoin />}
-        </main>
+        <div className="flex flex-col dark:bg-black md:h-screen">
+            <div className="mb-10 lg:mb-20" />
+            <main className="container md:h-full">
+                <Outlet />
+            </main>
+            <div className="mt-5 sm:mt-auto">
+                <Footer />
+            </div>
+            <Toaster />
+        </div>
     );
 }

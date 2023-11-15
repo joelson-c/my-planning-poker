@@ -1,10 +1,11 @@
-import { UserSocket } from "my-planit-poker-shared/typings/ServerTypes";
-import { VotingRoom } from "my-planit-poker-shared/typings/VotingRoom";
-import { inject, injectable } from "tsyringe";
-import VotingRoomRepository from "../../data/VotingRoomRepository";
-import ILogger from "../../../contracts/ILogger";
-import RoomUserRepository from "../../data/RoomUserRepository";
-import UnauthorizedAccess from "../../../errors/UnauthorizedAccess";
+import { inject, injectable } from 'tsyringe';
+import { VotingRoom } from 'my-planit-poker-shared/typings/VotingRoom';
+import { UserSocket } from 'my-planit-poker-shared/typings/ServerTypes';
+
+import VotingRoomRepository from '../../data/VotingRoomRepository';
+import RoomUserRepository from '../../data/RoomUserRepository';
+import UnauthorizedAccess from '../../../errors/UnauthorizedAccess';
+import ILogger from '../../../contracts/ILogger';
 
 @injectable()
 export default class CommandUtils {
@@ -17,8 +18,8 @@ export default class CommandUtils {
     getSocketRoom(socket: UserSocket): VotingRoom {
         const { roomId } = socket.data;
         if (!roomId) {
-            this.logger.warn('Missing room ID for client', { client: socket.data });
-            throw new Error('Missing Room ID');
+            this.logger.warn('Missing room Id for client', { client: socket.data });
+            throw new Error('Missing Room Id');
         }
 
         const room = this.roomRepository.getById(roomId);

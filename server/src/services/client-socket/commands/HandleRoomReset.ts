@@ -3,7 +3,6 @@ import ICommand from "../../../contracts/ICommand";
 import { UserSocket } from "my-planit-poker-shared/typings/ServerTypes";
 import ILogger from "../../../contracts/ILogger";
 import VotingRoomRepository from "../../data/VotingRoomRepository";
-import { VotingRoom } from "my-planit-poker-shared/typings/VotingRoom";
 import RoomUserRepository from "../../data/RoomUserRepository";
 import CommandUtils from "./CommandUtils";
 
@@ -35,6 +34,6 @@ export default class HandleRoomReset implements ICommand<CommandArgs> {
 
         socket.to(roomId!).emit('roomReset');
 
-        this.logger.info('Room reset', { room });
+        this.logger.debug('Room reset', { room });
     }
 }

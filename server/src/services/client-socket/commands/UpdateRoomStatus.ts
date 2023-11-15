@@ -5,7 +5,7 @@ import SystemUserRepository from "../../data/SystemUserRepository";
 import ILogger from "../../../contracts/ILogger";
 import VotingRoomRepository from "../../data/VotingRoomRepository";
 import RoomUserRepository from "../../data/RoomUserRepository";
-import { RoomStatusEvent, RoomStatusUsers } from "my-planit-poker-shared/typings/VotingRoom";
+import { RoomStatusEvent, RoomUser } from "my-planit-poker-shared/typings/VotingRoom";
 
 type CommandArgs = {
     socket: UserSocket;
@@ -32,14 +32,15 @@ export default class UpdateRoomStatus implements ICommand<CommandArgs, Promise<v
         }
 
         const roomUsers = this.roomUserRepo.getByRoomId(roomId);
-        const roomStatusUsers = roomUsers.reduce<RoomStatusUsers[]>((acc, roomUser) => {
+        const users = roomUsers.reduce<RoomUser[]>((acc, roomUser) => {
             const userData = this.systemUserRepo.getById(roomUser.userId);
             if (!userData) {
                 return acc;
             }
 
             acc.push({
-                id: userData.id,
+                userId: userData.id,
+                roomId: room.id,
                 username: userData.username,
                 isObserver: userData.isObserver,
                 hasVoted: !!roomUser.votingValue,
@@ -52,10 +53,10 @@ export default class UpdateRoomStatus implements ICommand<CommandArgs, Promise<v
 
         const eventData: RoomStatusEvent = {
             room,
-            users: roomStatusUsers
+            users
         }
 
-        this.logger.info('Sending room users data', { eventData });
+        this.logger.debug('Sending room users data', { eventData });
         // TODO: Implement proper user connect/disconnect events
         socket.to(roomId).emit('roomStatus', eventData);
         socket.emit('roomStatus', eventData);

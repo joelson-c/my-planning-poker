@@ -1,71 +1,65 @@
 import { UserSocket } from "my-planit-poker-shared/typings/ClientTypes";
-import { PropsWithChildren, createContext, useEffect, useMemo, useState } from "react";
+import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import useUserData from "../hooks/useUserData";
-import { SystemUser } from "my-planit-poker-shared/typings/SystemUser";
+import useRemoteDataCleaner from "../hooks/useRemoteDataCleaner";
+import { useRootStore } from "../state/rootStore";
+import { RoomStatusEvent } from "my-planit-poker-shared/typings/VotingRoom";
 
 type SocketClient = {
     socket: UserSocket;
     isConnected: boolean;
     hasError: boolean;
-    userInfo?: SystemUser;
 }
+
+const socket = io(import.meta.env.VITE_SOCKET_URL, {
+    autoConnect: false,
+}) as UserSocket;
 
 export const SocketContext = createContext<SocketClient>({} as SocketClient);
 
 export default function SocketClientContext({ children }: PropsWithChildren) {
-    const { username, isObserver } = useUserData();
-
-    const socket = useMemo<UserSocket>(() => io(import.meta.env.VITE_SOCKET_URL, {
-        autoConnect: false,
-        auth: {
-            username,
-            isObserver
-        }
-    }), [username, isObserver]);
-
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [hasError, setHasError] = useState(false);
-    const [userInfo, setUserInfo] = useState<SystemUser>();
+    const updateRoomData = useRootStore((state) => state.updateRoomData);
+    const cleanData = useRemoteDataCleaner();
+
+    function onConnect() {
+        setIsConnected(true);
+    }
+
+    function onDisconnect() {
+        setIsConnected(false);
+        cleanData();
+    }
+
+    function onError() {
+        setHasError(true);
+    }
+
+    function onRoomStatusUpdate(event: RoomStatusEvent) {
+        updateRoomData(event);
+    }
 
     useEffect(() => {
-        function onConnect() {
-            setIsConnected(true);
-        }
-
-        function onDisconnect() {
-            setIsConnected(false);
-        }
-
-        function onError() {
-            setHasError(true);
-        }
-
-        function onConnected(user: SystemUser) {
-            setUserInfo(user);
-        }
-
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
         socket.on('connect_error', onError);
-        socket.on('connected', onConnected);
-
-        if (username) {
-            socket.connect();
-        }
-
+        socket.on('roomStatus', onRoomStatusUpdate);
 
         return () => {
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);
             socket.off('connect_error', onError);
-            socket.off('connected', onConnected);
-            socket.disconnect();
-        };
-    }, [socket, username]);
+            socket.off('roomStatus', onRoomStatusUpdate);
+        }
+    }, []);
 
     return (
-        <SocketContext.Provider value={{ hasError, isConnected, socket, userInfo }}>
+        <SocketContext.Provider value={{
+            hasError,
+            isConnected,
+            socket
+        }}>
             {children}
         </SocketContext.Provider>
     )

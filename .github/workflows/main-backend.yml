@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'server/**'
+      - "server/**"
 
 jobs:
   deploy:
@@ -22,13 +22,18 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-            role-to-assume: ${{ secrets.PROD_AWS_ROLE_TO_ASSUME }}
-            aws-region: ${{ vars.PROD_AWS_REGION }}
+          role-to-assume: ${{ secrets.PROD_AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.PROD_AWS_REGION }}
 
-      - name: Trigger AWS CodeDeploy
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          aws deploy create-deployment --application-name ${{ vars.AWS_SERVER_APP_NAME }} \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --deployment-group-name ${{ vars.PROD_AWS_SEVER_DEPLOY_GROUP }} \
-            --github-location repository=${{ github.repository }},commitId=$(git rev-parse HEAD) \
-            --ignore-application-stop-failures
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG . -f docker/Dockerfile.backend --compress
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG

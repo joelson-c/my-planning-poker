@@ -1,15 +1,9 @@
-import { UserSession } from "./UserSession";
 import { SystemUser } from "./SystemUser";
-
-export type RoomStatusUsers = {
-    votingValue?: string;
-    hasVoted: boolean;
-    isModerator: boolean;
-} & SystemUser;
+import { UserSession } from "./UserSession";
 
 export type RoomStatusEvent = {
     room: VotingRoom;
-    users: RoomStatusUsers[];
+    users: RoomUser[];
 };
 
 export type RoomUser = {
@@ -18,6 +12,8 @@ export type RoomUser = {
     votingValue?: string;
     hasVoted: boolean;
     isModerator: boolean;
+    isObserver: boolean;
+    username: SystemUser['username'];
 };
 
 export type VotingRoom = {
