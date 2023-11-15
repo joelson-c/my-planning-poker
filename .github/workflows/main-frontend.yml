@@ -21,10 +21,9 @@ jobs:
         with:
           node-version: 18
           cache: "npm"
-          cache-dependency-path: package-lock.json
 
       - name: Install dependencies for shared lib
-        run: npm install --workspace=client --workspace=shared
+        run: npm install
 
       - name: Install dependencies and build front-end
         run: npm run build --workspace=client

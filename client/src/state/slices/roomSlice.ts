@@ -1,5 +1,5 @@
-import { RoomStatusEvent, VotingRoom } from 'my-planit-poker-shared/typings/VotingRoom';
 import { StateCreator } from 'zustand';
+import { RoomStatusEvent, VotingRoom } from 'my-planit-poker-shared/typings/VotingRoom';
 
 const DISCONNECTED_PING = 999;
 
@@ -19,7 +19,7 @@ export const createRoomSlice: StateCreator<
     [],
     [],
     RoomSlice
-> = (set, get) => ({
+> = (set) => ({
     roomMeta: undefined,
     roomUsers: undefined,
     mineUser: undefined,
