@@ -1,6 +1,7 @@
-import { useEffect } from "react";
-import useSocketClient from "../hooks/useSocketClient";
-import { useRootStore } from "../state/rootStore";
+import { useEffect } from 'react';
+
+import { useRootStore } from '../state/rootStore';
+import useSocketClient from '../hooks/useSocketClient';
 
 const PING_FREQUENCE_MS = 750;
 
@@ -29,7 +30,7 @@ export default function ServerInfo() {
 
         const interval = setTimeout(sendPing, PING_FREQUENCE_MS);
         return () => clearTimeout(interval);
-    }, [isConnected]);
+    }, [isConnected, socket, updatePing]);
 
     return (
         <>

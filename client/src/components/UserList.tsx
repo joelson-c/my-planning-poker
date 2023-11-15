@@ -1,6 +1,7 @@
 import { MdCheckCircle, MdQuestionMark, MdSecurity } from 'react-icons/md';
 import { FaBinoculars } from 'react-icons/fa';
 import { RoomUser } from 'my-planit-poker-shared/typings/VotingRoom';
+import classNames from 'classnames';
 
 import { Tooltip } from '@nextui-org/react';
 
@@ -23,6 +24,8 @@ function getBorderStyle(user: RoomUser) {
             return 'border-green-600';
         case user.isObserver:
             return 'border-gray-600';
+        case user.isModerator:
+            return 'border-yellow-600';
         default:
             return '';
     }
@@ -48,7 +51,10 @@ export default function UserList() {
             <ul className="space-y-4 h-full max-h-[148px] md:max-h-[196px] overflow-y-auto overflow-x-hidden">
                 {roomUsers?.map((user) => (
                     <li
-                        className={`relative flex items-center gap-1 p-2 border-2 rounded-lg ${getBorderStyle(user)}`}
+                        className={classNames(
+                            'relative flex items-center gap-1 p-2 border-2 rounded-lg',
+                            getBorderStyle(user)
+                        )}
                         key={user.userId}
                     >
                         {user.isModerator && (
@@ -61,7 +67,7 @@ export default function UserList() {
                         <Tooltip content={getTooltip(user)} showArrow={true}>
                             <div className="truncate flex-[0_1_calc(100%-25px)]">
                                 <span className="text-bold">{user.username}</span>
-                                <span className="absolute bg-black -right-2 -bottom-1 z-10 rounded">
+                                <span className="absolute bg-black -right-1 -bottom-1 z-10 rounded">
                                     {getUserIcon(user)}
                                 </span>
                             </div>

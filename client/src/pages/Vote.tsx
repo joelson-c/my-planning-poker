@@ -1,3 +1,6 @@
+import { useCopyToClipboard } from 'usehooks-ts';
+import { useHref } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Divider } from '@nextui-org/react';
@@ -13,12 +16,14 @@ import RoomActions from '../components/pageActions/RoomActions';
 export default function Vote() {
     const [vote, setVote] = useState<string>();
     const { socket } = useSocketClient();
+    const [, copy] = useCopyToClipboard();
     const {
         meta: roomMeta, userData
     } = useRootStore((state) => ({
         meta: state.roomMeta,
         userData: state.remoteUserData
     }));
+    const joinRoomHref = useHref(`/join/${roomMeta?.id}`);
 
     async function onCardReveal() {
         setVote('');
@@ -27,6 +32,11 @@ export default function Vote() {
 
     function onResetRequested() {
         socket.emit('resetRoom');
+    }
+
+    function onRoomShare() {
+        copy(`${window.location.origin}${joinRoomHref}`);
+        toast.success('Link da sala copiado para a área de transferência!');
     }
 
     const onVoteChanged = useCallback(function onVoteChanged(value: string) {
@@ -75,7 +85,11 @@ export default function Vote() {
                     <UserList />
                     <Divider className='my-3' />
                     <ServerInfo />
-                    <RoomActions onResetRequested={onResetRequested} onCardReveal={onCardReveal} />
+                    <RoomActions
+                        onResetRequested={onResetRequested}
+                        onCardReveal={onCardReveal}
+                        onRoomShare={onRoomShare}
+                    />
                 </div>
             </div>
         </div>

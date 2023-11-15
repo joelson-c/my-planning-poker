@@ -8,11 +8,12 @@ import useDelayedPromise from '../../hooks/useDelayedPromise';
 type RoomActionsProps = {
     onResetRequested: () => void;
     onCardReveal: () => void;
+    onRoomShare: () => void;
 };
 
 const ACTION_DELAY_MS = 1000;
 
-export default function RoomActions({ onResetRequested, onCardReveal }: RoomActionsProps) {
+export default function RoomActions({ onResetRequested, onCardReveal, onRoomShare }: RoomActionsProps) {
     const roomMeta = useRootStore((state) => state.roomMeta);
     const currentRoomUser = useRootStore((state) => state.getMyRemoteUser());
     const [isLoading, setIsLoading] = useState(false);
@@ -31,9 +32,15 @@ export default function RoomActions({ onResetRequested, onCardReveal }: RoomActi
 
     return (
         <>
-
             <Divider className='my-4' />
-            <div className='justify-self-center'>
+            <div className='flex gap-4 justify-self-center'>
+                <Button
+                    type='button'
+                    onClick={() => onRoomShare()}
+                    color="success"
+                >
+                    Copiar link da sala
+                </Button>
                 {roomMeta?.hasRevealedCards ?
                     (
                         <Button
