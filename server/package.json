@@ -6,17 +6,17 @@
   "scripts": {
     "dev": "npx nodemon main.ts",
     "build": "npx tsc",
-    "start": "node dist/main.js",
+    "start": "node dist/server/main.js",
     "test": "vitest"
   },
   "author": "Joelson Carvalho",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.3.1",
-    "my-planit-poker-shared": "file:../shared",
     "reflect-metadata": "^0.1.13",
     "safe-stable-stringify": "^2.4.3",
     "tsyringe": "^4.8.0",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.34.0",
     "winston": "^3.10.0"
   },
   "devDependencies": {
