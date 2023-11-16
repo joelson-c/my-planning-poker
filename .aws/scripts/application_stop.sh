@@ -1,4 +1,5 @@
 #!/bin/bash
 
 cd /home/ec2-user/app
-docker compose -f docker-compose.production.yml stop
+
+docker compose -f docker-compose.production.yml down

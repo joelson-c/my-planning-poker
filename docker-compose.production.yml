@@ -7,7 +7,11 @@ services:
       dockerfile: .docker/Dockerfile.backend
     ports:
       - 3000:3000
-    restart: unless-stopped
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
   nginx:
     build:
       context: .
@@ -16,9 +20,13 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - ./nginx/conf/:/etc/nginx/conf.d/:ro
       - ./certbot/www:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
     restart: unless-stopped
   certbot:
     image: certbot/certbot:latest
