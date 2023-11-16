@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile.backend
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+  nginx:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile.nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/conf/:/etc/nginx/conf.d/:ro
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+    restart: unless-stopped
+  certbot:
+    image: certbot/certbot:latest
+    command: renew
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw

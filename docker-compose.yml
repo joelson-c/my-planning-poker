@@ -1,3 +1,5 @@
+version: '3'
+
 services:
   app:
     ports:
@@ -12,4 +14,4 @@ services:
       "
     volumes:
       - ./:/home/node/app
-    image: "node:lts"
+    image: "node:lts-slim"

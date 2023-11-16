@@ -10,11 +10,7 @@ on:
 env:
   ROLE_TO_ASSUME: ${{ secrets.PROD_AWS_ROLE_TO_ASSUME }}
   AWS_REGION: ${{ vars.PROD_AWS_REGION }}
-  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-  ECS_SERVICE: backend-socket-node
-  ECS_CLUSTER: ${{ vars.PROD_ECR_CLUSTER }}
-  ECS_TASK_DEFINITION: .aws/task-definition.json
-  CONTAINER_NAME: socket-node
+  DEPLOYMENT_GROUP: prod
 
 jobs:
   deploy:
@@ -25,42 +21,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: ${{ env.ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/amd64
-          push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-          file: .docker/Dockerfile.backend
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+      - name: Trigger AWS CodeDeploy
+        run: |
+          aws deploy create-deployment --application-name ${{ vars.DEPLOY_APP_NAME }} \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name ${{ env.DEPLOYMENT_GROUP }} \
+            --github-location repository=${{ github.repository }},commitId=$(git rev-parse HEAD) \
+            --ignore-application-stop-failures
