@@ -33,6 +33,10 @@ hooks:
     - location: .aws/scripts/before_install.sh
       timeout: 300
       runas: ec2-user
+  AfterInstall:
+    - location: .aws/scripts/after_install.sh
+      timeout: 900
+      runas: ec2-user
   ApplicationStop:
     - location: .aws/scripts/application_stop.sh
       timeout: 300
