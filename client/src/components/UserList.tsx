@@ -48,7 +48,7 @@ export default function UserList() {
     return (
         <>
             <h2 className="text-bold text-xl mb-3">Usuários</h2>
-            <ul className="space-y-4 h-full max-h-[148px] md:max-h-[196px] overflow-y-auto overflow-x-hidden">
+            <ul className="space-y-4 h-[150px] md:h-full overflow-y-auto overflow-x-hidden">
                 {roomUsers?.map((user) => (
                     <li
                         className={classNames(

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Button, Divider } from '@nextui-org/react';
+import { Button } from '@nextui-org/react';
 
 import { useRootStore } from '../../state/rootStore';
 import useDelayedPromise from '../../hooks/useDelayedPromise';
@@ -31,38 +31,34 @@ export default function RoomActions({ onResetRequested, onCardReveal, onRoomShar
     }
 
     return (
-        <>
-            <Divider className='my-4' />
-            <div className='flex gap-4 justify-self-center'>
-                <Button
-                    type='button'
-                    onClick={() => onRoomShare()}
-                    color="success"
-                >
-                    Copiar link da sala
-                </Button>
-                {roomMeta?.hasRevealedCards ?
-                    (
-                        <Button
-                            type='button'
-                            onClick={() => onActionClick(onResetRequested)}
-                            isLoading={isLoading}
-                            color="primary"
-                        >
-                            Resetar
-                        </Button>
-                    ) : (
-                        <Button
-                            type='button'
-                            onClick={() => onActionClick(onCardReveal)}
-                            isLoading={isLoading}
-                            color="primary"
-                        >
-                            Revelar votos
-                        </Button>
-                    )}
-            </div>
-
-        </>
+        <div className='flex gap-4 justify-self-center'>
+            {roomMeta?.hasRevealedCards ?
+                (
+                    <Button
+                        type='button'
+                        onClick={() => onActionClick(onResetRequested)}
+                        isLoading={isLoading}
+                        color="primary"
+                    >
+                        Resetar
+                    </Button>
+                ) : (
+                    <Button
+                        type='button'
+                        onClick={() => onActionClick(onCardReveal)}
+                        isLoading={isLoading}
+                        color="primary"
+                    >
+                        Revelar votos
+                    </Button>
+                )}
+            <Button
+                type='button'
+                onClick={() => onRoomShare()}
+                color="success"
+            >
+                Copiar link da sala
+            </Button>
+        </div>
     );
 }

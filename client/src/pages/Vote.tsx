@@ -8,6 +8,7 @@ import { Divider } from '@nextui-org/react';
 import { useRootStore } from '../state/rootStore';
 import useSocketClient from '../hooks/useSocketClient';
 import useRoomCards from '../hooks/useRoomCards';
+import VoteStats from '../components/VoteStats';
 import UserList from '../components/UserList';
 import ServerInfo from '../components/ServerInfo';
 import PokerCardList from '../components/PokerCardList';
@@ -80,16 +81,20 @@ export default function Vote() {
             <div className='flex flex-col md:flex-row gap-10 h-full'>
                 <div className='flex-[0_1_70%]'>
                     <PokerCardList listItems={cardList} />
+                    <VoteStats />
                 </div>
-                <div className='flex-1'>
-                    <UserList />
-                    <Divider className='my-3' />
-                    <ServerInfo />
+                <div className='flex flex-col flex-1 pb-3'>
                     <RoomActions
                         onResetRequested={onResetRequested}
                         onCardReveal={onCardReveal}
                         onRoomShare={onRoomShare}
                     />
+                    <Divider className='my-3' />
+                    <div className='flex-1'>
+                        <UserList />
+                    </div>
+                    <Divider className='my-3' />
+                    <ServerInfo />
                 </div>
             </div>
         </div>
