@@ -6,6 +6,12 @@ on:
       - main
     paths:
       - "server/**"
+      - ".docker/**"
+      - ".github/workflows/main-backend.yml"
+      - "package.json"
+      - "package-lock.json"
+      - "appspec.yml"
+      - "docker-compose.production.yml"
 
 env:
   ROLE_TO_ASSUME: ${{ secrets.PROD_AWS_ROLE_TO_ASSUME }}
