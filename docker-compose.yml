@@ -2,16 +2,28 @@ version: '3'
 
 services:
   app:
+    image: "node:lts-slim"
     ports:
-      - "3001:5173"
       - "3000:3000"
     working_dir: /home/node/app
     user: "node"
-    command: >
-      sh -c "
-        npm run dev --workspace=client -- --host 0.0.0.0 --port 5173 &
-          npm run dev --workspace=server
-      "
+    command: "npm run dev --workspace=server"
     volumes:
       - ./:/home/node/app
+
+  frontend:
     image: "node:lts-slim"
+    ports:
+      - "5173:5173"
+    working_dir: /home/node/app
+    user: "node"
+    command: "npm run dev --workspace=client -- --host 0.0.0.0 --port 5173"
+    volumes:
+      - ./:/home/node/app
+
+  nginx:
+    image: nginx:mainline-alpine3.18
+    ports:
+      - "80:80"
+    volumes:
+      - .docker/nginx/nginx.dev.conf:/etc/nginx/nginx.conf

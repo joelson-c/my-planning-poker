@@ -1,10 +1,11 @@
-import { inject, injectable } from "tsyringe";
-import { UserSocket } from "my-planit-poker-shared/typings/ServerTypes";
-import { UserSession } from "my-planit-poker-shared/typings/UserSession";
-import IMiddleware from "../contracts/IMiddleware";
-import ISessionStorage from "../contracts/ISessionStorage";
-import SystemUserRepository, { CreateUserProps } from "../services/data/SystemUserRepository";
-import RandomIdGenerator from "../services/RandomIdGenerator";
+import { inject, injectable } from 'tsyringe';
+import { UserSession } from 'my-planit-poker-shared/typings/UserSession';
+import { UserSocket } from 'my-planit-poker-shared/typings/ServerTypes';
+
+import RandomIdGenerator from '../services/RandomIdGenerator';
+import SystemUserRepository, { CreateUserProps } from '../services/data/SystemUserRepository';
+import ISessionStorage from '../contracts/ISessionStorage';
+import IMiddleware from '../contracts/IMiddleware';
 
 @injectable()
 export default class SessionMiddleware implements IMiddleware {
@@ -20,7 +21,8 @@ export default class SessionMiddleware implements IMiddleware {
         if (!session) {
             const username = socket.handshake.auth.username as string | undefined;
             if (!username) {
-                throw new Error("Invalid username");
+                next(new Error("Invalid username"));
+                return;
             }
 
             session = this.openUserSession({
@@ -35,8 +37,7 @@ export default class SessionMiddleware implements IMiddleware {
         next();
     }
 
-    private getUserSession(sessionId?: string): UserSession|undefined
-    {
+    private getUserSession(sessionId?: string): UserSession | undefined {
         if (!sessionId) {
             return;
         }
@@ -44,8 +45,7 @@ export default class SessionMiddleware implements IMiddleware {
         return this.sessionStorage.getById(sessionId);
     }
 
-    private openUserSession(data: CreateUserProps): UserSession
-    {
+    private openUserSession(data: CreateUserProps): UserSession {
         const userId = this.systemUserRepo.create(data);
 
         return {

@@ -1,8 +1,9 @@
-import { inject, injectAll, injectable, singleton } from 'tsyringe';
+import { inject, injectable, injectAll, singleton } from 'tsyringe';
 import { UserServer } from 'my-planit-poker-shared/typings/ServerTypes';
+
+import ServerFactory from '../factories/ServerFactory';
 import IMiddleware from '../contracts/IMiddleware';
 import ILogger from '../contracts/ILogger';
-import ServerFactory from '../factories/ServerFactory';
 
 @injectable()
 @singleton()

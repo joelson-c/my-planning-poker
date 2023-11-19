@@ -1,28 +1,39 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { Card, CardBody, Checkbox, Input, Spinner } from "@nextui-org/react";
-import RoomJoinActions, { FormAction } from "../components/pageActions/RoomJoinActions";
-import useSocketConnect from "../hooks/socket/useSocketConnect";
-import useCreateRoom from "../hooks/socket/useCreateRoom";
-import { useParams } from "react-router-dom";
-import useJoinRoom from "../hooks/socket/useJoinRoom";
-import { useRootStore } from "../state/rootStore";
+import { useParams } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { useRef, useState } from 'react';
+
+import { Card, CardBody, Checkbox, Input, Spinner } from '@nextui-org/react';
+
+import { useRootStore } from '../state/rootStore';
+import useSocketConnect from '../hooks/socket/useSocketConnect';
+import useJoinRoom from '../hooks/socket/useJoinRoom';
+import useCreateRoom from '../hooks/socket/useCreateRoom';
+import RoomJoinActions, { FormAction } from '../components/pageActions/RoomJoinActions';
+
+type FormData = {
+    username: string;
+    isObserver: boolean;
+    action: string;
+}
 
 export default function RoomJoin() {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<FormData>();
+
     const formRef = useRef<HTMLFormElement>(null);
     const [isLoading, setIsLoading] = useState(false);
     const localUserData = useRootStore((state) => state.localUserData);
     const [formAction, setFormAction] = useState<FormAction | null>(null);
     const { roomId: urlRoomId } = useParams();
-    const connect = useSocketConnect(onSocketConnected);
+    const connect = useSocketConnect(onSocketConnected, onSocketError);
     const createRoom = useCreateRoom();
     const joinRoom = useJoinRoom();
 
-    async function onFormSubmit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+    async function onFormSubmit({ username, isObserver }: FormData) {
         setIsLoading(true);
-        const formData = new FormData(event.target as HTMLFormElement);
-        const username = formData.get('username') as string;
-        const isObserver = formData.get('isObserver') === 'true';
 
         connect({
             username,
@@ -51,17 +62,18 @@ export default function RoomJoin() {
         setIsLoading(false);
     }
 
-    function onActionRequested(action: FormAction) {
-        setFormAction(action);
+    function onSocketError() {
+        setIsLoading(false);
     }
 
-    useEffect(() => {
-        if (!formAction || !formRef.current) {
+    function onActionRequested(action: FormAction) {
+        if (!formRef.current) {
             return;
         }
 
-        formRef.current.requestSubmit();
-    }, [formAction]);
+        setFormAction(action);
+        formRef.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))
+    }
 
     if (isLoading) {
         return (
@@ -73,7 +85,7 @@ export default function RoomJoin() {
 
     return (
         <div className="flex flex-col h-full justify-center items-center">
-            <form className="flex flex-col gap-5 w-full xl:w-2/3" onSubmit={onFormSubmit} ref={formRef}>
+            <form className="flex flex-col gap-5 w-full xl:w-2/3" onSubmit={handleSubmit(onFormSubmit)} ref={formRef}>
                 <Card classNames={{ base: 'bg-yellow-600', body: 'text-black' }}>
                     <CardBody>
                         <p>O primeiro usuário a entrar na sala se tornará um <strong>moderador</strong>.</p>
@@ -82,13 +94,17 @@ export default function RoomJoin() {
                 </Card>
                 <Input
                     type="text"
-                    name="username"
                     label="Insira um nome de usuário"
                     defaultValue={localUserData?.username}
-                    required
+                    isInvalid={!!errors.username}
+                    {...register('username', { required: true })}
                 />
-                <Checkbox name="isObserver" color="default" value="true">Observador?</Checkbox>
-                <input type="hidden" name="action" value={formAction || ''} />
+                <Checkbox
+                    color="default"
+                    value="true"
+                    {...register("isObserver")}
+                >Observador?</Checkbox>
+                <input type="hidden" value={formAction || ''} {...register("action")} />
                 <RoomJoinActions onActionRequested={onActionRequested} />
             </form>
         </div>

@@ -1,9 +1,10 @@
-import { UserSocket } from "my-planit-poker-shared/typings/ClientTypes";
-import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { io } from "socket.io-client";
-import useRemoteDataCleaner from "../hooks/useRemoteDataCleaner";
-import { useRootStore } from "../state/rootStore";
-import { RoomStatusEvent } from "my-planit-poker-shared/typings/VotingRoom";
+import { io } from 'socket.io-client';
+import { createContext, PropsWithChildren, useEffect, useState } from 'react';
+import { RoomStatusEvent } from 'my-planit-poker-shared/typings/VotingRoom';
+import { UserSocket } from 'my-planit-poker-shared/typings/ClientTypes';
+
+import { useRootStore } from '../state/rootStore';
+import useRemoteDataCleaner from '../hooks/useRemoteDataCleaner';
 
 type SocketClient = {
     socket: UserSocket;
@@ -52,6 +53,7 @@ export default function SocketClientContext({ children }: PropsWithChildren) {
             socket.off('connect_error', onError);
             socket.off('roomStatus', onRoomStatusUpdate);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

@@ -1,7 +1,9 @@
-import { Button } from "@nextui-org/react";
-import { useMemo, useState } from "react";
-import useDelayedPromise from "../../hooks/useDelayedPromise";
-import { useParams } from "react-router-dom";
+import { useParams } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+
+import { Button } from '@nextui-org/react';
+
+import useDelayedPromise from '../../hooks/useDelayedPromise';
 
 export type FormAction = 'createRoom' | 'joinRoom';
 
@@ -32,10 +34,7 @@ export default function RoomJoinActions({ onActionRequested }: JoinActionsProps)
         <div className="flex gap-4 w-full">
             <Button
                 type="submit"
-                onClick={(event) => {
-                    event.preventDefault();
-                    onActionClick(primaryAction);
-                }}
+                onClick={() => onActionClick(primaryAction)}
                 color="primary"
                 isLoading={loadingAction === primaryAction}
                 isDisabled={!!loadingAction && loadingAction !== primaryAction}
@@ -45,7 +44,7 @@ export default function RoomJoinActions({ onActionRequested }: JoinActionsProps)
             </Button>
             {urlRoomId && (
                 <Button
-                    type="button"
+                    type="submit"
                     color="secondary"
                     onClick={() => onActionClick('createRoom')}
                     isLoading={loadingAction === 'createRoom'}
