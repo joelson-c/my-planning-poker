@@ -86,8 +86,8 @@ export default function VoteStats() {
                     <Progress
                         key={voteValue}
                         label={voteValue}
-                        value={voteCount / groupedVotesByCount.size}
-                        maxValue={groupedVotesByCount.size}
+                        value={voteCount / roomUsers.length}
+                        maxValue={1}
                         showValueLabel={true} />
                 ))}
             </div>

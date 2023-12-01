@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo } from 'react';
 
 function calculateFibonacci(maxNumber: number): number[] {
     let n1 = 0, n2 = 1, nextTerm = 0;
