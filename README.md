@@ -66,7 +66,7 @@ This repository contains a Planning Poker Estimation System, a collaborative too
 3. Start the production environment:
 
    ```bash
-   docker-compose -f docker-compose.production.yml up -d
+   docker compose -f docker-compose.production.yml up -d
    ```
 
 4. Access the application at [https://localhost](https://localhost). Note that an SSL certificate is required.
