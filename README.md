@@ -90,6 +90,15 @@ Replace `/path/to/dummy-cert` with the actual path to your dummy SSL certificate
 - `fullchain.pem`
 - `privkey.pem`
 
+### CORS
+If the frontend and backend are in different origins. You must setup the expected frontend origins in `server/.env` file to avoid [Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) errors.
+Please refer to [socket.io documentation](https://socket.io/docs/v4/handling-cors/) to get more details.
+
+Exemple CORS setup:
+```
+CORS_ORIGIN="http://localhost:5173,http://myorigin.com"
+```
+
 ## Contributing
 
 We welcome contributions from the community. If you have ideas for improvements, feature requests, or find any issues, feel free to open an [issue](https://github.com/joelson-c/my-planning-poker/issues) or submit a [pull request](https://github.com/joelson-c/my-planning-poker/pulls).
