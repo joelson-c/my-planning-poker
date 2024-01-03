@@ -6,7 +6,7 @@ import { LocalUserDataSlice, createLocalUserDataSlice } from './slices/localUser
 import { RemoteUserSlice, createRemoteUserSlice } from './slices/remoteUserSlice';
 import { MyRemoteUserSlice, createMyRemoteUserSlice } from './slices/myRemoteUserSlice';
 
-type StoreState = RoomSlice & LocalUserDataSlice & RemoteUserSlice & MyRemoteUserSlice;
+export type StoreState = RoomSlice & LocalUserDataSlice & RemoteUserSlice & MyRemoteUserSlice;
 
 export const useRootStore = create<
     StoreState,

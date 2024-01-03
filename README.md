@@ -27,13 +27,21 @@ This repository contains a Planning Poker Estimation System, a collaborative too
    cd my-planning-poker
    ```
 
-3. Start the development environment:
+3. Install the dependencies:
+
+   ```bash
+   docker compose run app npm install
+   ```
+
+4. Create a `.env` file in `client` folder from the `.env.example` and set the `VITE_SOCKET_URL` variable to `http://localhost`
+
+5. Start the development environment:
 
    ```bash
    docker compose up -d
    ```
 
-4. Access the application at [http://localhost:5173](http://localhost:5173).
+6. Access the application at [http://localhost:5173](http://localhost:5173).
 
 ## Production Workflow
 
@@ -58,7 +66,7 @@ This repository contains a Planning Poker Estimation System, a collaborative too
 3. Start the production environment:
 
    ```bash
-   docker-compose -f docker-compose.production.yml up -d
+   docker compose -f docker-compose.production.yml up -d
    ```
 
 4. Access the application at [https://localhost](https://localhost). Note that an SSL certificate is required.
@@ -81,6 +89,15 @@ To use a dummy SSL certificate during development, follow these steps:
 Replace `/path/to/dummy-cert` with the actual path to your dummy SSL certificate. The `/path/to/dummy-cert` must have the files:
 - `fullchain.pem`
 - `privkey.pem`
+
+### CORS
+If the frontend and backend are in different origins. You must setup the expected frontend origins in `server/.env` file to avoid [Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) errors.
+Please refer to [socket.io documentation](https://socket.io/docs/v4/handling-cors/) to get more details.
+
+Exemple CORS setup:
+```
+CORS_ORIGIN="http://localhost:5173,http://myorigin.com"
+```
 
 ## Contributing
 

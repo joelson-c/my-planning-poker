@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 
-import { Button } from '@nextui-org/react';
+import { Button, Link } from '@nextui-org/react';
 
 import useDelayedPromise from '../../hooks/useDelayedPromise';
 
@@ -43,16 +43,9 @@ export default function RoomJoinActions({ onActionRequested }: JoinActionsProps)
                 {urlRoomId ? 'Entrar na sala' : 'Criar sala'}
             </Button>
             {urlRoomId && (
-                <Button
-                    type="submit"
-                    color="secondary"
-                    onClick={() => onActionClick('createRoom')}
-                    isLoading={loadingAction === 'createRoom'}
-                    isDisabled={!!loadingAction && loadingAction !== 'createRoom'}
-                    className="flex-1"
-                >
-                    Criar sala
-                </Button>
+                <Link href='/' color='secondary'>
+                    Ir para o ínicio
+                </Link>
             )}
         </div>
     );

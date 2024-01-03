@@ -2,7 +2,7 @@ import useSocketClient from "../useSocketClient";
 import { useEffect } from "react";
 import useRemoteDataCleaner from "../useRemoteDataCleaner";
 
-export default function useSocketDisconnect(callback?: () => {}): () => void {
+export default function useSocketDisconnect(callback?: () => void): () => void {
     const { socket, isConnected } = useSocketClient();
     const cleanData = useRemoteDataCleaner();
 
@@ -17,7 +17,7 @@ export default function useSocketDisconnect(callback?: () => {}): () => void {
 
         cleanData();
         callback && callback();
-    }, [isConnected]);
+    }, [callback, cleanData, isConnected]);
 
     return disconnectSocket;
 }

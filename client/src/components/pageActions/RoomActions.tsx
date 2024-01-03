@@ -31,7 +31,7 @@ export default function RoomActions({ onResetRequested, onCardReveal, onRoomShar
     }
 
     return (
-        <div className='flex gap-4 justify-self-center'>
+        <div className='flex gap-4 justify-self-center mb-3'>
             {roomMeta?.hasRevealedCards ?
                 (
                     <Button
