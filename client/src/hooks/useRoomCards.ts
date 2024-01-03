@@ -20,7 +20,7 @@ export default function useRoomCards(onVoteChanged: (value: string) => void, vot
                 acc.push({
                     key: roomUser.userId,
                     description: roomUser.username,
-                    value: roomUser.votingValue || 'N/A',
+                    value: roomUser.votingValue?.toString() || 'N/A',
                     onVote: onVoteChanged
                 });
 
