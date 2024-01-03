@@ -9,6 +9,7 @@ import ILogger from '../contracts/ILogger';
 @singleton()
 export default class SocketServer {
     private server?: UserServer;
+    private CORS_SEPARATOR = ',';
 
     constructor(
         @injectAll('IMiddleware') private middlewares: IMiddleware[],
@@ -21,16 +22,19 @@ export default class SocketServer {
             return;
         }
 
-        const corsOrigin = process.env.CORS_ORIGIN || '*';
-        if (corsOrigin === '*') {
+        let allowedOrigins: string | string[] = process.env.CORS_ORIGIN || '*';
+        if (allowedOrigins === '*') {
             this.logger.warn('Using "*" as CORS Origin.');
+        } else if (allowedOrigins.includes(this.CORS_SEPARATOR)) {
+            allowedOrigins = allowedOrigins.split(this.CORS_SEPARATOR);
+            this.logger.info(`Using "${JSON.stringify(allowedOrigins)}" as CORS Origin.`);
         } else {
-            this.logger.info(`Using "${corsOrigin}" as CORS Origin.`);
+            this.logger.info(`Using "${allowedOrigins}" as CORS Origin.`);
         }
 
         this.server = this.serverFactory.build({
             cors: {
-                origin: corsOrigin
+                origin: allowedOrigins
             },
             connectionStateRecovery: {
                 // the backup duration of the sessions and the packets
