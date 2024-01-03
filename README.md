@@ -33,7 +33,7 @@ This repository contains a Planning Poker Estimation System, a collaborative too
    docker compose run app npm install
    ```
 
-3. Create a `.env` file in `client` folder from the `.env.example` and set the `VITE_SOCKET_URL` variable to `http://localhost`
+4. Create a `.env` file in `client` folder from the `.env.example` and set the `VITE_SOCKET_URL` variable to `http://localhost`
 
 5. Start the development environment:
 
