@@ -12,10 +12,17 @@ export default function VoteStats() {
         users: state.roomUsers || []
     }));
 
+    const validVotes = useMemo(
+        () => roomUsers
+            .filter((user) => !!user.votingValue)
+            .map((user) => user.votingValue),
+        [roomUsers]
+    );
+
     const averageVote = useMemo(() => {
-        const numericVotes = roomUsers
-            .map((roomUser) => {
-                const numericVote = parseInt(roomUser?.votingValue || '', 10);
+        const numericVotes = validVotes
+            .map((vote) => {
+                const numericVote = parseInt(vote?.toString() || '', 10);
                 if (isNaN(numericVote)) {
                     return null;
                 }
@@ -29,20 +36,20 @@ export default function VoteStats() {
         }
 
         return (numericVotes.reduce((acc, value) => acc + value, 0) / numericVotes.length).toFixed(1);
-    }, [roomUsers]);
+    }, [validVotes]);
 
     const groupedVotesByCount = useMemo(() => {
-        const roomUsersGroupByVote = roomUsers.reduce((acc, roomUser) => {
-            if (roomUser.votingValue === undefined) {
+        const roomUsersGroupByVote = validVotes.reduce((acc, vote) => {
+            if (vote === undefined) {
                 return acc;
             }
 
-            acc.set(roomUser.votingValue, (acc.get(roomUser.votingValue) || 0) + 1);
+            acc.set(vote.toString(), (acc.get(vote.toString()) || 0) + 1);
             return acc;
         }, new Map<string, number>());
 
         return roomUsersGroupByVote;
-    }, [roomUsers]);
+    }, [validVotes]);
 
     const majorityVote = useMemo(() => {
         if (!groupedVotesByCount.size) {
@@ -68,17 +75,17 @@ export default function VoteStats() {
     }
 
     return (
-        <div className='text-center'>
+        <div className='text-center mt-5 md:mt-4'>
             <h2 className='text-xl font-bold'>Votos</h2>
             <Divider className='my-2' />
             <div className="flex flex-col gap-2">
                 <dl>
                     <dt className='text-lg'>Pontuação votada pela maioria</dt>
-                    <dd className='text-3xl font-bold'>{majorityVote}</dd>
+                    <dd className='text-xl md:text-3xl font-bold' data-testid="voting-majority">{majorityVote}</dd>
                 </dl>
                 <dl>
                     <dt className='text-lg'>Pontuação média</dt>
-                    <dd className='text-3xl font-bold'>{averageVote}</dd>
+                    <dd className='text-xl md:text-3xl font-bold' data-testid="voting-average">{averageVote}</dd>
                 </dl>
             </div>
             <div className="flex flex-col gap-3 my-2">
@@ -86,8 +93,8 @@ export default function VoteStats() {
                     <Progress
                         key={voteValue}
                         label={voteValue}
-                        value={voteCount / roomUsers.length}
-                        maxValue={1}
+                        value={Math.round((voteCount / validVotes.length)  * 100)}
+                        maxValue={100}
                         showValueLabel={true} />
                 ))}
             </div>

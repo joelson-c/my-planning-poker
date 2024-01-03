@@ -7,6 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
+    "test:client": "npx --workspace client vitest",
     "test:server": "npx --workspace server vitest",
     "prepare": "npx husky install",
     "commit": "npx commit"

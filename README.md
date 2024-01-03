@@ -27,13 +27,21 @@ This repository contains a Planning Poker Estimation System, a collaborative too
    cd my-planning-poker
    ```
 
-3. Start the development environment:
+3. Install the dependencies:
+
+   ```bash
+   docker compose run app npm install
+   ```
+
+3. Create a `.env` file in `client` folder from the `.env.example` and set the `VITE_SOCKET_URL` variable to `http://localhost`
+
+5. Start the development environment:
 
    ```bash
    docker compose up -d
    ```
 
-4. Access the application at [http://localhost:5173](http://localhost:5173).
+6. Access the application at [http://localhost:5173](http://localhost:5173).
 
 ## Production Workflow
 

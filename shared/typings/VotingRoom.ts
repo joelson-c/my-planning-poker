@@ -6,10 +6,12 @@ export type RoomStatusEvent = {
     users: RoomUser[];
 };
 
+export type Vote = string | number | undefined;
+
 export type RoomUser = {
     userId: UserSession['userId'];
     roomId: VotingRoom['id'];
-    votingValue?: string;
+    votingValue?: Vote;
     hasVoted: boolean;
     isModerator: boolean;
     isObserver: boolean;
@@ -20,3 +22,4 @@ export type VotingRoom = {
     hasRevealedCards: boolean;
     id: string;
 };
+

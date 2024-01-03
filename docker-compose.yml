@@ -3,8 +3,6 @@ version: '3'
 services:
   app:
     image: "node:lts-slim"
-    ports:
-      - "3000:3000"
     working_dir: /home/node/app
     user: "node"
     command: "npm run dev --workspace=server"

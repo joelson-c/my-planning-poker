@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import { Tooltip } from '@nextui-org/react';
 
 import { useRootStore } from '../state/rootStore';
+import { useMemo } from 'react';
 
 function getUserIcon(user: RoomUser) {
     switch (true) {
@@ -43,13 +44,28 @@ function getTooltip(user: RoomUser) {
 }
 
 export default function UserList() {
-    const roomUsers = useRootStore((state) => state.roomUsers);
+    const { roomUsers, myUser } = useRootStore((state) => ({
+        roomUsers: state.roomUsers,
+        myUser: state.getMyRemoteUser()
+    }));
+
+    const users = useMemo(() => [...roomUsers || []].sort((a, b) => {
+        if (a.userId === myUser?.userId) {
+            return -1;
+        }
+
+        if (b.userId === myUser?.userId) {
+            return 1;
+        }
+
+        return 0;
+    }), [roomUsers, myUser]);
 
     return (
         <>
             <h2 className="text-bold text-xl mb-3">Usuários</h2>
             <ul className="space-y-4 h-[150px] md:h-full overflow-y-auto overflow-x-hidden">
-                {roomUsers?.map((user) => (
+                {users?.map((user) => (
                     <li
                         className={classNames(
                             'relative flex items-center gap-1 p-2 border-2 rounded-lg',
