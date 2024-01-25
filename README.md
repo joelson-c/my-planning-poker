@@ -75,7 +75,15 @@ This repository contains a Planning Poker Estimation System, a collaborative too
 
 To use a dummy SSL certificate during development, follow these steps:
 
-1. Create a dummy SSL certificate.
+1. Create a dummy SSL certificate. You can use the following commands to make one:
+
+   ```bash
+      chown -R $USER:$USER certbot
+      mkdir -p certbot/conf/live/socket.myplanningpoker.dev 
+      cd certbot/conf/live/socket.myplanningpoker.dev
+      openssl genrsa 2048 > privkey.pem
+      openssl req -x509 -days 1000 -new -key privkey.pem -out fullchain.pem
+   ```
 
 2. Map the certificate using Docker volumes. Update the `docker-compose.production.yml` file:
 
