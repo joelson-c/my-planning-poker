@@ -1,0 +1,42 @@
+{
+    "name": "@my-planit-poker/server",
+    "version": "2.0.0",
+    "main": "dist/main.js",
+    "scripts": {
+        "dev": "rollup -c -w & node --watch dist/main.js",
+        "build": "rollup -c",
+        "start": "node dist/main.js",
+        "test": "vitest",
+        "test:watch": "vitest --watch"
+    },
+    "author": "Joelson Carvalho",
+    "license": "ISC",
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "reflect-metadata": "^0.2.2",
+        "safe-stable-stringify": "^2.5.0",
+        "socket.io": "^4.7.5",
+        "tsyringe": "^4.8.0",
+        "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.4.0",
+        "winston": "^3.14.2"
+    },
+    "devDependencies": {
+        "@faker-js/faker": "^9.0.0",
+        "@my-planit-poker/tsconfig": "*",
+        "@rollup/plugin-commonjs": "^26.0.1",
+        "@rollup/plugin-json": "^6.1.0",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-typescript": "^11.1.6",
+        "@socket.io/admin-ui": "^0.5.1",
+        "@types/my-planit-poker": "^1.0.0",
+        "@types/node": "^20.5.2",
+        "@vitest/coverage-v8": "^2.0.5",
+        "rollup": "^4.21.2",
+        "ts-jest-mocker": "^0.5.0",
+        "vitest": "^2.0.5"
+    },
+    "optionalDependencies": {
+        "bufferutil": "^4.0.8",
+        "utf-8-validate": "^5.0.10"
+    }
+}

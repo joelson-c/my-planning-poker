@@ -1,0 +1,12 @@
+{
+    "extends": "@my-planit-poker/tsconfig/base",
+    "include": ["src/main.ts", "global.d.ts", "src/**/*"],
+    "compilerOptions": {
+        "lib": ["ESNext"],
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "outDir": "dist",
+        "module": "ESNext",
+        "moduleResolution": "Bundler"
+    }
+}

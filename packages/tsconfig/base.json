@@ -1,0 +1,20 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig.json",
+    "compilerOptions": {
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "target": "ESNext",
+        "allowJs": true,
+        "resolveJsonModule": true,
+        "moduleDetection": "force",
+        "isolatedModules": true,
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "module": "ESNext",
+        "verbatimModuleSyntax": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+    }
+}

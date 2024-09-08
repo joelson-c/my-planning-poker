@@ -1,0 +1,12 @@
+{
+    "extends": "@my-planit-poker/tsconfig/base",
+    "compilerOptions": {
+        "target": "ESNext",
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "resolveJsonModule": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "moduleResolution": "Bundler"
+    },
+    "include": ["src"]
+}

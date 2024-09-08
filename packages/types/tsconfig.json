@@ -1,0 +1,3 @@
+{
+    "extends": "@my-planit-poker/tsconfig/base"
+}

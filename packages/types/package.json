@@ -1,0 +1,14 @@
+{
+    "name": "@types/my-planit-poker",
+    "version": "1.0.0",
+    "main": "index.ts",
+    "types": "index.ts",
+    "author": "Joelson Carvalho",
+    "license": "ISC",
+    "devDependencies": {
+        "@my-planit-poker/tsconfig": "*",
+        "socket.io": "^4.7.5",
+        "socket.io-client": "^4.7.5",
+        "typescript": "^5.5.4"
+    }
+}
