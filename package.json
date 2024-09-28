@@ -1,8 +1,7 @@
 {
-  "name": "my-planit-poker",
+  "name": "planningpoker",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A collaborative tool designed for agile development teams to streamline the estimation process.",
   "directories": {
     "doc": "docs"
   },
@@ -15,14 +14,8 @@
   "author": "Joelson Carvalho",
   "license": "MIT",
   "workspaces": [
-    "client",
-    "server",
-    "shared"
+    "packages"
   ],
-  "dependencies": {
-    "socket.io": "^4.7.2",
-    "socket.io-client": "^4.7.2"
-  },
   "devDependencies": {
     "@commitlint/cli": "^17.7.1",
     "@commitlint/config-conventional": "^17.7.0",
