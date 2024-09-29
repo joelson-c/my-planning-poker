@@ -6,15 +6,18 @@
     "doc": "docs"
   },
   "scripts": {
-    "test:client": "npx --workspace client vitest",
-    "test:server": "npx --workspace server vitest",
-    "prepare": "npx husky install",
+    "dev": "npm run dev -ws",
+    "build": "npm run build -ws",
+    "dev:client": "npm run dev -w @planningpoker/vote-client",
+    "build:client": "npm run build -w @planningpoker/vote-client",
+    "preview:client": "npm run preview -w @planningpoker/vote-client",
+    "prepare": "husky",
     "commit": "npx commit"
   },
   "author": "Joelson Carvalho",
   "license": "MIT",
   "workspaces": [
-    "packages"
+    "packages/*"
   ],
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
