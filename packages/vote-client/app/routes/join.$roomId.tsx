@@ -1,12 +1,9 @@
-import {
+import type {
   ClientActionFunctionArgs,
   ClientLoaderFunctionArgs,
-  json,
-  redirect,
-  useActionData,
-  useParams,
 } from "@remix-run/react";
-import { RoomLogin } from "~/components/roomLogin";
+import { redirect, useParams } from "@remix-run/react";
+import { LoginCard } from "~/components/login/card";
 
 type RouteParams = {
   roomId: string;
@@ -27,7 +24,7 @@ export default function Join() {
 
   return (
     <main>
-      <RoomLogin roomId={roomId} />
+      <LoginCard roomId={roomId} />
     </main>
   );
 }

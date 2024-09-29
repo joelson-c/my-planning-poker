@@ -1,7 +1,7 @@
 import type { MetaFunction } from "@remix-run/node";
 import type { ClientActionFunctionArgs } from "@remix-run/react";
 import { redirect } from "@remix-run/react";
-import { RoomLogin } from "~/components/roomLogin";
+import { LoginCard } from "~/components/login/card";
 
 export const meta: MetaFunction = () => {
   return [
@@ -13,7 +13,7 @@ export const meta: MetaFunction = () => {
 export default function Index() {
   return (
     <main>
-      <RoomLogin />
+      <LoginCard />
     </main>
   );
 }

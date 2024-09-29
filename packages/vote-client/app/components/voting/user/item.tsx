@@ -1,4 +1,4 @@
-import type { StoredVotingUser } from "@planningpoker/domain-models/voting/user";
+import type { VotingUser } from "@planningpoker/domain-models/voting/user";
 import { CheckCircle2, CircleEllipsis, Crown, XCircle } from "lucide-react";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";

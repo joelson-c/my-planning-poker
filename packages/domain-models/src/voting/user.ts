@@ -5,23 +5,17 @@ import {
   object,
   omit,
   optional,
+  size,
   string,
 } from "superstruct";
 
-export const StoredVotingUser = object({
+export const VotingUser = object({
   roomId: string(),
   connectionId: string(),
-  nickname: string(),
+  nickname: size(string(), 2, 32),
   vote: optional(string()),
   isAdmin: defaulted(boolean(), false),
   isObserver: defaulted(boolean(), false),
 });
 
-export const JoinedVotingUser = omit(StoredVotingUser, [
-  "roomId",
-  "connectionId",
-  "isAdmin",
-]);
-
-export type StoredVotingUser = Infer<typeof StoredVotingUser>;
-export type JoinedVotingUser = Infer<typeof JoinedVotingUser>;
+export type VotingUser = Infer<typeof VotingUser>;
