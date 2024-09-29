@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "npm run dev -ws",
     "build": "npm run build -ws",
+    "test": "npm run test -ws",
     "dev:client": "npm run dev -w @planningpoker/vote-client",
     "build:client": "npm run build -w @planningpoker/vote-client",
     "preview:client": "npm run preview -w @planningpoker/vote-client",
