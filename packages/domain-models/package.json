@@ -1,0 +1,22 @@
+{
+  "name": "@planningpoker/domain-models",
+  "version": "1.0.0",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Provides domain models definition for voting application",
+  "exports": {
+    "./voting/*": "./src/voting/*.ts"
+  },
+  "scripts": {
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "superstruct": "^2.0.2"
+  },
+  "devDependencies": {
+    "@planningpoker/eslint-config-planning-poker": "^0.0.0",
+    "@planningpoker/tsconfig": "^0.0.0",
+    "typescript": "^5.1.6"
+  }
+}

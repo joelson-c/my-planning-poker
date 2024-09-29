@@ -2,10 +2,11 @@ import {
   ClientActionFunctionArgs,
   ClientLoaderFunctionArgs,
   json,
+  redirect,
   useActionData,
   useParams,
 } from "@remix-run/react";
-import { RoomLogin } from "~/components/room/login";
+import { RoomLogin } from "~/components/roomLogin";
 
 type RouteParams = {
   roomId: string;
@@ -18,23 +19,23 @@ export const clientLoader = async ({ params }: ClientLoaderFunctionArgs) => {
     });
   }
 
-  // TODO: validate roomId
-
   return null;
 };
 
-export default function JoinRoom() {
-  const data = useActionData<typeof clientAction>();
+export default function Join() {
   const { roomId } = useParams<RouteParams>();
 
   return (
-    <div className="container mx-auto flex items-center justify-center min-h-screen p-4">
+    <main>
       <RoomLogin roomId={roomId} />
-    </div>
+    </main>
   );
 }
-export const clientAction = async ({ request }: ClientActionFunctionArgs) => {
-  // TODO: Join room
-  console.log(await request.formData());
-  return json({ errors: { nickname: "Nickname is required" } });
+
+export const clientAction = async ({
+  request,
+  params,
+}: ClientActionFunctionArgs) => {
+  // TODO: Save nickname to atom
+  return redirect(`/room/${params.roomId!}`);
 };
