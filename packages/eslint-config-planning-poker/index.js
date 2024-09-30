@@ -48,7 +48,14 @@ module.exports = {
       files: ["**/*.{ts,tsx}"],
       plugins: ["@typescript-eslint"],
       parser: "@typescript-eslint/parser",
-      extends: ["plugin:@typescript-eslint/recommended"],
+      parserOptions: {
+        project: "./packages/**/tsconfig.json",
+        sourceType: "module",
+      },
+      extends: [
+        "plugin:@typescript-eslint/recommended",
+        "plugin:rxjs/recommended",
+      ],
     },
 
     // Node

@@ -6,7 +6,8 @@
   "license": "ISC",
   "description": "Provides domain models definition for voting application",
   "exports": {
-    "./voting/*": "./src/voting/*.ts"
+    "./voting/*": "./src/voting/*.ts",
+    "./realtime/*": "./src/realtime/*.ts"
   },
   "scripts": {
     "lint": "eslint"

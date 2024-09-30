@@ -3,7 +3,6 @@ import {
   boolean,
   defaulted,
   object,
-  omit,
   optional,
   size,
   string,

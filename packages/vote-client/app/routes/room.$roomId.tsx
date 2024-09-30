@@ -1,5 +1,6 @@
 import type { ClientLoaderFunctionArgs } from "@remix-run/react";
 import { useParams } from "@remix-run/react";
+import { Suspense } from "react";
 import { VotingActions } from "~/components/voting/actions";
 import { VotingCardList } from "~/components/voting/card/list";
 import { VotingHeader } from "~/components/voting/header";
@@ -29,8 +30,10 @@ export default function Room() {
       <VotingHeader roomId={roomId!} />
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex flex-col w-full">
-          <VotingCardList />
-          <VotingActions />
+          <Suspense fallback="Loading cards...">
+            <VotingCardList />
+          </Suspense>
+          <VotingActions roomId={roomId!} />
         </div>
         <VotingUserList />
       </div>
