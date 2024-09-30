@@ -29,10 +29,12 @@ export default function Join() {
   );
 }
 
-export const clientAction = async ({
-  request,
-  params,
-}: ClientActionFunctionArgs) => {
-  // TODO: Save nickname to atom
-  return redirect(`/room/${params.roomId!}`);
+export const clientAction = async ({ params }: ClientActionFunctionArgs) => {
+  if (!params.roomId) {
+    throw new Response(null, {
+      status: 403,
+    });
+  }
+
+  return redirect(`/room/${params.roomId}`);
 };

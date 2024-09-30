@@ -41,6 +41,7 @@
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "autoprefixer": "^10.4.20",
+    "jotai-devtools": "^0.10.1",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.13",
     "typescript": "^5.1.6",

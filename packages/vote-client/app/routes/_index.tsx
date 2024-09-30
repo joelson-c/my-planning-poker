@@ -18,10 +18,6 @@ export default function Index() {
   );
 }
 
-export const clientAction = async ({
-  request,
-  params,
-}: ClientActionFunctionArgs) => {
-  // TODO: Create and save nickname to atom
+export const clientAction = async ({ params }: ClientActionFunctionArgs) => {
   return redirect(`/room/${params.roomId!}`);
 };

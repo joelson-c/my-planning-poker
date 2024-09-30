@@ -1,4 +1,8 @@
 import type { SubmitHandler } from "react-hook-form";
+import {
+  localVotingUserAtom,
+  type LocalVotingUser,
+} from "~/lib/atoms/voting/localUser";
 import { Controller, useForm } from "react-hook-form";
 import { superstructResolver } from "@hookform/resolvers/superstruct";
 import { VotingUser } from "@planningpoker/domain-models/voting/user";
@@ -8,12 +12,8 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 import { pick } from "superstruct";
-
-interface FormValues {
-  nickname: string;
-  isObserver: boolean;
-  roomId?: string;
-}
+import { useAtom } from "jotai";
+import { useEffect } from "react";
 
 interface LoginFormProps {
   roomId?: string;
@@ -29,19 +29,28 @@ export function LoginForm({ roomId }: LoginFormProps) {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<FormValues>({
+  } = useForm<LocalVotingUser>({
     resolver: superstructResolver(userFormSchema),
     defaultValues: {
       isObserver: false,
     },
   });
 
-  const onSubmit: SubmitHandler<FormValues> = ({ nickname, isObserver }) => {
-    submit(
-      { nickname, isObserver, roomId: roomId || null },
-      { method: "post" }
-    );
+  const [localVotingUser, setLocalVotingUser] = useAtom(localVotingUserAtom);
+
+  const onSubmit: SubmitHandler<LocalVotingUser> = ({
+    nickname,
+    isObserver,
+  }) => {
+    setLocalVotingUser({ nickname, isObserver });
   };
+
+  useEffect(() => {
+    if (!localVotingUser) {
+      return;
+    }
+    submit({ ...localVotingUser }, { method: "post" });
+  }, [localVotingUser, submit]);
 
   return (
     <Form method="post" onSubmit={handleSubmit(onSubmit)}>

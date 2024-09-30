@@ -1,15 +1,25 @@
 import type { VotingCard } from "../voting/card";
+import type { VotingRoom, VotingRoomState } from "../voting/room";
 import type { VotingUser } from "../voting/user";
 
-interface ConnectedMessage {
-  type: "connected";
+interface JoinRoomMessage {
+  type: "join";
   roomId: string;
+  nickname: string;
+  isObserver: boolean;
+}
+
+interface JoinedRoomMessage {
+  type: "joined";
+  room: VotingRoom;
   connectionId: string;
+  isAdmin: boolean;
 }
 
 interface VoteSendMessage {
   type: "vote_send";
   value: string;
+  connectionId: string;
 }
 
 interface VoteBroadcastMessage {
@@ -17,7 +27,20 @@ interface VoteBroadcastMessage {
   votes: Record<VotingUser["connectionId"], VotingCard>;
 }
 
+interface UserListBroadcastMessage {
+  type: "user_list_broadcast";
+  users: Omit<VotingUser, "vote">[];
+}
+
+interface RoomStateBroadcastMessage {
+  type: "room_state_broadcast";
+  state: VotingRoomState;
+}
+
 export type RealtimeMessage =
-  | ConnectedMessage
+  | JoinRoomMessage
+  | JoinedRoomMessage
   | VoteSendMessage
-  | VoteBroadcastMessage;
+  | VoteBroadcastMessage
+  | UserListBroadcastMessage
+  | RoomStateBroadcastMessage;

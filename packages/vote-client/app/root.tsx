@@ -6,9 +6,11 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
+import { Toaster } from "./components/ui/toaster";
+import { AtomProvider } from "./components/atom/provider";
+import { AtomDevTools } from "./components/atom/devtools";
 
 import "./tailwind.css";
-import { Toaster } from "./components/ui/toaster";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -33,10 +35,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
-        <Toaster />
+        <AtomProvider>
+          {children}
+          <ScrollRestoration />
+          <Scripts />
+          <Toaster />
+          <AtomDevTools />
+        </AtomProvider>
       </body>
     </html>
   );
