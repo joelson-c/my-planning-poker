@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package planningpoker.realtime.base;
+
+option go_package = "planningpoker/domain_models/dist_go/base";
+
+enum CardType {
+    FIBONACCI = 0;
+    SHIRT_SIZES = 1;
+}

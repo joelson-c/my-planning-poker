@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package planningpoker.realtime.base;
+
+option go_package = "planningpoker/domain_models/dist_go/base";
+
+enum MessageType {
+    ERROR = 0;
+    CREATE_ROOM_REQUEST = 1;
+    CREATE_ROOM_RESPONSE = 2;
+    JOIN_ROOM_REQUEST = 3;
+    JOIN_ROOM_RESPONSE = 4;
+    VOTE_REQUEST = 5;
+    VOTE_BROADCAST = 6;
+    ROOM_STATE_BROADCAST = 7;
+}

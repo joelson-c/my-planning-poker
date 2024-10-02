@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package planningpoker.realtime;
+
+option go_package = "planningpoker/domain_models/dist-go";
+
+message JoinRoomRequest {
+    string roomId = 2;
+    string nickname = 3;
+    bool isObserver = 4;
+}

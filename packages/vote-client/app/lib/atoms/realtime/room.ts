@@ -1,29 +1,33 @@
 import type { VotingRoom } from "@planningpoker/domain-models/voting/room";
 import { atom } from "jotai";
 import { atomWithObservable } from "jotai/utils";
-import { filter, map, timeout } from "rxjs";
+import { timeout } from "rxjs";
 import { socketSubject } from "~/lib/realtime/socketClient.client";
+import { protobufMessage } from "~/lib/realtime/protobufMessage";
+import { createMessage } from "~/lib/realtime/createMessage";
 import { localVotingUserAtom } from "../voting/localUser";
+import { JoinRoomResponseSchema } from "@planningpoker/domain-models/realtime/join_room_response_pb";
+import { RoomStateBroadcastSchema } from "@planningpoker/domain-models/realtime/room_state_broadcast_pb";
+import { RoomState } from "@planningpoker/domain-models/realtime/base/room_state_pb";
+import { CardType } from "@planningpoker/domain-models/realtime/base/card_type_pb";
+import { MessageType } from "@planningpoker/domain-models/realtime/base/message_type_pb";
 
 const ROOM_JOIN_TIMEOUT_MS = 5000;
 
 export const roomStateAtom = atomWithObservable(
-  () =>
-    socketSubject.pipe(
-      filter((data) => data.type === "room_state_broadcast"),
-      map((data) => data.state)
-    ),
-  { initialValue: "voting" }
+  () => socketSubject.pipe(protobufMessage(RoomStateBroadcastSchema)),
+  {
+    initialValue: {
+      $typeName: "planningpoker.realtime.RoomStateBroadcast",
+      state: RoomState.VOTING,
+      cardType: CardType.FIBONACCI,
+    },
+  }
 );
 
 export const roomAtom = atomWithObservable(() =>
   socketSubject.pipe(
-    filter((data) => data.type === "joined"),
-    map(({ isAdmin, room, connectionId }) => ({
-      isAdmin,
-      room,
-      connectionId,
-    })),
+    protobufMessage(JoinRoomResponseSchema),
     timeout(ROOM_JOIN_TIMEOUT_MS)
   )
 );
@@ -37,6 +41,18 @@ export const joinRoomAction = atom(
     }
 
     const { nickname, isObserver } = localUser;
-    socketSubject.next({ type: "join", roomId, nickname, isObserver });
+    socketSubject.next(
+      createMessage({
+        type: MessageType.JOIN_ROOM_REQUEST,
+        content: {
+          case: "joinRoomRequest",
+          value: {
+            roomId,
+            nickname,
+            isObserver,
+          },
+        },
+      })
+    );
   }
 );

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package planningpoker.realtime;
+
+import "create_room_request.proto";
+import "create_room_response.proto";
+import "join_room_request.proto";
+import "vote_request.proto";
+import "room_state_broadcast.proto";
+import "error.proto";
+import "join_room_response.proto";
+import "vote_broadcast.proto";
+
+import "base/message_type.proto";
+
+option go_package = "planningpoker/domain_models/dist-go";
+
+message SocketMessage {
+    planningpoker.realtime.base.MessageType type = 1;
+    oneof content {
+        planningpoker.realtime.Error error = 2;
+        planningpoker.realtime.CreateRoomRequest createRoomRequest = 3;
+        planningpoker.realtime.CreateRoomResponse createRoomResponse = 4;
+        planningpoker.realtime.JoinRoomRequest joinRoomRequest = 5;
+        planningpoker.realtime.VoteRequest voteRequest = 6;
+        planningpoker.realtime.RoomStateBroadcast roomStateBroadcast = 7;
+        planningpoker.realtime.JoinRoomResponse joinRoomResponse = 8;
+        planningpoker.realtime.VoteBroadcast voteBroadcast = 9;
+    }
+}

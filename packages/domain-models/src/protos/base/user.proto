@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package planningpoker.realtime.base;
+
+option go_package = "planningpoker/domain_models/dist_go/base";
+
+message User {
+  string connectionId = 1;
+  string roomId = 2;
+  string nickname = 3;
+  optional string vote = 4;
+  bool isAdmin = 5;
+  bool isObserver = 6;
+}

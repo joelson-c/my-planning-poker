@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package planningpoker.realtime;
+
+option go_package = "planningpoker/domain_models/dist-go";
+
+import "base/room_state.proto";
+import "base/card_type.proto";
+
+message RoomStateBroadcast {
+    planningpoker.realtime.base.RoomState state = 1;
+    planningpoker.realtime.base.CardType cardType = 2;
+}

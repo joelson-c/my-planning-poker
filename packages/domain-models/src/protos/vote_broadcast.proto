@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package planningpoker.realtime;
+
+option go_package = "planningpoker/domain_models/dist-go";
+
+message VoteBroadcast {
+    map<string, string> votes = 1;
+}
