@@ -1,0 +1,6 @@
+with-expecter: true
+packages:
+    planningpoker/vote-server/pkg/db:
+        config:
+        interfaces:
+            DynamoDBAPI:

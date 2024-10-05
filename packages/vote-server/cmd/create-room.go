@@ -15,7 +15,7 @@ import (
 )
 
 func handler(ctx context.Context) (string, error) {
-	action := actions.DbAction{Client: db.GetClient(ctx), TableName: actions.RoomsTableName, Context: ctx}
+	action := actions.BaseAction{Client: db.NewDynamoDBClient(ctx), TableName: actions.RoomsTableName, Context: ctx}
 	room, err := action.CreateRoom(base.VotingCardType_FIBONACCI)
 	if err != nil {
 		log.Panicf("Failed to create room: %v", err)

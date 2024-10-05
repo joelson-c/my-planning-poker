@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"context"
 	"fmt"
 	"planningpoker/domain_models/domain/base"
 
@@ -10,15 +9,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type DbAction struct {
-	Context   context.Context
-	Client    *dynamodb.Client
-	TableName string
-}
-
 const RoomsTableName = "planningpoker-voting-rooms"
 
-func (action *DbAction) CreateRoom(cardType base.VotingCardType) (*base.VotingRoom, error) {
+func (action *BaseAction) CreateRoom(cardType base.VotingCardType) (*base.VotingRoom, error) {
 	roomId := uuid.New()
 	room := &base.VotingRoom{
 		RoomId:   roomId.String(),
@@ -31,7 +24,7 @@ func (action *DbAction) CreateRoom(cardType base.VotingCardType) (*base.VotingRo
 		return nil, fmt.Errorf("Failed to marshal room object: %w", err)
 	}
 
-	_, err = action.Client.PutItem(action.Context, &dynamodb.PutItemInput{
+	_, err = action.Client.CreateItem(action.Context, &dynamodb.PutItemInput{
 		Item:      item,
 		TableName: &action.TableName,
 	})
