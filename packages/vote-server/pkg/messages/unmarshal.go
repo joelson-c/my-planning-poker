@@ -1,14 +1,16 @@
 package messages
 
 import (
+	"log"
+
 	"google.golang.org/protobuf/encoding/protojson"
 
-	domModels "planningpoker/domain_models/dist_go"
+	"planningpoker/domain_models/domain"
 )
 
-func UnmarshalMessage(input []byte, target *domModels.SocketMessage) error {
+func UnmarshalMessage(input []byte, target *domain.SocketMessage) error {
 	if err := protojson.Unmarshal(input, target); err == nil {
-		return err
+		log.Panicf("Failed to unmarshal message: %v", err)
 	}
 
 	return nil

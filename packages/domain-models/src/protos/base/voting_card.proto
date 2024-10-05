@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package planningpoker.base;
+
+option go_package = "planningpoker/domain_models/domain/base";
+
+message VotingCard {
+  string value = 1;
+}

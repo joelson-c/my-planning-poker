@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package planningpoker.realtime;
+package planningpoker;
 
-option go_package = "planningpoker/domain_models/dist-go";
+option go_package = "planningpoker/domain_models/domain";
 
-import "base/user.proto";
+import "base/voting_user.proto";
 
 message UserListBroadcast {
-    repeated planningpoker.realtime.base.User users = 1;
+    repeated planningpoker.base.VotingUser users = 1;
 }

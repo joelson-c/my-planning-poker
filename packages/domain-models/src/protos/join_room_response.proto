@@ -1,12 +1,13 @@
 syntax = "proto3";
 
-package planningpoker.realtime;
+package planningpoker;
 
-option go_package = "planningpoker/domain_models/dist-go";
+option go_package = "planningpoker/domain_models/domain";
+
+import "base/voting_room.proto";
+import "base/voting_user.proto";
 
 message JoinRoomResponse {
-    string roomId = 2;
-    string nickname = 3;
-    bool isObserver = 4;
-    bool isAdmin = 5;
+    planningpoker.base.VotingRoom room = 1;
+    planningpoker.base.VotingUser user = 2;
 }

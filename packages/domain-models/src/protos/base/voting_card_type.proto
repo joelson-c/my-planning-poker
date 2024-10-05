@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package planningpoker.base;
+
+option go_package = "planningpoker/domain_models/domain/base";
+
+enum VotingCardType {
+    FIBONACCI = 0;
+    SHIRT_SIZES = 1;
+}

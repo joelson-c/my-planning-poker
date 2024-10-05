@@ -1,9 +1,11 @@
 syntax = "proto3";
 
-package planningpoker.realtime;
+package planningpoker;
 
-option go_package = "planningpoker/domain_models/dist-go";
+option go_package = "planningpoker/domain_models/domain";
+
+import "base/voting_card.proto";
 
 message VoteRequest {
-    string vote = 1;
+    planningpoker.base.VotingCard vote = 1;
 }

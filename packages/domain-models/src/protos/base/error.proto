@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package planningpoker.base;
+
+option go_package = "planningpoker/domain_models/domain/base";
+
+message Error {
+    string reason = 1;
+    string code = 2;
+}

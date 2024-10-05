@@ -6,6 +6,6 @@ option go_package = "planningpoker/domain_models/domain";
 
 import "base/voting_room.proto";
 
-message CreateRoomResponse {
+message RoomUpdateBroadcast {
     planningpoker.base.VotingRoom room = 1;
 }

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package planningpoker.base;
+
+option go_package = "planningpoker/domain_models/domain/base";
+
+import "base/voting_card.proto";
+
+message VotingUser {
+  string connectionId = 1;
+  string roomId = 2;
+  string nickname = 3;
+  optional planningpoker.base.VotingCard vote = 4;
+  optional planningpoker.base.VotingCard hasVoted = 5;
+  bool isAdmin = 6;
+  bool isObserver = 7;
+}

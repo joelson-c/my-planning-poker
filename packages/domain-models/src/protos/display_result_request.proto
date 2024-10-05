@@ -4,8 +4,6 @@ package planningpoker;
 
 option go_package = "planningpoker/domain_models/domain";
 
-message JoinRoomRequest {
+message DisplayResultRequest {
     string roomId = 1;
-    string nickname = 2;
-    bool isObserver = 3;
 }

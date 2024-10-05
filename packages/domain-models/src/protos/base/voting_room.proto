@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package planningpoker.base;
+
+option go_package = "planningpoker/domain_models/domain/base";
+
+import "base/voting_card_type.proto";
+import "base/voting_room_state.proto";
+
+message VotingRoom {
+  string roomId = 1;
+  planningpoker.base.VotingCardType cardType = 2;
+  planningpoker.base.VotingRoomState state = 3;
+}

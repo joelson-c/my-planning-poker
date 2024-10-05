@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package planningpoker.realtime.base;
+package planningpoker.base;
 
-option go_package = "planningpoker/domain_models/dist_go/base";
+option go_package = "planningpoker/domain_models/domain/base";
 
 enum MessageType {
     ERROR = 0;
