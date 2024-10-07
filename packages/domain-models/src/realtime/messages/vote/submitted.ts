@@ -1,6 +1,6 @@
-import type { VotingUser } from "../../../voting/user";
+import type { VotingCard } from "../../../voting/card";
 
 export interface VoteSubmittedMessage {
   type: "vote_submitted";
-  user_id: VotingUser["connectionId"];
+  value: VotingCard;
 }

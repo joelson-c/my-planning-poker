@@ -1,7 +1,6 @@
-import type { VotingCard } from "../../../voting/card";
-import type { VotingUser } from "../../../voting/user";
+import type { VotingResult } from "../../../voting/result";
 
-export interface RevealedVotesMessage {
-  type: "revealed_votes";
-  votes: Record<VotingUser["connectionId"], VotingCard>;
+export interface VoteRevealedBroadcast {
+  type: "vote_revealed_broadcast";
+  votes: VotingResult;
 }

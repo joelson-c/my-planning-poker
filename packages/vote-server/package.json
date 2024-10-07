@@ -1,0 +1,28 @@
+{
+  "name": "@planningpoker/vote-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "node ./build.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.665.0",
+    "@aws-sdk/client-dynamodb": "^3.665.0",
+    "@aws-sdk/lib-dynamodb": "^3.665.0",
+    "dotenv": "^16.4.5",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@planningpoker/domain-models": "^1.0.0",
+    "@planningpoker/eslint-config-planning-poker": "^0.0.0",
+    "@planningpoker/tsconfig": "^0.0.0",
+    "@types/aws-lambda": "^8.10.145",
+    "@types/uuid": "^10.0.0"
+  }
+}

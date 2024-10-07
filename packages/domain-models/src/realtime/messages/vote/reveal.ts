@@ -1,3 +1,3 @@
-export interface RevealVoteMessage {
-  type: "reveal_vote";
+export interface VoteRevealMessage {
+  type: "vote_reveal";
 }

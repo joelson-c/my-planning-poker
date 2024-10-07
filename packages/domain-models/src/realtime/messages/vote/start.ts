@@ -1,3 +1,3 @@
-export interface StartVoteMessage {
+export interface VoteStartMessage {
   type: "start_vote";
 }

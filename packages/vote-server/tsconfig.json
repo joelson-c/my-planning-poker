@@ -1,0 +1,10 @@
+{
+  "extends": "@planningpoker/tsconfig",
+  "include": ["env.d.ts", "src/**/*.ts"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  }
+}

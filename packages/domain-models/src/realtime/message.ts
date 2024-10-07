@@ -1,15 +1,16 @@
-import type * as roomMessages from "./messages/room";
-import type * as userMessages from "./messages/user";
-import type * as votingMessages from "./messages/vote";
+import type * as messages from "./messages/types";
 
 export type RealtimeMessage =
-  | roomMessages.JoinRoomMessage
-  | roomMessages.JoinedRoomMessage
-  | userMessages.UserJoinedBroadcast
-  | userMessages.UserLeftBroadcast
-  | votingMessages.RevealVoteMessage
-  | votingMessages.RevealedVotesMessage
-  | votingMessages.StartVoteMessage
-  | votingMessages.VoteStartedBroadcast
-  | votingMessages.VoteSubmitMessage
-  | votingMessages.VoteSubmittedMessage;
+  | messages.JoinRoomMessage
+  | messages.JoinedRoomMessage
+  | messages.UserJoinedBroadcast
+  | messages.UserLeftBroadcast
+  | messages.UserVotedBroadcast
+  | messages.UserChangedBroadcast
+  | messages.VoteRevealMessage
+  | messages.VoteRevealedBroadcast
+  | messages.VoteStartMessage
+  | messages.VoteStartedBroadcast
+  | messages.VoteSubmitMessage
+  | messages.VoteSubmittedMessage
+  | messages.UserChangedBroadcast;
