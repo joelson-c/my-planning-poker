@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:17
+    volumes:
+      - ./.docker/postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "vote-app"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    environment:
+      - POSTGRES_USER=vote-app
+      - POSTGRES_PASSWORD=vote-app
+      - POSTGRES_DB=vote-app
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+  backend:
+    image: "node:lts-slim"
+    working_dir: /home/node/app
+    user: "node"
+    command: "npm run dev:server"
+    volumes:
+      - ./:/home/node/app
+    expose:
+      - 3000
+    depends_on:
+      db:
+        condition: service_healthy
+  frontend:
+    image: "node:lts-slim"
+    working_dir: /home/node/app
+    user: "node"
+    command: "npm run dev:client"
+    volumes:
+      - ./:/home/node/app
+    expose:
+      - 5173
+  centrifugo:
+    image: centrifugo/centrifugo:v5.2.0
+    volumes:
+      - ./centrifugo/config.json:/centrifugo/config.json
+    command: centrifugo -c config.json
+    expose:
+      - 8000
+  nginx:
+    image: nginx:mainline-alpine
+    volumes:
+      - ./.docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 9000:80
+    depends_on:
+      - backend
+      - frontend
+      - centrifugo

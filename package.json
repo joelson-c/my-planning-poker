@@ -6,10 +6,11 @@
     "doc": "docs"
   },
   "scripts": {
-    "dev": "npm run dev -ws --if-present",
-    "build": "npm run build -ws --if-present",
-    "test": "npm run test -ws --if-present",
-    "lint": "npm run lint -ws",
+    "lint:server": "npm run lint -w @planningpoker/vote-server",
+    "dev:server": "npm run start:dev -w @planningpoker/vote-server",
+    "build:server": "npm run build -w @planningpoker/vote-server",
+    "preview:server": "npm run start:prod -w @planningpoker/vote-server",
+    "lint:client": "npm run lint -w @planningpoker/vote-client",
     "dev:client": "npm run dev -w @planningpoker/vote-client",
     "build:client": "npm run build -w @planningpoker/vote-client",
     "preview:client": "npm run preview -w @planningpoker/vote-client",
