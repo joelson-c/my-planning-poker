@@ -28,6 +28,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://vote-app:vote-app@db:5432/vote-app?schema=public
       - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY:?error}
+      - CENTRIFUGO_API_ENDPOINT=${CENTRIFUGO_API_ENDPOINT:?error}
       - REALTIME_JWT_PRIVATE_KEY=${REALTIME_JWT_PRIVATE_KEY:?error}
       - REALTIME_JWT_PUBLIC_KEY=${REALTIME_JWT_PUBLIC_KEY:?error}
       - AUTH_JWT_PRIVATE_KEY=${AUTH_JWT_PRIVATE_KEY:?error}
@@ -39,7 +40,7 @@ services:
     image: "node:lts"
     working_dir: /home/node/app/packages/vote-client
     user: "node"
-    command: "npm run dev"
+    command: "npm run dev -- --host"
     volumes:
       - ./:/home/node/app
     expose:
@@ -53,6 +54,10 @@ services:
       - CENTRIFUGO_TOKEN_RSA_PUBLIC_KEY=${REALTIME_JWT_PUBLIC_KEY:?error}
       - CENTRIFUGO_API_KEY${CENTRIFUGO_API_KEY:?error}
       - CENTRIFUGO_ALLOWED_ORIGINS=http://frontend:5173
+      - CENTRIFUGO_ADMIN=true
+      - CENTRIFUGO_ADMIN_INSECURE=true
+    ports:
+      - 9001:8000
     expose:
       - 8000
   nginx:

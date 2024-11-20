@@ -50,12 +50,9 @@ export class RealtimeService {
             info: { nickname: token.nickname, isObserver },
         } satisfies Subscription;
 
-        return {
-            token: await this.jwtService.signAsync(payload, {
-                expiresIn: '5m',
-            }),
-            newAdminId: await this.assignNewAdmin(roomId),
-        };
+        return this.jwtService.signAsync(payload, {
+            expiresIn: '5m',
+        });
     }
 
     async revokeSubscription(userId: VotingUser['id']) {
@@ -66,9 +63,7 @@ export class RealtimeService {
 
         await this.removeUser(user.roomId, userId);
 
-        return {
-            newAdminId: await this.assignNewAdmin(user.roomId),
-        };
+        return user;
     }
 
     async joinUser(
@@ -85,7 +80,7 @@ export class RealtimeService {
             throw new RoomClosedException(roomId);
         }
 
-        const [updatedRoom] = await this.prisma.$transaction([
+        const [updatedRoom, updatedUser] = await this.prisma.$transaction([
             this.prisma.votingRoom.update({
                 where: {
                     id: roomId,
@@ -108,7 +103,10 @@ export class RealtimeService {
             }),
         ]);
 
-        return updatedRoom;
+        return {
+            room: updatedRoom,
+            user: updatedUser,
+        };
     }
 
     async removeUser(roomId: VotingRoom['id'], userId: VotingUser['id']) {

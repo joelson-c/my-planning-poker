@@ -5,6 +5,7 @@ import { RealtimeController } from './realtime.controller';
 import { RealtimeService } from './realtime.service';
 import { RoomModule } from 'src/room/room.module';
 import { UserModule } from 'src/user/user.module';
+import { BroadcastModule } from 'src/broadcast/broadcast.module';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { UserModule } from 'src/user/user.module';
         }),
         RoomModule,
         UserModule,
+        BroadcastModule,
     ],
     controllers: [RealtimeController],
     providers: [RealtimeService],

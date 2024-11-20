@@ -10,10 +10,20 @@ import { RealtimeService } from './realtime.service';
 import { SubscriptionDto } from './subscription/subscription.dto';
 import { AuthToken } from 'src/auth/token/token.decorator';
 import { Token } from 'src/auth/token/token.interface';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+    NEW_ROOM_SUBSCRIPTION_EVENT,
+    NewRoomSubscriptionEvent,
+    ROOM_UNSUBSCRIBE_EVENT,
+    RoomUnsubscribeEvent,
+} from './events';
 
 @Controller('realtime')
 export class RealtimeController {
-    constructor(private readonly realtimeService: RealtimeService) {}
+    constructor(
+        private readonly realtimeService: RealtimeService,
+        private readonly eventEmitter: EventEmitter2,
+    ) {}
 
     @Post('connection')
     async connectionToken(@AuthToken() token: Token) {
@@ -28,16 +38,16 @@ export class RealtimeController {
         @Body() { isObserver }: SubscriptionDto,
         @Param('roomId', new ParseUUIDPipe()) roomId: string,
     ) {
-        const { token: subToken, newAdminId } =
-            await this.realtimeService.generateSubscriptionToken(
-                token,
-                roomId,
-                isObserver,
-            );
+        const subToken = await this.realtimeService.generateSubscriptionToken(
+            token,
+            roomId,
+            isObserver,
+        );
 
-        if (newAdminId) {
-            // TODO: Broadcast new admin
-        }
+        this.eventEmitter.emit(
+            NEW_ROOM_SUBSCRIPTION_EVENT,
+            new NewRoomSubscriptionEvent(token.sub, roomId),
+        );
 
         return {
             token: subToken,
@@ -46,7 +56,12 @@ export class RealtimeController {
 
     @Post('subscription/revoke')
     async revokeSubscription(@AuthToken() token: Token) {
-        await this.realtimeService.revokeSubscription(token.sub);
+        const user = await this.realtimeService.revokeSubscription(token.sub);
+
+        this.eventEmitter.emit(
+            ROOM_UNSUBSCRIBE_EVENT,
+            new RoomUnsubscribeEvent(user.id, user.roomId),
+        );
     }
 
     @Get('subscription/mine')

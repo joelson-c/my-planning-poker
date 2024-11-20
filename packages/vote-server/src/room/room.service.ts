@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, VotingRoom, VotingUser } from '@prisma/client';
+import { Prisma, RoomState, VotingRoom, VotingUser } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { RoomMissingException } from './room.exception';
 
@@ -30,23 +30,29 @@ export class RoomService {
             throw new RoomMissingException(roomId);
         }
 
-        if (room.state === 'REVEAL') {
-            return this.getRoomVotes(room);
+        if (room.state === RoomState.REVEAL) {
+            return {
+                room,
+                votes: this.getRoomVotes(room),
+            };
         }
 
         const updatedRoom = await this.prisma.votingRoom.update({
-            select: {
-                users: true,
-            },
             where: {
                 id: roomId,
             },
             data: {
-                state: 'REVEAL',
+                state: RoomState.REVEAL,
+            },
+            include: {
+                users: true,
             },
         });
 
-        return this.getRoomVotes(updatedRoom);
+        return {
+            room: updatedRoom,
+            votes: this.getRoomVotes(updatedRoom),
+        };
     }
 
     async reset(roomId: VotingRoom['id']) {
@@ -55,7 +61,7 @@ export class RoomService {
                 id: roomId,
             },
             data: {
-                state: 'VOTING',
+                state: RoomState.VOTING,
             },
         });
     }
