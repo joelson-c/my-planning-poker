@@ -1,49 +1,30 @@
-import type { KyInstance } from 'ky';
-import { Inject, Injectable } from '@nestjs/common';
-import { MODULE_OPTIONS_TOKEN } from './centrifugo.module-definition';
-import {
-    CentrifugoModuleOptions,
+import type {
+    CentrifugoPublishData,
     CentrifugoPublishOptions,
+    CentrifugoPublishResult,
 } from './interfaces';
+import { Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom, map } from 'rxjs';
 
 @Injectable()
 export class CentrifugoService {
-    private readonly _httpClient: KyInstance;
+    constructor(private readonly httpService: HttpService) {}
 
-    constructor(
-        @Inject(MODULE_OPTIONS_TOKEN)
-        private readonly options: CentrifugoModuleOptions,
-    ) {}
-
-    async publish<TPayload, TResponse = unknown>(
+    async publish<TPayload>(
         channel: string,
         payload: TPayload,
         options?: CentrifugoPublishOptions,
     ) {
-        const response = await (
-            await this.getHttpClient()
-        ).post<TResponse>('publish', {
-            json: {
-                ...options,
-                channel: channel,
-                data: payload,
-            },
+        const response = this.httpService.post<
+            CentrifugoPublishResult,
+            CentrifugoPublishData<TPayload>
+        >('publish', {
+            ...options,
+            channel: channel,
+            data: payload,
         });
 
-        return response.json();
-    }
-
-    private async getHttpClient() {
-        if (this._httpClient) {
-            return this._httpClient;
-        }
-
-        const ky = (await import('ky')).default;
-        return ky.create({
-            prefixUrl: this.options.centrifugoApiEndpoint,
-            headers: {
-                'X-API-Key': this.options.centrifugoApiKey,
-            },
-        });
+        return firstValueFrom(response.pipe(map((response) => response.data)));
     }
 }

@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { VotingRoom, VotingUser } from '@prisma/client';
+import type { VotingRoom, VotingUser } from '@planningpoker/domain-models';
+import type {
+    NewAdminEvent,
+    RoomResetEvent,
+    VoteRevealEvent,
+} from './interfaces';
 import { CentrifugoService } from 'src/centrifugo/centrifgugo.service';
-import { NewAdminEvent, RoomResetEvent, VoteRevealEvent } from './interfaces';
 
 @Injectable()
 export class BroadcastService {

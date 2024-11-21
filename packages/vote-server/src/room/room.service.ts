@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, RoomState, VotingRoom, VotingUser } from '@prisma/client';
+import type {
+    Prisma,
+    VotingRoom,
+    VotingUser,
+} from '@planningpoker/domain-models';
+import { RoomState } from '@planningpoker/domain-models';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { RoomMissingException } from './room.exception';
 

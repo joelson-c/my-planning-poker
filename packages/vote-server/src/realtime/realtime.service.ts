@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Subscription } from './subscription/subscription.interface';
-import { Connection } from './connection/connection.interface';
-import { Token } from 'src/auth/token/token.interface';
+import type { Subscription } from './subscription/subscription.interface';
+import type { Connection } from './connection/connection.interface';
+import type { Token } from 'src/auth/token/token.interface';
 import { RoomService } from 'src/room/room.service';
 import { UserService } from 'src/user/user.service';
-import { VotingRoom, VotingUser } from '@prisma/client';
+import type { VotingRoom, VotingUser } from '@planningpoker/domain-models';
 import {
     RoomMissingException,
     RoomClosedException,
@@ -14,7 +14,8 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 
 @Injectable()
 export class RealtimeService {
-    private readonly issuer = 'voting_server';
+    private readonly TOKEN_ISSUER = 'voting_server';
+    private readonly CHANNEL_PREFIX = 'vote';
 
     constructor(
         private readonly prisma: PrismaService,
@@ -26,7 +27,7 @@ export class RealtimeService {
     async generateConnectionToken(token: Token) {
         const payload = {
             sub: token.sub,
-            iss: this.issuer,
+            iss: this.TOKEN_ISSUER,
             aud: 'connection',
         } satisfies Connection;
 
@@ -40,13 +41,13 @@ export class RealtimeService {
         roomId: string,
         isObserver: boolean,
     ) {
-        await this.joinUser(roomId, token.sub);
+        const { room } = await this.joinUser(roomId, token.sub);
 
         const payload = {
             sub: token.sub,
-            iss: this.issuer,
+            iss: this.TOKEN_ISSUER,
             aud: 'subscription',
-            channel: roomId,
+            channel: room.channel,
             info: { nickname: token.nickname, isObserver },
         } satisfies Subscription;
 
@@ -80,8 +81,20 @@ export class RealtimeService {
             throw new RoomClosedException(roomId);
         }
 
-        const [updatedRoom, updatedUser] = await this.prisma.$transaction([
-            this.prisma.votingRoom.update({
+        const prismaClient = this.prisma.$extends({
+            result: {
+                votingRoom: {
+                    channel: {
+                        needs: {
+                            id: true,
+                        },
+                        compute: ({ id }) => `${this.CHANNEL_PREFIX}:${id}`,
+                    },
+                },
+            },
+        });
+        const [updatedRoom, updatedUser] = await prismaClient.$transaction([
+            prismaClient.votingRoom.update({
                 where: {
                     id: roomId,
                 },
@@ -93,7 +106,7 @@ export class RealtimeService {
                     },
                 },
             }),
-            this.prisma.votingUser.update({
+            prismaClient.votingUser.update({
                 where: {
                     id: userId,
                 },

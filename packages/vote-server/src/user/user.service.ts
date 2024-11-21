@@ -1,5 +1,5 @@
+import type { VotingUser } from '@planningpoker/domain-models';
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { VotingUser } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { ObserverVoteException } from './user.exception';
 

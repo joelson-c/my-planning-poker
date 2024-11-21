@@ -5,19 +5,18 @@
   "author": "",
   "license": "ISC",
   "description": "Provides domain models definition for voting application",
-  "exports": {
-    "./voting/*": "./src/voting/*.ts",
-    "./realtime/*": "./src/realtime/*.ts"
-  },
+  "main": "./src/index.js",
   "scripts": {
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "superstruct": "^2.0.2"
+    "lint": "eslint",
+    "generate": "npx prisma generate",
+    "postinstall": "npm run generate"
   },
   "devDependencies": {
     "@planningpoker/eslint-config-planning-poker": "^0.0.0",
     "@planningpoker/tsconfig": "^0.0.0",
     "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
   }
 }

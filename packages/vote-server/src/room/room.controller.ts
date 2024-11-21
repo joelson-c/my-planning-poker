@@ -1,10 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { RoomService } from './room.service';
-import { CreateRoomDto } from './create/create.dto';
+import { CreateRoomDto } from './dto';
 import { AuthToken } from 'src/auth/token/token.decorator';
 import { Token } from 'src/auth/token/token.interface';
 import { UserService } from 'src/user/user.service';
 import { BroadcastService } from 'src/broadcast/broadcast.service';
+import { Public } from 'src/auth/public/public.decorator';
 
 @Controller('room')
 export class RoomController {
@@ -17,7 +18,7 @@ export class RoomController {
     @Post('create')
     async create(@Body() { cardType }: CreateRoomDto) {
         return {
-            roomId: await this.roomService.create({
+            room: await this.roomService.create({
                 cardType,
             }),
         };
@@ -40,5 +41,11 @@ export class RoomController {
     @Post('mine')
     async mine(@AuthToken() token: Token) {
         return this.roomService.getById(token.sub, true);
+    }
+
+    @Public()
+    @Post(':roomId/exists')
+    async exists(@Param('roomId', new ParseUUIDPipe()) roomId: string) {
+        return this.roomService.getById(roomId) !== null;
     }
 }

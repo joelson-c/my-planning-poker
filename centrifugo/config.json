@@ -1,6 +1,5 @@
 {
   "log_level": "debug",
-  "token_audience": "realtime",
   "token_issuer": "voting_server",
   "api_error_mode": "transport",
   "namespaces": [
