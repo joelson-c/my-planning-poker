@@ -4,7 +4,9 @@
   "api_error_mode": "transport",
   "namespaces": [
     {
-      "name": "vote"
+      "name": "vote",
+      "history_size": 5,
+      "history_ttl": "60s"
     }
   ]
 }

@@ -1,7 +1,8 @@
-import type { VotingUser } from '@planningpoker/domain-models';
+import type { VotingRoom, VotingUser } from '@planningpoker/domain-models';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { ObserverVoteException } from './user.exception';
+import { Token } from 'src/auth/token/token.interface';
 
 @Injectable()
 export class UserService {
@@ -27,20 +28,41 @@ export class UserService {
         });
     }
 
-    async getById(id: VotingUser['id'], withRoom = false) {
+    async getById(userId: VotingUser['id']) {
         return this.prisma.votingUser.findUnique({
             where: {
-                id,
+                id: userId,
+            },
+        });
+    }
+
+    async getByIdWithRoom(userId: VotingUser['id']) {
+        return this.prisma.votingUser.findUnique({
+            where: {
+                id: userId,
             },
             include: {
-                room: withRoom,
+                room: true,
+            },
+        });
+    }
+
+    async getByToken(token: Token) {
+        return this.getById(token.sub);
+    }
+
+    async getAdminUserByRoom(roomId: VotingRoom['id']) {
+        return this.prisma.votingUser.findFirst({
+            where: {
+                roomId,
+                isAdmin: true,
             },
         });
     }
 
     async addVote(id: VotingUser['id'], vote: VotingUser['vote']) {
         // TODO: Add vote value validation
-        const user = await this.getById(id, true);
+        const user = await this.getByIdWithRoom(id);
         if (!user) {
             throw new Error('User not found');
         }

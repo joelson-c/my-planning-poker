@@ -4,7 +4,7 @@ import { create } from 'superstruct';
 import { LoginCard } from '~/components/login/card';
 import { authenticate } from '~/lib/api/auth.server';
 import { authenticationData } from '~/lib/api/authentication-data';
-import { createRoom } from '~/lib/api/room';
+import { createRoom, joinRoom } from '~/lib/api/room';
 import { commitSession } from '~/lib/session';
 
 export const meta: MetaFunction = () => {
@@ -40,7 +40,9 @@ export async function action({ request }: ActionFunctionArgs) {
     );
 
     const { id: roomId } = await createRoom(token);
-    return redirect(`/room/${roomId}/vote?observer=${isObserver}`, {
+    await joinRoom(token, roomId, isObserver);
+
+    return redirect(`/room/${roomId}/vote`, {
         headers: {
             'Set-Cookie': await commitSession(autheticatedSession),
         },

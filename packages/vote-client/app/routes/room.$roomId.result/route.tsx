@@ -1,9 +1,9 @@
 import type { ClientLoaderFunctionArgs } from '@remix-run/react';
 import { RepositoryBanner } from '~/components/repository/banner';
-import { ResultHeader } from '~/components/result/header';
-import { ResultIndividualVotes } from '~/components/result/individualVotes';
-import { ResultSummary } from '~/components/result/summary';
-import { ResultVoteDistribution } from '~/components/result/voteDistribution';
+import { ResultHeader } from './result/header';
+import { ResultIndividualVotes } from './result/individualVotes';
+import { ResultSummary } from './result/summary';
+import { ResultVoteDistribution } from './result/voteDistribution';
 
 export const clientLoader = async ({ params }: ClientLoaderFunctionArgs) => {
     if (!params.roomId) {

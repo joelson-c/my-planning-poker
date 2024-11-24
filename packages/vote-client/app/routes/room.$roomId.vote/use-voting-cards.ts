@@ -1,11 +1,11 @@
-import type { VotingCardVariants } from '@planningpoker/domain-models/voting/room';
+import type { CardTypes } from '@planningpoker/domain-models';
 
-export function useVotingCards(variant: VotingCardVariants): string[] {
+export function useVotingCards(variant: CardTypes): string[] {
     switch (variant) {
-        case 'fibonacci':
+        case 'FIBONACCI':
             return ['0', '1', '2', '3', '5', '8', '13', '21', '34', '55', '89'];
 
-        case 'sizes':
+        case 'SIZES':
             return ['S', 'M', 'L', 'XL'];
 
         default:

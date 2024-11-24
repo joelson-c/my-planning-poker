@@ -1,53 +1,73 @@
 import type { AuthenticationData } from './authentication-data';
+import type { JwtPayload } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 import { env } from '../environment.server';
 import { getAuthenticatedHttpClient, httpClient } from '../http.server';
 import { getSession } from '../session';
+import { MissingAuthToken } from './errors/MissingAuthToken';
 
-export async function refreshToken(authToken: string) {
+export async function refreshToken(request: Request) {
+    const { rawToken: oldToken } = await validateAndGetToken(request);
     const {
         data: { token },
-    } = await getAuthenticatedHttpClient(authToken).post<{ token: string }>(
+    } = await getAuthenticatedHttpClient(oldToken).post<{ token: string }>(
         'auth/revalidate',
     );
-    return token;
-}
 
-export async function getServerToken(request: Request) {
     const session = await getSession(request.headers.get('Cookie'));
-    const token = session.get('serverToken');
-    if (!token) {
-        return null;
-    }
-
-    const newToken = await refreshToken(token);
     session.set('serverToken', token);
 
-    return new Promise<{ token: string; session: typeof session } | null>(
+    return {
+        session,
+        token,
+    };
+}
+
+export async function validateToken(token: string) {
+    return new Promise<{ rawToken: string; data: JwtPayload }>(
         (resolve, reject) => {
             jwt.verify(token, env.AUTH_JWT_PUBLIC_KEY, (err, decoded) => {
-                if (err) {
-                    resolve(null);
-                    return;
-                }
-
-                if (!decoded) {
-                    reject(new Error('Invalid token'));
+                if (err || !decoded) {
+                    reject(err);
                     return;
                 }
 
                 resolve({
-                    token: newToken,
-                    session,
+                    rawToken: token,
+                    data: decoded as JwtPayload,
                 });
             });
         },
     );
 }
 
+export async function validateAndGetToken(request: Request) {
+    const token = await getServerToken(request);
+    try {
+        return await validateToken(token);
+    } catch (error) {
+        if (error instanceof jwt.JsonWebTokenError) {
+            throw new Response('Unauthorized', { status: 401 });
+        }
+
+        throw error;
+    }
+}
+
 export async function isAuthenticated(request: Request) {
-    const serverToken = await getServerToken(request);
-    return serverToken !== null;
+    try {
+        await validateAndGetToken(request);
+        return true;
+    } catch (error) {
+        if (
+            error instanceof MissingAuthToken ||
+            error instanceof jwt.JsonWebTokenError
+        ) {
+            return false;
+        }
+
+        throw error;
+    }
 }
 
 export async function authenticate(
@@ -66,4 +86,14 @@ export async function authenticate(
         session,
         token,
     };
+}
+
+async function getServerToken(request: Request) {
+    const session = await getSession(request.headers.get('Cookie'));
+    const token = session.get('serverToken');
+    if (!token) {
+        throw new MissingAuthToken();
+    }
+
+    return token;
 }

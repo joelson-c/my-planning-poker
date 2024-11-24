@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback } from '../ui/avatar';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
+import { Avatar, AvatarFallback } from '~/components/ui/avatar';
+import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
 
 export function ResultIndividualVotes() {
     return (

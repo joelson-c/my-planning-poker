@@ -1,4 +1,4 @@
-import { VotingUser } from '@prisma/client';
+import type { VotingUser } from '@prisma/client';
 
 type EventType = 'ROOM_RESET' | 'VOTE_REVEAL' | 'NEW_ADMIN';
 

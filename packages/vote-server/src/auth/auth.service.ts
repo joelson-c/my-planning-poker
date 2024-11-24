@@ -28,6 +28,7 @@ export class AuthService {
         await this.userService.refreshUser(token.sub);
         const newToken = { ...token };
         delete newToken['exp'];
+        delete newToken['iat'];
 
         return this.jwtService.signAsync({
             ...newToken,

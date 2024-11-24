@@ -16,21 +16,21 @@ import { RealtimeModule } from './realtime/realtime.module';
         RoomModule,
         UserModule,
         CoreModule,
-        ThrottlerModule.forRoot([
+        /* ThrottlerModule.forRoot([
             {
                 ttl: 60000,
                 limit: 10,
             },
-        ]),
+        ]), */
         RealtimeModule,
     ],
     controllers: [AppController],
     providers: [
         AppService,
-        {
+        /* {
             provide: APP_GUARD,
             useClass: ThrottlerGuard,
-        },
+        }, */
     ],
 })
 export class AppModule {}
