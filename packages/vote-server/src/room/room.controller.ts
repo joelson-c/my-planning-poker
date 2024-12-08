@@ -79,6 +79,8 @@ export class RoomController {
             RoomState.VOTING,
         );
 
+        await this.roomService.resetVotes(roomId);
+
         await this.broadcastService.broadcastRoomState(room.id, room.state);
     }
 

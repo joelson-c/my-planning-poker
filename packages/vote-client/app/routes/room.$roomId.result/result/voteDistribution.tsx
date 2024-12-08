@@ -1,13 +1,28 @@
+import type { VoteResult } from '@planningpoker/domain-models';
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Progress } from '~/components/ui/progress';
 
-const voteCounts = {
-    '13': 9,
-};
+interface ResultVoteDistributionProps {
+    votes: VoteResult;
+}
 
-const maxVoteCount = 18;
+export function ResultVoteDistribution({ votes }: ResultVoteDistributionProps) {
+    const voteCounts = useMemo(() => {
+        return Object.values(votes).reduce((acc, { vote }) => {
+            if (!vote) {
+                return acc;
+            }
 
-export function ResultVoteDistribution() {
+            acc[vote] = (acc[vote] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+    }, [votes]);
+
+    const voteCount = useMemo(() => {
+        return Object.values(votes).filter(({ vote }) => !!vote).length;
+    }, [votes]);
+
     return (
         <Card>
             <CardHeader>
@@ -23,7 +38,7 @@ export function ResultVoteDistribution() {
                             </span>
                         </div>
                         <Progress
-                            value={(count / maxVoteCount) * 100}
+                            value={(count / voteCount) * 100}
                             className="h-2"
                         />
                     </div>

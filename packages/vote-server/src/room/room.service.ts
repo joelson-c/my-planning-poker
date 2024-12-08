@@ -4,6 +4,7 @@ import type {
     VotingRoom,
     VotingUser,
     RoomState,
+    VoteResult,
 } from '@planningpoker/domain-models';
 import { RoomClosedException, RoomMissingException } from './room.exception';
 import { UserService } from 'src/user/user.service';
@@ -44,7 +45,15 @@ export class RoomService {
 
     async getRoomVotes(roomId: VotingRoom['id']) {
         const room = await this.getByIdWithUsers(roomId);
-        return room.users.map((user) => user.vote);
+        const votes = room.users.reduce(
+            (acc, user) => ({
+                ...acc,
+                [user.id]: { vote: user.vote, nickname: user.nickname },
+            }),
+            {} as VoteResult,
+        );
+
+        return votes;
     }
 
     async updateState(roomId: VotingRoom['id'], state: RoomState) {
@@ -157,5 +166,16 @@ export class RoomService {
         );
 
         return oldestUser.id;
+    }
+
+    async resetVotes(roomId: VotingRoom['id']) {
+        return this.prisma.votingUser.updateMany({
+            where: {
+                roomId,
+            },
+            data: {
+                vote: null,
+            },
+        });
     }
 }

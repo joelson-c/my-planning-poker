@@ -1,5 +1,5 @@
 import { getAuthenticatedHttpClient, httpClient } from '../http.server';
-import type { VotingRoom } from '@planningpoker/domain-models';
+import type { VoteResult, VotingRoom } from '@planningpoker/domain-models';
 
 export async function createRoom(token: string) {
     const httpClient = getAuthenticatedHttpClient(token);
@@ -64,4 +64,14 @@ export async function resetRoom(token: string, roomId: string) {
     );
 
     return data?.room || null;
+}
+
+export async function getRoomVotes(token: string, roomId: string) {
+    const httpClient = getAuthenticatedHttpClient(token);
+
+    const { data } = await httpClient.get<{
+        votes: VoteResult;
+    } | null>(`room/${roomId}/votes`);
+
+    return data?.votes || {};
 }
