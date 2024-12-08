@@ -1,6 +1,6 @@
 import { redirect, type ActionFunctionArgs } from '@remix-run/node';
 import { validateAndGetToken } from '~/lib/api/auth.server';
-import { revealCards } from '~/lib/api/room';
+import { resetRoom } from '~/lib/api/room';
 
 export async function action({ request, params }: ActionFunctionArgs) {
     const { roomId } = params;
@@ -9,6 +9,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     const { rawToken } = await validateAndGetToken(request);
-    await revealCards(rawToken, roomId);
-    return redirect(`/room/${roomId}/result`);
+    await resetRoom(rawToken, roomId);
+    return redirect(`/room/${roomId}`);
 }

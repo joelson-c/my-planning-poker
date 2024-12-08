@@ -1,12 +1,12 @@
 import { json, type ActionFunctionArgs } from '@remix-run/node';
 import { create, string } from 'superstruct';
-import { VotingActions } from '~/routes/room.$roomId.vote/voting/actions';
-import { VotingCardList } from '~/routes/room.$roomId.vote/voting/card/list';
-import { VotingHeader } from '~/routes/room.$roomId.vote/voting/header';
-import { VotingUserList } from '~/routes/room.$roomId.vote/voting/user/list';
+import { VotingActions } from '~/routes/room.$roomId._index/voting/actions';
+import { VotingCardList } from '~/routes/room.$roomId._index/voting/card/list';
+import { VotingHeader } from '~/routes/room.$roomId._index/voting/header';
+import { VotingUserList } from '~/routes/room.$roomId._index/voting/user/list';
 import { sendVote } from '~/lib/api/user';
-import { useRoomContext } from '../room.$roomId/RoomProvider';
 import { validateAndGetToken } from '~/lib/api/auth.server';
+import { useRoomContext } from '~/routes/room/RoomProvider';
 
 export default function RoomVote() {
     const { room } = useRoomContext();

@@ -1,9 +1,9 @@
 import type { action } from '../../route';
-import { useVotingCards } from '~/routes/room.$roomId.vote/use-voting-cards';
+import { useVotingCards } from '~/routes/room.$roomId._index/use-voting-cards';
 import { VotingCardItem } from './item';
 import { useFetcher } from '@remix-run/react';
 import { useMemo } from 'react';
-import { useRoomContext } from '~/routes/room.$roomId/RoomProvider';
+import { useRoomContext } from '~/routes/room/RoomProvider';
 
 export function VotingCardList() {
     const {

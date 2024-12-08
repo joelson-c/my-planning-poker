@@ -1,4 +1,8 @@
-import type { Subscription, Error as CentrifugeError } from 'centrifuge';
+import type {
+    Subscription,
+    Error as CentrifugeError,
+    PublicationContext,
+} from 'centrifuge';
 import { Centrifuge } from 'centrifuge';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -8,12 +12,14 @@ interface CentrifugeHookOptions {
     roomId: string;
     realtimeEndpoint: string;
     onConnectionError: (error: CentrifugeError) => void;
+    onPublication: (publication: PublicationContext) => void;
 }
 
 export function useCentrifuge({
     roomId,
     realtimeEndpoint,
     onConnectionError,
+    onPublication,
 }: CentrifugeHookOptions) {
     const [client, setClient] = useState<Centrifuge | undefined>();
     const [isJoined, setIsJoined] = useState(false);
@@ -79,13 +85,13 @@ export function useCentrifuge({
         });
 
         subscription?.on('publication', (ctx) => {
-            console.log(ctx);
+            onPublication(ctx);
         });
 
         return () => {
             subscription?.unsubscribe();
         };
-    }, [subscription, onConnectionError]);
+    }, [subscription, onConnectionError, onPublication]);
 
     useEffect(() => {
         client?.on('error', ({ error }) => onConnectionError(error));

@@ -55,3 +55,13 @@ export async function revealCards(token: string, roomId: string) {
 
     return data?.room || null;
 }
+
+export async function resetRoom(token: string, roomId: string) {
+    const httpClient = getAuthenticatedHttpClient(token);
+
+    const { data } = await httpClient.post<{ room: VotingRoom } | null>(
+        `room/${roomId}/reset`,
+    );
+
+    return data?.room || null;
+}

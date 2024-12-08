@@ -2,19 +2,24 @@ import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import type { Error as CentrifugeError } from 'centrifuge';
 import { json, Outlet, redirect, useLoaderData } from '@remix-run/react';
 import { useCallback } from 'react';
-import { refreshToken } from '~/lib/api/auth.server';
+import { isAuthenticated, refreshToken } from '~/lib/api/auth.server';
 import { getMyJoinedRoom } from '~/lib/api/room';
 import { env } from '~/lib/environment.server';
 import { useToast } from '~/hooks/use-toast';
 import { commitSession } from '~/lib/session';
-import { RoomProvider } from './RoomProvider';
 import { getCurrentUser } from '~/lib/api/user';
+import { RoomProvider } from './RoomProvider';
 import { useCentrifuge } from './useCentrifuge';
+import { usePublicationHandle } from './usePublicationHandle';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
     const { roomId } = params;
     if (!roomId) {
         throw new Response(null, { status: 404 });
+    }
+
+    if (!(await isAuthenticated(request))) {
+        return redirect(`/join/${params.roomId}`);
     }
 
     const { token, session } = await refreshToken(request);
@@ -44,9 +49,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Room() {
-    const { realtimeEndpoint, room, user } = useLoaderData<typeof loader>();
     const { toast } = useToast();
-
     const onConnectionError = useCallback(
         (error: CentrifugeError) => {
             console.error('Centrifuge connection error:', error);
@@ -61,20 +64,18 @@ export default function Room() {
         [toast],
     );
 
-    const { client, isJoined, subscription } = useCentrifuge({
+    const { realtimeEndpoint, room, user } = useLoaderData<typeof loader>();
+
+    const onPublication = usePublicationHandle({ roomId: room.id });
+    const { isJoined } = useCentrifuge({
         roomId: room.id,
         realtimeEndpoint,
         onConnectionError,
+        onPublication,
     });
 
     return (
-        <RoomProvider
-            client={client}
-            subscription={subscription}
-            room={room}
-            user={user}
-            isJoined={isJoined}
-        >
+        <RoomProvider room={room} user={user} isJoined={isJoined}>
             <Outlet />
         </RoomProvider>
     );

@@ -1,4 +1,3 @@
-import type { Centrifuge, Subscription } from 'centrifuge';
 import type { ReactNode } from 'react';
 import type { VotingRoom, VotingUser } from '@planningpoker/domain-models';
 import { createContext, useContext } from 'react';
@@ -8,8 +7,6 @@ interface RoomContextData {
     room: Omit<VotingRoom, 'createdAt'>;
     // Omit date properties due to serialization
     user: Omit<VotingUser, 'connectedAt' | 'updatedAt'>;
-    client?: Centrifuge;
-    subscription?: Subscription;
     isJoined: boolean;
 }
 
@@ -33,17 +30,13 @@ export function RoomProvider({
     children,
     room,
     user,
-    client,
-    subscription,
     isJoined,
 }: RoomProviderProps) {
     return (
         <RoomContext.Provider
             value={{
-                client,
                 room,
                 user,
-                subscription,
                 isJoined,
             }}
         >

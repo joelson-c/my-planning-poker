@@ -57,7 +57,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     await joinRoom(token, roomId, isObserver);
 
-    return redirect(`/room/${roomId}/vote`, {
+    return redirect(`/room/${roomId}`, {
         headers: {
             'Set-Cookie': await commitSession(autheticatedSession),
         },
