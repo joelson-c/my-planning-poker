@@ -4,7 +4,8 @@ import type { VotingRoom, VotingUser } from '@planningpoker/domain-models';
 import { createContext, useContext } from 'react';
 
 interface RoomContextData {
-    room: VotingRoom;
+    // Omit date properties due to serialization
+    room: Omit<VotingRoom, 'createdAt'>;
     // Omit date properties due to serialization
     user: Omit<VotingUser, 'connectedAt' | 'updatedAt'>;
     client?: Centrifuge;

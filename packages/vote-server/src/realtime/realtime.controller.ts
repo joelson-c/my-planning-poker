@@ -8,8 +8,8 @@ import {
 } from '@nestjs/common';
 import { RealtimeService } from './realtime.service';
 import { SubscriptionDto } from './subscription/subscription.dto';
-import { AuthToken } from 'src/auth/token/token.decorator';
 import { Token } from 'src/auth/token/token.interface';
+import { AuthToken } from 'src/auth/auth.decorator';
 
 @Controller('realtime')
 export class RealtimeController {

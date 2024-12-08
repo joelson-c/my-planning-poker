@@ -2,8 +2,8 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { LoginAnonymousDto } from './login/login-anonymous.dto';
 import { AuthService } from './auth.service';
 import { Public } from './public/public.decorator';
-import { AuthToken } from './token/token.decorator';
 import { Token } from './token/token.interface';
+import { AuthToken } from './auth.decorator';
 
 @Controller('auth')
 export class AuthController {

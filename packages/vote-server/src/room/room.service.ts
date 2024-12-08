@@ -3,12 +3,12 @@ import type {
     Prisma,
     VotingRoom,
     VotingUser,
+    RoomState,
 } from '@planningpoker/domain-models';
-import { RoomState } from '@planningpoker/domain-models';
-import { PrismaService } from 'src/core/prisma/prisma.service';
 import { RoomClosedException, RoomMissingException } from './room.exception';
 import { UserService } from 'src/user/user.service';
 import { JoinedRoomMismatch } from 'src/core/core.exception';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class RoomService {
@@ -16,6 +16,12 @@ export class RoomService {
         private readonly prisma: PrismaService,
         private readonly userService: UserService,
     ) {}
+
+    async create(data: Prisma.VotingRoomCreateInput) {
+        return this.prisma.votingRoom.create({
+            data,
+        });
+    }
 
     async getById(roomId: VotingRoom['id']) {
         return this.prisma.votingRoom.findUnique({
@@ -36,50 +42,18 @@ export class RoomService {
         });
     }
 
-    async create(data: Prisma.VotingRoomCreateInput) {
-        return this.prisma.votingRoom.create({
-            data,
-        });
-    }
-
-    async revealCards(roomId: VotingRoom['id']) {
+    async getRoomVotes(roomId: VotingRoom['id']) {
         const room = await this.getByIdWithUsers(roomId);
-        if (!room) {
-            throw new RoomMissingException(roomId);
-        }
-
-        if (room.state === RoomState.REVEAL) {
-            return {
-                room,
-                votes: this.getRoomVotes(room),
-            };
-        }
-
-        const updatedRoom = await this.prisma.votingRoom.update({
-            where: {
-                id: roomId,
-            },
-            data: {
-                state: RoomState.REVEAL,
-            },
-            include: {
-                users: true,
-            },
-        });
-
-        return {
-            room: updatedRoom,
-            votes: this.getRoomVotes(updatedRoom),
-        };
+        return room.users.map((user) => user.vote);
     }
 
-    async reset(roomId: VotingRoom['id']) {
+    async updateState(roomId: VotingRoom['id'], state: RoomState) {
         return this.prisma.votingRoom.update({
             where: {
                 id: roomId,
             },
             data: {
-                state: RoomState.VOTING,
+                state,
             },
         });
     }
@@ -183,9 +157,5 @@ export class RoomService {
         );
 
         return oldestUser.id;
-    }
-
-    private getRoomVotes(room: { users: VotingUser[] }) {
-        return room.users.map((user) => user.vote);
     }
 }

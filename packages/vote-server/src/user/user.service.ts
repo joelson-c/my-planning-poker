@@ -1,8 +1,8 @@
 import type { VotingRoom, VotingUser } from '@planningpoker/domain-models';
+import type { Token } from 'src/auth/token/token.interface';
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/core/prisma/prisma.service';
 import { ObserverVoteException } from './user.exception';
-import { Token } from 'src/auth/token/token.interface';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UserService {

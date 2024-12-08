@@ -1,23 +1,19 @@
-import type { VotingUser } from '@prisma/client';
+import type { RoomState, VotingUser } from "@prisma/client";
 
-type EventType = 'ROOM_RESET' | 'VOTE_REVEAL' | 'NEW_ADMIN';
+type EventType = "ROOM_STATE_UPDATE" | "NEW_ADMIN";
 
 export interface BroadcastEvent {
-    type: EventType;
+  type: EventType;
 }
 
-export interface RoomResetEvent extends BroadcastEvent {
-    type: 'ROOM_RESET';
-}
-
-export interface VoteRevealEvent extends BroadcastEvent {
-    type: 'VOTE_REVEAL';
-    votes: VotingUser['vote'][];
+export interface NewRoomStateEvent extends BroadcastEvent {
+  type: "ROOM_STATE_UPDATE";
+  state: RoomState;
 }
 
 export interface NewAdminEvent extends BroadcastEvent {
-    type: 'NEW_ADMIN';
-    newAdminId: VotingUser['id'];
+  type: "NEW_ADMIN";
+  newAdminId: VotingUser["id"];
 }
 
-export type BroadcastEvents = RoomResetEvent | VoteRevealEvent | NewAdminEvent;
+export type BroadcastEvents = NewRoomStateEvent | NewAdminEvent;

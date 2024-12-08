@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import type { VotingRoom, VotingUser } from '@planningpoker/domain-models';
 import type {
+    RoomState,
+    VotingRoom,
+    VotingUser,
     NewAdminEvent,
-    RoomResetEvent,
-    VoteRevealEvent,
+    NewRoomStateEvent,
 } from '@planningpoker/domain-models';
 import { CentrifugoService } from 'src/centrifugo/centrifgugo.service';
 import { CHANNEL_PREFIX } from './constants';
@@ -12,24 +13,12 @@ import { CHANNEL_PREFIX } from './constants';
 export class BroadcastService {
     constructor(private readonly centrifugoService: CentrifugoService) {}
 
-    async broadcastRoomReset(roomId: VotingRoom['id']) {
-        await this.centrifugoService.publish<RoomResetEvent>(
+    async broadcastRoomState(roomId: VotingRoom['id'], state: RoomState) {
+        await this.centrifugoService.publish<NewRoomStateEvent>(
             this.getRoomChannel(roomId),
             {
-                type: 'ROOM_RESET',
-            },
-        );
-    }
-
-    async broadcastVoteReveal(
-        roomId: VotingRoom['id'],
-        votes: VotingUser['vote'][],
-    ) {
-        await this.centrifugoService.publish<VoteRevealEvent>(
-            this.getRoomChannel(roomId),
-            {
-                type: 'VOTE_REVEAL',
-                votes,
+                type: 'ROOM_STATE_UPDATE',
+                state,
             },
         );
     }

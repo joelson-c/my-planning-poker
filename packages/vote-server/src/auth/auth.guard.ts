@@ -39,6 +39,7 @@ class AuthGuard implements CanActivate {
         }
 
         request['token'] = tokenPayload;
+        request['user'] = user;
         return true;
     }
 

@@ -18,11 +18,12 @@ enum RoomState {
 }
 
 model VotingRoom {
-  id                String       @id @default(uuid()) @db.Uuid
+  id                String       @id @default(uuid(7)) @db.Uuid
   cardType          CardTypes    @default(FIBONACCI)
   state             RoomState    @default(VOTING)
   acceptConnections Boolean      @default(true)
   users             VotingUser[]
+  createdAt         DateTime     @default(now())
 }
 
 model VotingUser {

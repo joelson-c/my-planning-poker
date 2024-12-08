@@ -8,9 +8,7 @@ import {
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto';
-import { AuthToken } from 'src/auth/token/token.decorator';
 import { Token } from 'src/auth/token/token.interface';
-import { UserService } from 'src/user/user.service';
 import { BroadcastService } from 'src/broadcast/broadcast.service';
 import { Public } from 'src/auth/public/public.decorator';
 import { JoinRoomDto } from './dto/join.dto';
@@ -21,21 +19,16 @@ import {
     ROOM_UNSUBSCRIBE_EVENT,
     RoomUnsubscribeEvent,
 } from './events';
+import { RoomState, VotingUser } from '@planningpoker/domain-models';
+import { AuthToken, AuthUser } from 'src/auth/auth.decorator';
 
 @Controller('room')
 export class RoomController {
     constructor(
         private readonly roomService: RoomService,
-        private readonly userService: UserService,
         private readonly broadcastService: BroadcastService,
         private readonly eventEmitter: EventEmitter2,
     ) {}
-
-    @Public()
-    @Get(':roomId/exists')
-    async exists(@Param('roomId', new ParseUUIDPipe()) roomId: string) {
-        return this.roomService.getById(roomId) !== null;
-    }
 
     @Post('create')
     async create(@Body() { cardType }: CreateRoomDto) {
@@ -46,26 +39,47 @@ export class RoomController {
         };
     }
 
-    @Post('reveal')
-    async reveal(@AuthToken() token: Token) {
-        const user = await this.userService.getByToken(token);
-        const { room, votes } = await this.roomService.revealCards(user.roomId);
-        await this.broadcastService.broadcastVoteReveal(room.id, votes);
-    }
-
-    @Post('reset')
-    async reset(@AuthToken() token: Token) {
-        const user = await this.userService.getById(token.sub);
-        const room = await this.roomService.reset(user.roomId);
-        await this.broadcastService.broadcastRoomReset(room.id);
+    @Public()
+    @Get(':roomId/exists')
+    async exists(@Param('roomId', new ParseUUIDPipe()) roomId: string) {
+        return this.roomService.getById(roomId) !== null;
     }
 
     @Get('mine')
-    async mine(@AuthToken() token: Token) {
-        const user = await this.userService.getByIdWithRoom(token.sub);
+    async mine(@AuthUser() user: VotingUser) {
+        const room = await this.roomService.getById(user.roomId);
+
         return {
-            room: user.room,
+            room,
         };
+    }
+
+    @Get(':roomId/votes')
+    async myVotes(@Param('roomId', new ParseUUIDPipe()) roomId: string) {
+        const votes = await this.roomService.getRoomVotes(roomId);
+        return {
+            votes,
+        };
+    }
+
+    @Post(':roomId/reveal')
+    async reveal(@Param('roomId', new ParseUUIDPipe()) roomId: string) {
+        const room = await this.roomService.updateState(
+            roomId,
+            RoomState.REVEAL,
+        );
+
+        await this.broadcastService.broadcastRoomState(roomId, room.state);
+    }
+
+    @Post(':roomId/reset')
+    async reset(@Param('roomId', new ParseUUIDPipe()) roomId: string) {
+        const room = await this.roomService.updateState(
+            roomId,
+            RoomState.VOTING,
+        );
+
+        await this.broadcastService.broadcastRoomState(room.id, room.state);
     }
 
     @Post(':roomId/join')
@@ -86,7 +100,7 @@ export class RoomController {
         );
 
         return {
-            room: room,
+            room,
         };
     }
 

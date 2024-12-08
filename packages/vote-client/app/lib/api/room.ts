@@ -36,7 +36,7 @@ export async function roomExists(roomId: string) {
     return data;
 }
 
-export async function getJoinedRoom(token: string) {
+export async function getMyJoinedRoom(token: string) {
     const httpClient = getAuthenticatedHttpClient(token);
 
     const { data } = await httpClient.get<{ room: VotingRoom } | null>(
@@ -46,11 +46,11 @@ export async function getJoinedRoom(token: string) {
     return data?.room || null;
 }
 
-export async function revealCards(token: string) {
+export async function revealCards(token: string, roomId: string) {
     const httpClient = getAuthenticatedHttpClient(token);
 
     const { data } = await httpClient.post<{ room: VotingRoom } | null>(
-        `room/reveal`,
+        `room/${roomId}/reveal`,
     );
 
     return data?.room || null;

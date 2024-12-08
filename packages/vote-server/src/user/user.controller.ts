@@ -1,24 +1,24 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { AuthToken } from 'src/auth/token/token.decorator';
-import { Token } from 'src/auth/token/token.interface';
 import { UserService } from './user.service';
 import { VoteDto } from './vote/vote.dto';
+import { AuthUser } from 'src/auth/auth.decorator';
+import { VotingUser } from '@planningpoker/domain-models';
 
 @Controller('user')
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
     @Get('me')
-    async me(@AuthToken() token: Token) {
+    async me(@AuthUser() user: VotingUser) {
         return {
-            user: await this.userService.getByToken(token),
+            user,
         };
     }
 
     @Post('vote')
-    async vote(@AuthToken() token: Token, @Body() { value }: VoteDto) {
+    async vote(@AuthUser() user: VotingUser, @Body() { value }: VoteDto) {
         return {
-            user: await this.userService.addVote(token.sub, value),
+            user: await this.userService.addVote(user.id, value),
         };
     }
 }

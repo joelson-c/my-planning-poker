@@ -1,13 +1,15 @@
 import { useFetcher } from '@remix-run/react';
 import { Button } from '~/components/ui/button';
+import { useRoomContext } from '~/routes/room.$roomId/RoomProvider';
 
 export function VotingActions() {
     const revealFetcher = useFetcher();
+    const { room } = useRoomContext();
 
     const onRevealClick = () => {
         revealFetcher.submit(null, {
             method: 'post',
-            action: `/room/reveal-cards`,
+            action: `/room/${room.id}/reveal`,
         });
     };
 

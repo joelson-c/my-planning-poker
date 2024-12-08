@@ -1,7 +1,6 @@
 import Joi from 'joi';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaService } from './prisma/prisma.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
@@ -24,7 +23,6 @@ const envSchema = Joi.object({
         ScheduleModule.forRoot(),
         EventEmitterModule.forRoot(),
     ],
-    providers: [PrismaService],
-    exports: [ConfigModule, PrismaService, ScheduleModule],
+    exports: [ConfigModule, ScheduleModule],
 })
 export class CoreModule {}

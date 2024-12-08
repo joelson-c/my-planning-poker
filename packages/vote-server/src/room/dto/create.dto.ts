@@ -1,4 +1,4 @@
-import { CardTypes } from '@prisma/client';
+import { CardTypes } from '@planningpoker/domain-models';
 import { IsIn, IsOptional } from 'class-validator';
 
 export class CreateRoomDto {

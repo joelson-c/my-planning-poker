@@ -1,4 +1,4 @@
-import type { VotingRoom, VotingUser } from '@prisma/client';
+import type { VotingRoom, VotingUser } from '@planningpoker/domain-models';
 
 export const ROOM_UNSUBSCRIBE_EVENT = Symbol('room_unsubscribe');
 
