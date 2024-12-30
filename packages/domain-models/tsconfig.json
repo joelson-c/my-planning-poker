@@ -1,7 +1,0 @@
-{
-  "include": ["src/**/*.ts"],
-  "extends": "@planningpoker/tsconfig",
-  "compilerOptions": {
-    "noEmit": true
-  }
-}

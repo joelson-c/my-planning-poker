@@ -1,14 +1,19 @@
 {
-    "extends": "@planningpoker/tsconfig",
-    "include": ["env.d.ts", "**/*.ts", "**/*.tsx"],
+    "extends": ["../../tsconfig.json"],
+    "include": [
+        "**/*",
+        "**/.server/**/*",
+        "**/.client/**/*",
+        ".react-router/types/**/*"
+    ],
     "compilerOptions": {
-        "types": ["@remix-run/node", "vite/client"],
+        "types": ["@react-router/node", "vite/client", "bun"],
         "baseUrl": ".",
+        "rootDirs": [".", "./.react-router/types"],
         "paths": {
             "~/*": ["./app/*"]
         },
-
-        // Remix takes care of building everything in `remix build`.
-        "noEmit": true
+        "esModuleInterop": true,
+        "resolveJsonModule": true
     }
 }

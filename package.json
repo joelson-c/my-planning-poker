@@ -1,41 +1,32 @@
 {
-  "name": "planningpoker",
-  "version": "1.0.0",
-  "description": "A collaborative tool designed for agile development teams to streamline the estimation process.",
-  "directories": {
-    "doc": "docs"
-  },
-  "scripts": {
-    "lint:server": "npm run lint -w @planningpoker/vote-server",
-    "dev:server": "npm run start:dev -w @planningpoker/vote-server",
-    "build:server": "npm run build -w @planningpoker/vote-server",
-    "preview:server": "npm run start:prod -w @planningpoker/vote-server",
-    "lint:client": "npm run lint -w @planningpoker/vote-client",
-    "dev:client": "npm run dev -w @planningpoker/vote-client",
-    "build:client": "npm run build -w @planningpoker/vote-client",
-    "preview:client": "npm run preview -w @planningpoker/vote-client",
-    "prepare": "husky",
-    "commit": "npx commit"
-  },
-  "author": "Joelson Carvalho",
-  "license": "MIT",
-  "workspaces": [
-    "packages/*"
-  ],
-  "devDependencies": {
-    "@commitlint/cli": "^19.5.0",
-    "@commitlint/config-conventional": "^19.5.0",
-    "@commitlint/config-lerna-scopes": "^19.5.0",
-    "@commitlint/prompt-cli": "^19.5.0",
-    "@faker-js/faker": "^9.0.3",
-    "@vitest/coverage-v8": "^2.1.1",
-    "eslint-plugin-testing-library": "^6.3.0",
-    "husky": "^9.1.6",
-    "ts-jest-mocker": "^1.0.0",
-    "typescript": "^5.6.2",
-    "vitest": "^2.1.1"
-  },
-  "prisma": {
-    "schema": "./packages/domain-models/prisma/schema.prisma"
-  }
+    "name": "planningpoker",
+    "version": "1.0.0",
+    "description": "A collaborative tool designed for agile development teams to streamline the estimation process.",
+    "type": "module",
+    "directories": {
+        "doc": "docs"
+    },
+    "scripts": {
+        "lint:client": "bun run --filter @planningpoker/vote-client lint",
+        "dev:client": "bun run --filter @planningpoker/vote-client dev",
+        "build:client": "bun run --filter @planningpoker/vote-client build",
+        "preview:client": "bun run --filter @planningpoker/vote-client preview",
+        "prepare": "husky",
+        "commit": "commit"
+    },
+    "author": "Joelson Carvalho",
+    "license": "MIT",
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {
+        "@commitlint/cli": "^19.5.0",
+        "@commitlint/config-conventional": "^19.5.0",
+        "@commitlint/config-lerna-scopes": "^19.5.0",
+        "@commitlint/prompt-cli": "^19.5.0",
+        "@faker-js/faker": "^9.0.3",
+        "@types/bun": "latest",
+        "husky": "^9.1.6",
+        "typescript": "^5.6.2"
+    }
 }

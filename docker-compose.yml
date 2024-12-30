@@ -1,97 +1,49 @@
 services:
-  db:
-    image: postgres:17
-    volumes:
-      - ./.docker/postgres_data:/var/lib/postgresql/data/
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "vote-app"]
-      interval: 1s
-      timeout: 5s
-      retries: 10
-    environment:
-      - POSTGRES_USER=vote-app
-      - POSTGRES_PASSWORD=vote-app
-      - POSTGRES_DB=vote-app
-    expose:
-      - 5432
-    ports:
-      - 5432:5432
-    networks:
-      - backend
+    frontend:
+        build:
+            context: .
+            dockerfile: .docker/Dockerfile.frontend.dev
+        develop:
+            watch:
+                - action: sync
+                  path: ./packages/vote-client
+                  target: /usr/src/app/packages/vote-client
+        environment:
+            - BACKEND_ENDPOINT=http://backend:3000/api
 
-  backend:
-    image: "node:lts"
-    working_dir: /home/node/app/packages/vote-server
-    user: "node"
-    command: "npm run start:dev"
-    volumes:
-      - ./:/home/node/app
-    expose:
-      - 3000
-    environment:
-      - DATABASE_URL=postgresql://vote-app:vote-app@db:5432/vote-app?schema=public
-      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY:?error}
-      - CENTRIFUGO_API_ENDPOINT=${CENTRIFUGO_API_ENDPOINT:?error}
-      - REALTIME_JWT_PRIVATE_KEY=${REALTIME_JWT_PRIVATE_KEY:?error}
-      - AUTH_JWT_PRIVATE_KEY=${AUTH_JWT_PRIVATE_KEY:?error}
-      - AUTH_JWT_PUBLIC_KEY=${AUTH_JWT_PUBLIC_KEY:?error}
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - backend
-      - frontend
+    realtime:
+        build:
+            context: ./packages/vote-realtime
+            dockerfile: ../../.docker/Dockerfile.realtime
+        working_dir: /usr/src/app
+        entrypoint: ['/bin/sh', '-c']
+        volumes:
+            - pb_data:/usr/src/app/pb_data
+        command:
+            - |
+                pocketbase superuser upsert realtime@realtime.com realtime
+                pocketbase serve --http 0.0.0.0:8090
+        develop:
+            watch:
+                - action: rebuild
+                  path: ./packages/vote-realtime
+                  target: /usr/src/app
 
-  frontend:
-    image: "node:lts"
-    working_dir: /home/node/app/packages/vote-client
-    user: "node"
-    command: "npm run dev -- --host"
-    volumes:
-      - ./:/home/node/app
-    environment:
-      - BACKEND_ENDPOINT=http://backend:3000/api
-      - REALTIME_ENDPOINT=ws://localhost:9000/connection/websocket
-      - REALTIME_AUTH_ENDPOINT=http://localhost:9000/api
-      - SESSION_SECRET=${SESSION_SECRET}
-      - AUTH_JWT_PUBLIC_KEY=${AUTH_JWT_PUBLIC_KEY?:error}
-    expose:
-      - 5173
-    networks:
-      - frontend
+    proxy:
+        image: caddy:2.8
+        volumes:
+            - ./.docker/caddy/conf:/etc/caddy
+            - caddy_data:/data
+            - caddy_config:/config
+        ports:
+            - '80:80'
+            - '443:443'
+            - '443:443/udp'
+        depends_on:
+            - frontend
+            - realtime
 
-  centrifugo:
-    image: centrifugo/centrifugo:v5.2.0
-    volumes:
-      - ./centrifugo/config.json:/centrifugo/config.json
-    command: centrifugo -c config.json
-    environment:
-      - CENTRIFUGO_TOKEN_RSA_PUBLIC_KEY=${REALTIME_JWT_PUBLIC_KEY:?error}
-      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY:?error}
-      - CENTRIFUGO_ALLOWED_ORIGINS=http://localhost:9000
-      - CENTRIFUGO_ADMIN=true
-      - CENTRIFUGO_ADMIN_INSECURE=true
-    ports:
-      - 9001:8000
-    expose:
-      - 8000
-    networks:
-      - backend
-
-  nginx:
-    image: nginx:mainline-alpine
-    volumes:
-      - ./.docker/nginx/nginx.conf:/etc/nginx/nginx.conf
-    ports:
-      - 9000:80
-    depends_on:
-      - backend
-      - frontend
-      - centrifugo
-    networks:
-      - backend
-      - frontend
-
-networks:
-  frontend:
-  backend:
+volumes:
+    caddy_data:
+    caddy_config:
+    pb_data:

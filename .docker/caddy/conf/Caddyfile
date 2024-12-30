@@ -1,0 +1,4 @@
+localhost
+
+reverse_proxy /realtime/* realtime:8090
+reverse_proxy frontend:5173

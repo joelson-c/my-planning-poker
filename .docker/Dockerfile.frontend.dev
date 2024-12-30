@@ -1,0 +1,17 @@
+FROM oven/bun:1 AS base
+WORKDIR /usr/src/app
+
+FROM base AS install
+RUN mkdir -p /temp/dev
+COPY package.json bun.lockb /temp/dev/
+COPY packages/vote-client/package.json /temp/dev/packages/vote-client/
+RUN cd /temp/dev && bun install --frozen-lockfile
+
+FROM base AS prerelease
+COPY --from=install --chown=bun /temp/dev/node_modules node_modules
+COPY --chown=bun packages/vote-client ./packages/vote-client
+COPY --chown=bun package.json bun.lockb tsconfig.json commitlint.config.ts ./
+
+USER bun
+EXPOSE 5173/tcp
+ENTRYPOINT [ "bun", "run", "dev:client", "--host" ]

@@ -1,11 +1,5 @@
-import {
-    Links,
-    Meta,
-    Outlet,
-    Scripts,
-    ScrollRestoration,
-} from '@remix-run/react';
-import type { LinksFunction } from '@remix-run/node';
+import type { LinksFunction } from 'react-router';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import { Toaster } from './components/ui/toaster';
 
 import './tailwind.css';
