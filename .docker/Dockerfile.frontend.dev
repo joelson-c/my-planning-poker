@@ -5,7 +5,10 @@ FROM base AS install
 RUN mkdir -p /temp/dev
 COPY package.json bun.lockb /temp/dev/
 COPY packages/vote-client/package.json /temp/dev/packages/vote-client/
-RUN cd /temp/dev && bun install --frozen-lockfile
+
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    cd /temp/dev \
+    && bun install --frozen-lockfile
 
 FROM base AS prerelease
 COPY --from=install --chown=bun /temp/dev/node_modules node_modules

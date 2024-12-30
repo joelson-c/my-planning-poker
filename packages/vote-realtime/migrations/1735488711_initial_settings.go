@@ -9,6 +9,11 @@ func init() {
 	m.Register(func(app core.App) error {
 		settings := app.Settings()
 
+		settings.Meta.AppName = "Vote Realtime"
+		settings.TrustedProxy.Headers = []string{
+			"X-Forwarded-For",
+		}
+
 		return app.Save(settings)
 	}, nil)
 }

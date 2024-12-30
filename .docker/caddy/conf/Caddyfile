@@ -1,4 +1,17 @@
 localhost
 
-reverse_proxy /realtime/* realtime:8090
-reverse_proxy frontend:5173
+handle_path /realtime/* {
+	reverse_proxy realtime:8090 {
+		transport http {
+			read_timeout 360s
+		}
+	}
+}
+
+handle /_* {
+	redir * /realtime/_/
+}
+
+handle {
+	#reverse_proxy frontend:5173
+}

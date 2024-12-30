@@ -8,8 +8,10 @@ services:
                 - action: sync
                   path: ./packages/vote-client
                   target: /usr/src/app/packages/vote-client
-        environment:
-            - BACKEND_ENDPOINT=http://backend:3000/api
+                - action: rebuild
+                  path: package.json
+                - action: rebuild
+                  path: ./packages/vote-client/package.json
 
     realtime:
         build:
@@ -19,10 +21,11 @@ services:
         entrypoint: ['/bin/sh', '-c']
         volumes:
             - pb_data:/usr/src/app/pb_data
+            - ./packages/vote-realtime/migrations:/usr/src/app/migrations
         command:
             - |
                 pocketbase superuser upsert realtime@realtime.com realtime
-                pocketbase serve --http 0.0.0.0:8090
+                pocketbase serve --http 0.0.0.0:8090 --dev
         develop:
             watch:
                 - action: rebuild
@@ -32,16 +35,17 @@ services:
     proxy:
         image: caddy:2.8
         volumes:
-            - ./.docker/caddy/conf:/etc/caddy
             - caddy_data:/data
             - caddy_config:/config
         ports:
             - '80:80'
             - '443:443'
             - '443:443/udp'
-        depends_on:
-            - frontend
-            - realtime
+        develop:
+            watch:
+                - action: sync+restart
+                  path: ./.docker/caddy/conf
+                  target: /etc/caddy
 
 volumes:
     caddy_data:

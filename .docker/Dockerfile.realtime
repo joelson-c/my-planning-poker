@@ -1,13 +1,21 @@
-FROM golang:1.23
+FROM golang:1.23 AS build
 
 WORKDIR /usr/src/app
-
-# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
 COPY go.mod go.sum ./
-RUN go mod download && go mod verify
+
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    go mod download && go mod verify
 
 COPY . .
-RUN go build -v -o /usr/local/bin/pocketbase ./...
 
+ENV GOCACHE=/root/.cache/go-build
+RUN --mount=type=cache,target="/root/.cache/go-build" \
+    CGO_ENABLED=0 GOOS=linux go build -o /usr/local/bin/pocketbase
+
+FROM debian:12 AS release
+WORKDIR /usr/src/app
+COPY --from=build /usr/local/bin/pocketbase /usr/local/bin/pocketbase
+
+VOLUME ["/usr/src/app/pb_data"]
 EXPOSE 8090
-CMD ["pocketbase "]
+ENTRYPOINT ["pocketbase"]
