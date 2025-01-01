@@ -7,7 +7,7 @@
         ".react-router/types/**/*"
     ],
     "compilerOptions": {
-        "types": ["@react-router/node", "vite/client", "bun"],
+        "types": ["vite/client"],
         "baseUrl": ".",
         "rootDirs": [".", "./.react-router/types"],
         "paths": {

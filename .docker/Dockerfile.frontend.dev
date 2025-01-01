@@ -1,20 +1,29 @@
-FROM oven/bun:1 AS base
+ARG VITE_SESSION_SECRET
+ARG VITE_BACKEND_ENDPOINT
+
+FROM node:lts AS base
 WORKDIR /usr/src/app
 
 FROM base AS install
 RUN mkdir -p /temp/dev
-COPY package.json bun.lockb /temp/dev/
+COPY package.json package-lock.json /temp/dev/
 COPY packages/vote-client/package.json /temp/dev/packages/vote-client/
 
-RUN --mount=type=cache,target=/root/.bun/install/cache \
+RUN --mount=type=cache,target=/root/.npm \
     cd /temp/dev \
-    && bun install --frozen-lockfile
+    && npm install --frozen-lockfile
 
 FROM base AS prerelease
-COPY --from=install --chown=bun /temp/dev/node_modules node_modules
-COPY --chown=bun packages/vote-client ./packages/vote-client
-COPY --chown=bun package.json bun.lockb tsconfig.json commitlint.config.ts ./
+ENV VITE_SESSION_SECRET=$VITE_SESSION_SECRET
+ENV VITE_BACKEND_ENDPOINT=$VITE_BACKEND_ENDPOINT
 
-USER bun
+COPY --from=install --chown=bun /temp/dev/node_modules node_modules
+COPY --chown=node packages/vote-client ./packages/vote-client
+COPY --chown=node package.json package-lock.json tsconfig.json ./
+
+WORKDIR /usr/src/app/packages/vote-client
+USER node
+ENV HOST 0.0.0.0
+ENV PORT 5173
 EXPOSE 5173/tcp
-ENTRYPOINT [ "bun", "run", "dev:client", "--host" ]
+ENTRYPOINT [ "node", "server.js" ]

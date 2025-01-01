@@ -1,12 +1,20 @@
-import type { Room } from '~/types/room';
 import type { Route } from './+types';
-import { VotingActionList } from './ongoing/actionList';
-import { VotingCardList } from './ongoing/card/list';
+import { redirect } from 'react-router';
 import { VotingHeader } from './ongoing/header';
+import { VotingCardList } from './ongoing/card/list';
+import { VotingActionList } from './ongoing/actionList';
 import { VotingUserList } from './ongoing/user/list';
 
-export async function loader({ params }: Route.LoaderArgs) {
-    const room = {} as Room;
+export async function loader({ params, context }: Route.LoaderArgs) {
+    const { backend } = context;
+
+    if (!backend.authStore.isValid) {
+        return redirect('/?roomId=' + params.roomId);
+    }
+
+    const room = await backend
+        .collection('vote_rooms')
+        .getOne(params.roomId, { expand: 'users' });
 
     return {
         room,

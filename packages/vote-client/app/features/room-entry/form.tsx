@@ -1,9 +1,11 @@
 import type { SubmitHandler } from 'react-hook-form';
-import type { Infer } from 'superstruct';
 import { Controller, useForm } from 'react-hook-form';
-import { superstructResolver } from '@hookform/resolvers/superstruct';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, useSubmit } from 'react-router';
-import { authenticationData } from '~/features/room-entry/authenticationData';
+import {
+    roomJoinForm,
+    type RoomJoinForm,
+} from '~/features/room-entry/roomJoinForm';
 import { Label } from '~/components/ui/label';
 import { Input } from '~/components/ui/input';
 import { Switch } from '~/components/ui/switch';
@@ -21,8 +23,8 @@ export function LoginForm({ roomId }: LoginFormProps) {
         handleSubmit,
         control,
         formState: { errors },
-    } = useForm<Infer<typeof authenticationData> & { isObserver: boolean }>({
-        resolver: superstructResolver(authenticationData),
+    } = useForm<RoomJoinForm & { isObserver: boolean }>({
+        resolver: zodResolver(roomJoinForm),
     });
 
     const onSubmit: SubmitHandler<Record<string, unknown>> = (_, event) => {

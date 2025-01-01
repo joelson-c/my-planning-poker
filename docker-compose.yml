@@ -3,15 +3,22 @@ services:
         build:
             context: .
             dockerfile: .docker/Dockerfile.frontend.dev
+            args:
+                - VITE_SESSION_SECRET=${VITE_SESSION_SECRET}
+                - VITE_BACKEND_ENDPOINT=${VITE_BACKEND_ENDPOINT}
+        env_file: ./packages/vote-client/.env
         develop:
             watch:
-                - action: sync
-                  path: ./packages/vote-client
-                  target: /usr/src/app/packages/vote-client
                 - action: rebuild
                   path: package.json
                 - action: rebuild
                   path: ./packages/vote-client/package.json
+                - action: sync
+                  path: ./packages/vote-client
+                  target: /usr/src/app/packages/vote-client
+                  ignore:
+                      - build
+                      - package.json
 
     realtime:
         build:

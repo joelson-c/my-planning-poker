@@ -3,8 +3,6 @@ import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import autoprefixer from 'autoprefixer';
 import tailwindcss from 'tailwindcss';
-import devServer from '@hono/vite-dev-server';
-import adapter from '@hono/vite-dev-server/bun';
 
 export default defineConfig(({ isSsrBuild }) => ({
     build: {
@@ -21,7 +19,7 @@ export default defineConfig(({ isSsrBuild }) => ({
         },
     },
     plugins: [
-        devServer({ entry: './server/app.ts', adapter }),
+        /* devServer({ entry: './server/app.ts', adapter }), */
         reactRouter(),
         tsconfigPaths(),
     ],

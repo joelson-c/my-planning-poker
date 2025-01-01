@@ -13,7 +13,7 @@ func init() {
 		collection.ListRule = nil
 		collection.ViewRule = types.Pointer("@request.auth.id != '' && users.id ?= @request.auth.id")
 		collection.CreateRule = types.Pointer("")
-		collection.UpdateRule = types.Pointer("@request.auth.id != '' && users.id ?= @request.auth.id && users.admin = true")
+		collection.UpdateRule = types.Pointer("@request.auth.id != '' && users.id ?= @request.auth.id && @request.auth.admin = true")
 		collection.DeleteRule = nil
 
 		usersCollection, err := app.FindCollectionByNameOrId("vote_users")

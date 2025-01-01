@@ -43,19 +43,15 @@ func init() {
 				OnCreate: true,
 				OnUpdate: true,
 			},
-			&core.TextField{
-				Name:     "internal_nickname",
-				Required: true,
-			},
 		)
 
-		collection.AddIndex("idx_internal_nickname", true, "internal_nickname", "internal_nickname != ''")
+		collection.AddIndex("idx_nickname", true, "nickname", "nickname != ''")
 
 		emailField := collection.Fields.GetByName("email").(*core.EmailField)
 		emailField.Required = false
 
 		collection.AuthAlert.Enabled = false
-		collection.PasswordAuth.IdentityFields = []string{"internal_nickname"}
+		collection.PasswordAuth.IdentityFields = []string{"nickname"}
 
 		return app.Save(collection)
 	}, func(app core.App) error {

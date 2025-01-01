@@ -1,62 +1,41 @@
-import { posix } from 'node:path';
-import { createRequestHandler, type ServerBuild } from 'react-router';
-import { Hono } from 'hono';
-import { secureHeaders } from 'hono/secure-headers';
-import { requestId } from 'hono/request-id';
-import { logger } from 'hono/logger';
-import { serveStatic } from 'hono/bun';
+import 'react-router';
+import { createRequestHandler } from '@react-router/express';
+import express from 'express';
+import { createBackend, type Backend } from './backend';
 
 declare module 'react-router' {
-    export interface AppLoadContext {
-        VALUE_FROM_CLOUDFLARE: string;
+    interface AppLoadContext {
+        backend: Backend;
     }
 }
 
-const app = new Hono();
+declare module 'express-serve-static-core' {
+    interface Request {
+        backend?: Backend;
+    }
+}
 
-const serverBuild: ServerBuild = await import(
-    // @ts-expect-error - virtual module provided by React Router at build time
-    'virtual:react-router/server-build'
-);
+export const app = express();
 
-const requestHandler = createRequestHandler(
-    () => serverBuild,
-    import.meta.env.MODE,
-);
+/* app.use(async (req, res, next) => {
+    req.backend = await createBackend(req, res);
+    req.backend.authStore.loadFromCookie(req.get('Cookie') || '');
 
-app.use(
-    posix.join(serverBuild.publicPath, 'assets', '*'),
-    serveStatic({
-        root: serverBuild.assetsBuildDirectory,
-        onFound: (_path, c) => {
-            c.header('Cache-Control', `public, immutable, max-age=31536000`);
+    next();
+}) */
+
+app.use(async (req, res, next) => {
+    const backend = await createBackend(req, res);
+
+    const requestHandler = createRequestHandler({
+        // @ts-expect-error - virtual module provided by React Router at build time
+        build: () => import('virtual:react-router/server-build'),
+        getLoadContext() {
+            return {
+                backend,
+            };
         },
-    }),
-);
+    });
 
-app.use(
-    posix.join(serverBuild.publicPath, '*'),
-    serveStatic({
-        root: serverBuild.assetsBuildDirectory,
-    }),
-);
-
-app.use(
-    serveStatic({
-        root: 'public',
-        onFound: (_path, c) => {
-            c.header('Cache-Control', `public, max-age=31536000`);
-        },
-    }),
-);
-
-app.use(logger());
-app.use(secureHeaders());
-app.use(requestId());
-app.use((context) =>
-    requestHandler(context.req.raw, {
-        VALUE_FROM_CLOUDFLARE: new Date().toISOString(),
-    }),
-);
-
-export default app;
+    return requestHandler(req, res, next);
+});

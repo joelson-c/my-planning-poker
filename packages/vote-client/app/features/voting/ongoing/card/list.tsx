@@ -9,7 +9,7 @@ interface VotingActionsProps {
 }
 
 export function VotingCardList({ room }: VotingActionsProps) {
-    const cards = useVotingCards(room.cardVariant);
+    const cards = useVotingCards(room.cardType);
     const voteFetcher = useFetcher();
     const formRef = useRef<HTMLFormElement>(null);
 
@@ -23,24 +23,22 @@ export function VotingCardList({ room }: VotingActionsProps) {
 
     return (
         <div className="w-full lg:w-2/3">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
-                <voteFetcher.Form
-                    action={`/room/${room.id}/vote`}
-                    method="post"
-                    ref={formRef}
-                >
-                    {cards.map((card) => (
-                        <Fragment key={card}>
-                            <input type="hidden" name="vote" value={card} />
-                            <VotingCardItem
-                                value={card}
-                                selected={card === selectedCard}
-                                onClick={() => onCardSelected()}
-                            />
-                        </Fragment>
-                    ))}
-                </voteFetcher.Form>
-            </div>
+            <voteFetcher.Form
+                action={`/room/${room.id}/vote`}
+                method="post"
+                ref={formRef}
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6"
+            >
+                {cards.map((card) => (
+                    <Fragment key={card}>
+                        <VotingCardItem
+                            value={card}
+                            selected={card === selectedCard}
+                            onClick={() => onCardSelected()}
+                        />
+                    </Fragment>
+                ))}
+            </voteFetcher.Form>
         </div>
     );
 }
