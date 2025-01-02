@@ -1,14 +1,11 @@
 package main
 
 import (
-	"log"
-
 	"github.com/pocketbase/pocketbase/core"
 )
 
 func bindHooks(app core.App) {
 	app.OnRecordEnrich("vote_users").BindFunc(func(e *core.RecordEnrichEvent) error {
-		log.Println("OnRecordEnrich")
 		if e.RequestInfo.Auth == nil || e.RequestInfo.Auth.Collection().Name != "vote_users" {
 			e.Record.Hide("vote")
 			return e.Next()

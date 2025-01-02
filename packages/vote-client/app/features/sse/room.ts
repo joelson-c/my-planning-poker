@@ -3,6 +3,7 @@ import { EventSource } from 'eventsource';
 import { eventStream } from 'remix-utils/sse/server';
 import { ClientResponseError } from 'pocketbase';
 import { commitSession, getSession } from '~/lib/session.server';
+import type { Room } from '~/types/room';
 
 global.EventSource = EventSource;
 
@@ -40,47 +41,44 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
         });
     }
 
-    return eventStream(request.signal, function setup(send) {
-        send({
-            event: 'room',
-            data: JSON.stringify(room),
-        });
+    return eventStream(request.signal, (send, abort) => {
+        async function run(room: Room) {
+            await backend.collection('vote_rooms').subscribe(
+                room.id,
+                (event) => {
+                    send({
+                        event: 'room',
+                        data: JSON.stringify(event.record),
+                    });
+                },
+                {
+                    expand: 'users',
+                },
+            );
 
-        backend.collection('vote_rooms').subscribe(
-            room.id,
-            (event) => {
-                if (request.signal.aborted) {
-                    return;
-                }
+            send({
+                event: 'room',
+                data: JSON.stringify(room),
+            });
+        }
 
-                send({
-                    event: 'room',
-                    data: JSON.stringify(event.record),
-                });
-            },
-            {
-                expand: 'users',
-            },
-        );
+        run(room);
+
+        backend.realtime.onDisconnect = (activeSubscriptions) => {
+            if (activeSubscriptions.length > 0) {
+                abort();
+            }
+        };
 
         return () => {
-            async function disconnectUserFromRoom(
-                roomId: string,
-                userId: string,
-            ) {
-                await Promise.all([
-                    await backend.collection('vote_rooms').unsubscribe(roomId),
-                    await backend.collection('vote_rooms').update(roomId, {
-                        'users-': [userId],
-                    }),
-                ]);
-            }
-
-            try {
-                disconnectUserFromRoom(room.id, backend.authStore.record!.id);
-            } catch (error) {
-                console.error('Failed to disconnect user from room: %s', error);
-            }
+            Promise.all([
+                backend.collection('vote_rooms').unsubscribe(roomId),
+                backend.collection('vote_rooms').update(roomId, {
+                    'users-': [backend.authStore.record!.id],
+                }),
+            ]).catch((error) =>
+                console.error('Failed to disconnect user from room: %s', error),
+            );
         };
     });
 }
