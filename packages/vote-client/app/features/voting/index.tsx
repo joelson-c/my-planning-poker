@@ -9,7 +9,7 @@ import { VotingCardList } from './ongoing/card/list';
 import { VotingActionList } from './ongoing/actionList';
 import { VotingUserList } from './ongoing/user/list';
 import { commitSession, getSession } from '~/lib/session.server';
-import { useEventSource } from '~/lib/event-source';
+import { useEventSource } from '~/lib/useEventSource';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];

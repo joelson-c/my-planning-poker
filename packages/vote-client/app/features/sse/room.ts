@@ -64,19 +64,20 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
         );
 
         return () => {
-            backend.collection('vote_rooms').unsubscribe(room.id);
-            async function disconnectUserFromRoom(roomId: string) {
-                if (!backend.authStore.record) {
-                    return;
-                }
-
-                await backend.collection('vote_rooms').update(roomId, {
-                    'users-': [backend.authStore.record.id],
-                });
+            async function disconnectUserFromRoom(
+                roomId: string,
+                userId: string,
+            ) {
+                await Promise.all([
+                    await backend.collection('vote_rooms').unsubscribe(roomId),
+                    await backend.collection('vote_rooms').update(roomId, {
+                        'users-': [userId],
+                    }),
+                ]);
             }
 
             try {
-                disconnectUserFromRoom(room.id);
+                disconnectUserFromRoom(room.id, backend.authStore.record!.id);
             } catch (error) {
                 console.error('Failed to disconnect user from room: %s', error);
             }
