@@ -1,3 +1,4 @@
+import type { User } from '~/types/user';
 import { CheckCircle2, CircleEllipsis, Crown, XCircle } from 'lucide-react';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
@@ -7,28 +8,34 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
+import { cn } from '~/lib/utils';
 
 interface VotingUserItemProps {
-    user: {};
+    user: User;
+    currentUser: User;
 }
 
-export function VotingUserItem({ user }: VotingUserItemProps) {
+export function VotingUserItem({ user, currentUser }: VotingUserItemProps) {
+    const isUserMine = user.id === currentUser.id;
+
     return (
         <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 flex-grow">
                 <Avatar>
                     <AvatarFallback>{user.nickname.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <span>{user.nickname}</span>
+                <span className={cn(isUserMine && 'font-semibold')}>
+                    {user.nickname}
+                </span>
                 {user.isAdmin && <Crown className="h-4 w-4 text-yellow-500" />}
             </div>
             <div className="flex items-center space-x-2">
-                {user.vote ? (
+                {user.hasVoted ? (
                     <CheckCircle2 className="text-green-500" size={20} />
                 ) : (
                     <XCircle className="text-red-500" size={20} />
                 )}
-                {user.isAdmin && (
+                {user.isAdmin && !isUserMine && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">

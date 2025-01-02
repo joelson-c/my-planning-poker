@@ -17,13 +17,6 @@ declare module 'express-serve-static-core' {
 
 export const app = express();
 
-/* app.use(async (req, res, next) => {
-    req.backend = await createBackend(req, res);
-    req.backend.authStore.loadFromCookie(req.get('Cookie') || '');
-
-    next();
-}) */
-
 app.use(async (req, res, next) => {
     const backend = await createBackend(req, res);
 

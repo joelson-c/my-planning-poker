@@ -15,6 +15,8 @@ func main() {
 		Automigrate: app.IsDev(),
 	})
 
+	bindHooks(app)
+
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
 	}

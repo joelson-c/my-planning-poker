@@ -13,9 +13,17 @@ import { Button } from '~/components/ui/button';
 
 interface LoginFormProps {
     roomId?: string;
+    prevNickname?: string;
+    nicknameTaken?: boolean;
 }
 
-export function LoginForm({ roomId }: LoginFormProps) {
+let hasAddedServerErrors = false;
+
+export function LoginForm({
+    roomId,
+    prevNickname,
+    nicknameTaken,
+}: LoginFormProps) {
     const submit = useSubmit();
 
     const {
@@ -23,13 +31,24 @@ export function LoginForm({ roomId }: LoginFormProps) {
         handleSubmit,
         control,
         formState: { errors },
+        setError,
     } = useForm<RoomJoinForm & { isObserver: boolean }>({
         resolver: zodResolver(roomJoinForm),
     });
 
     const onSubmit: SubmitHandler<Record<string, unknown>> = (_, event) => {
+        hasAddedServerErrors = false;
         submit(event!.target);
     };
+
+    if (nicknameTaken && !hasAddedServerErrors) {
+        setError('nickname', {
+            type: 'nickname-taken',
+            message: 'The nickname is already taken.',
+        });
+
+        hasAddedServerErrors = true;
+    }
 
     return (
         <Form method="post" onSubmit={handleSubmit(onSubmit)}>
@@ -40,18 +59,19 @@ export function LoginForm({ roomId }: LoginFormProps) {
                         id="nickname"
                         placeholder="Enter your nickname"
                         aria-invalid={errors.nickname ? 'true' : 'false'}
+                        defaultValue={prevNickname}
                         {...register('nickname')}
                     />
                     {errors.nickname && (
                         <p className="text-sm text-red-500" role="alert">
-                            The nickname must be between 2 and 32 characters
+                            {errors.nickname.message}
                         </p>
                     )}
                 </div>
                 {roomId && (
                     <div className="space-y-2">
                         <Label htmlFor="roomid">Room ID</Label>
-                        <Input value={roomId} id="roomId" readOnly />
+                        <Input value={roomId} id="roomId" disabled />
                     </div>
                 )}
                 <div className="flex items-center space-x-2">

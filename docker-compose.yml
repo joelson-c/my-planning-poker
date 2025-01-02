@@ -7,18 +7,27 @@ services:
                 - VITE_SESSION_SECRET=${VITE_SESSION_SECRET}
                 - VITE_BACKEND_ENDPOINT=${VITE_BACKEND_ENDPOINT}
         env_file: ./packages/vote-client/.env
+        volumes:
+            - ./packages/vote-client/.react-router:/usr/src/app/packages/vote-client/.react-router
+        ports:
+            - 24678:24678
         develop:
             watch:
                 - action: rebuild
                   path: package.json
                 - action: rebuild
                   path: ./packages/vote-client/package.json
+                - action: sync+restart
+                  path: ./packages/vote-client/server.js
+                  target: /usr/src/app/packages/vote-client/server.js
                 - action: sync
                   path: ./packages/vote-client
                   target: /usr/src/app/packages/vote-client
                   ignore:
                       - build
                       - package.json
+                      - server.js
+                      - .react-router
 
     realtime:
         build:
@@ -45,9 +54,9 @@ services:
             - caddy_data:/data
             - caddy_config:/config
         ports:
-            - '80:80'
-            - '443:443'
-            - '443:443/udp'
+            - 80:80
+            - 443:443
+            - 443:443/udp
         develop:
             watch:
                 - action: sync+restart

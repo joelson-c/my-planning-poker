@@ -12,7 +12,7 @@ const app = express();
 
 app.use(compression());
 app.disable('x-powered-by');
-app.use(morgan('tiny'));
+//app.use(morgan('tiny'));
 
 async function createProdServer() {
     console.log('Starting production server');
@@ -36,7 +36,12 @@ async function createDevServer() {
 
     const vite = await import('vite');
     const viteDevServer = await vite.createServer({
-        server: { middlewareMode: true },
+        server: {
+            middlewareMode: true,
+            hmr: {
+                protocol: 'ws',
+            },
+        },
         appType: 'custom',
     });
 

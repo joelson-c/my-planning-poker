@@ -15,12 +15,14 @@ import { sessionCookie } from './lib/session.server';
 
 export const streamTimeout = 5_000;
 
-export default function handleRequest(
+export default async function handleRequest(
     request: Request,
     responseStatusCode: number,
     responseHeaders: Headers,
     routerContext: EntryContext,
 ) {
+    await rollingCookie(sessionCookie, request, responseHeaders);
+
     return new Promise((resolve, reject) => {
         let shellRendered = false;
         const userAgent = request.headers.get('user-agent');

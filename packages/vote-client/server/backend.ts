@@ -17,8 +17,6 @@ export async function createBackend(request: Request, response: Response) {
     ) as TypedPocketBase;
 
     pb.authStore.loadFromCookie(request.get('Cookie') || '');
-
-    console.log(pb.authStore.token);
     pb.authStore.onChange(() => {
         response.append('Set-Cookie', pb.authStore.exportToCookie());
     });

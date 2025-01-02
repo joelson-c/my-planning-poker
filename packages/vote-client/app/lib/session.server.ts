@@ -6,6 +6,10 @@ type SessionData = {
     backendAuth: string;
 };
 
+type SessionFlashData = {
+    error: string;
+};
+
 export const sessionCookie = createCookie('__session', {
     httpOnly: true,
     maxAge: 60 * 60 * 24, // 1 day
@@ -14,8 +18,10 @@ export const sessionCookie = createCookie('__session', {
 });
 
 const { getSession, commitSession, destroySession } =
-    createCookieSessionStorage<SessionData>({
+    createCookieSessionStorage<SessionData, SessionFlashData>({
         cookie: sessionCookie,
     });
+
+export type AppSession = Awaited<ReturnType<typeof getSession>>;
 
 export { getSession, commitSession, destroySession };
