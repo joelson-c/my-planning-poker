@@ -37,7 +37,6 @@ export function useEventSource<T>(
 ) {
     const map = useContext(context);
     const [data, setData] = useState<T | null>(null);
-    const [hasError, setHasError] = useState<boolean>(false);
 
     useEffect(() => {
         if (!enabled) {
@@ -55,11 +54,9 @@ export function useEventSource<T>(
         map.set(key, value);
 
         value.source.addEventListener(event, handler);
-        value.source.addEventListener('error', errorHandler);
 
         // rest data if dependencies change
         setData(null);
-        setHasError(false);
 
         function handler(event: MessageEvent) {
             const eventData = decode
@@ -69,13 +66,8 @@ export function useEventSource<T>(
             setData(eventData);
         }
 
-        function errorHandler() {
-            setHasError(true);
-        }
-
         return () => {
             value.source.removeEventListener(event, handler);
-            value.source.removeEventListener('error', errorHandler);
             --value.count;
             if (value.count <= 0) {
                 value.source.close();
@@ -84,8 +76,5 @@ export function useEventSource<T>(
         };
     }, [url, event, map, enabled]);
 
-    return {
-        data,
-        hasError,
-    };
+    return data;
 }

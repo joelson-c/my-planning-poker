@@ -1,15 +1,16 @@
 import type { Route } from './+types';
 import type { User } from '~/types/user';
 import type { Room } from '~/types/room';
-import { useEffect } from 'react';
-import { data, redirect, useNavigate } from 'react-router';
-import { ClientResponseError } from 'pocketbase';
+import { data, Link, redirect, useNavigate } from 'react-router';
 import { VotingHeader } from './ongoing/header';
 import { VotingCardList } from './ongoing/card/list';
 import { VotingActionList } from './ongoing/actionList';
 import { VotingUserList } from './ongoing/user/list';
 import { commitSession, getSession } from '~/lib/session.server';
 import { useEventSource } from '~/lib/useEventSource';
+import { ClientResponseError } from 'pocketbase';
+import { useEffect } from 'react';
+import { useHeartbeat } from './useHeartbeat';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];
@@ -20,23 +21,21 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     const session = await getSession(request.headers.get('Cookie'));
 
     async function redirectToRoomJoin() {
-        session.flash('error', 'You must be joined to vote in this room.');
-
-        return redirect(`/room/${params.roomId}/join`, {
-            headers: {
-                'Set-Cookie': await commitSession(session),
-            },
-        });
+        return redirect(`/room/${params.roomId}/join`);
     }
 
-    if (!backend.authStore.isValid) {
+    if (
+        !backend.authStore.isValid ||
+        backend.authStore.record?.collectionName !== 'vote_users'
+    ) {
         return redirectToRoomJoin();
     }
 
+    let currentUser;
     try {
-        await backend
-            .collection('vote_rooms')
-            .getOne(params.roomId, { expand: 'users' });
+        currentUser = await backend
+            .collection('vote_users')
+            .getOne(backend.authStore.record.id);
     } catch (error) {
         if (!(error instanceof ClientResponseError)) {
             throw error;
@@ -44,8 +43,6 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
 
         return redirectToRoomJoin();
     }
-
-    const currentUser = backend.authStore.record as User;
 
     return data(
         {
@@ -65,21 +62,28 @@ export default function VotingIndex({
 }: Route.ComponentProps) {
     const { currentUser } = loaderData;
     const navigate = useNavigate();
-    const { data: room, hasError } = useEventSource<Room>(
-        `/sse/room/${roomId}`,
-        {
-            event: 'room',
-            init: { withCredentials: true },
-        },
-    );
+    const realtimeUrl = `/room/${roomId}/realtime`;
+    const room = useEventSource<Room>(realtimeUrl, {
+        event: 'room',
+    });
+
+    const roomError = useEventSource<Room>(realtimeUrl, {
+        event: 'error',
+    });
+
+    const users = useEventSource<User[]>(realtimeUrl, {
+        event: 'users',
+    });
 
     useEffect(() => {
-        if (!hasError) {
+        if (!roomError) {
             return;
         }
 
         navigate(`/room/${roomId}/join`);
-    }, [hasError]);
+    }, [roomError]);
+
+    useHeartbeat(roomId);
 
     if (!room) {
         return <p>Loading..</p>;
@@ -93,10 +97,7 @@ export default function VotingIndex({
                     <VotingCardList room={room} />
                     <VotingActionList room={room} />
                 </div>
-                <VotingUserList
-                    users={room.expand?.users || []}
-                    currentUser={currentUser}
-                />
+                <VotingUserList users={users || []} currentUser={currentUser} />
             </div>
         </main>
     );

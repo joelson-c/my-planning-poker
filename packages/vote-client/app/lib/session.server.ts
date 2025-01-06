@@ -1,9 +1,18 @@
-import { createCookie, createCookieSessionStorage } from 'react-router';
+import {
+    createCookie,
+    createCookieSessionStorage,
+    type Session,
+} from 'react-router';
+
+export type CachedUser = {
+    nickname: string;
+    password: string;
+    roomId: string;
+};
 
 type SessionData = {
-    prevNickname: string;
-    prevPassword: string;
-    backendAuth: string;
+    lastNickname: string;
+    lastCreatedUserId: string;
 };
 
 type SessionFlashData = {
@@ -22,6 +31,6 @@ const { getSession, commitSession, destroySession } =
         cookie: sessionCookie,
     });
 
-export type AppSession = Awaited<ReturnType<typeof getSession>>;
+export type AppSession = Session<SessionData, SessionFlashData>;
 
 export { getSession, commitSession, destroySession };

@@ -4,7 +4,7 @@ import { LoginCard } from './card';
 import { roomJoinForm } from './roomJoinForm';
 import { commitSession, getSession } from '~/lib/session.server';
 import { formDataToObject } from '~/lib/utils';
-import { getOrCreateVoteUser } from './roomAuth.server';
+import { createVoteUser } from './roomAuth.server';
 import { ClientResponseError } from 'pocketbase';
 import { LoginForm } from './form';
 import { useSessionErrorToast } from '~/lib/useSessionErrorToast';
@@ -16,7 +16,7 @@ export function meta() {
 export async function loader({ request }: Route.LoaderArgs) {
     const session = await getSession(request.headers.get('Cookie'));
     const sessionError = session.get('error');
-    const prevNickname = session.get('prevNickname');
+    const prevNickname = session.get('lastNickname');
 
     return data(
         {
@@ -60,9 +60,9 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     }
 
     const joinData = roomJoinForm.parse(inputData);
-    let user;
+
     try {
-        user = await getOrCreateVoteUser(context, joinData, session);
+        await createVoteUser(backend, joinData, session, roomId);
     } catch (error) {
         if (!(error instanceof ClientResponseError)) {
             throw error;
@@ -89,10 +89,6 @@ export async function action({ request, params, context }: Route.ActionArgs) {
             },
         );
     }
-
-    await backend.collection('vote_rooms').update(room.id, {
-        'users+': [user.id],
-    });
 
     return redirect(`/room/${room.id}`, {
         headers: {

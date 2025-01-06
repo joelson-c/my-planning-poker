@@ -1,5 +1,8 @@
 import type { Request, Response } from 'express';
-import PocketBase, { type RecordService } from 'pocketbase';
+import PocketBase, {
+    type RecordAuthResponse,
+    type RecordService,
+} from 'pocketbase';
 import type { Room } from '~/types/room';
 import type { User } from '~/types/user';
 
@@ -18,6 +21,10 @@ export async function createBackend(request: Request, response: Response) {
 
     pb.authStore.loadFromCookie(request.get('Cookie') || '');
     pb.authStore.onChange(() => {
+        if (response.headersSent) {
+            return;
+        }
+
         response.append('Set-Cookie', pb.authStore.exportToCookie());
     });
 
@@ -32,4 +39,27 @@ export async function createBackend(request: Request, response: Response) {
     }
 
     return pb;
+}
+
+export async function authWithRoomAndNickname(
+    backend: Backend,
+    room: string,
+    nickname: string,
+    password: string,
+) {
+    const authResponse = await backend.send<RecordAuthResponse<User>>(
+        '/api/room-auth',
+        {
+            method: 'POST',
+            body: {
+                nickname,
+                password,
+                room,
+            },
+        },
+    );
+
+    backend.authStore.save(authResponse.token, authResponse.record);
+
+    return authResponse;
 }
