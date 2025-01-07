@@ -6,13 +6,17 @@ import {
 } from '@react-router/dev/routes';
 
 export default [
-    index('./features/room-entry/index.tsx'),
+    index('./features/room-create/index.tsx'),
+    route('/join/:roomId', './features/room-join/index.tsx'),
 
     ...prefix('/room/:roomId', [
-        index('./features/voting/index.tsx'),
-        route('vote', './features/voting/actions/vote.ts'),
-        route('join', './features/room-entry/join.tsx'),
-        route('realtime', './features/voting/actions/realtime.ts'),
-        route('heartbeat', './features/voting/actions/heartbeat.ts'),
+        index('./features/vote-collect/index.tsx'),
+        route('result', './features/vote-results/index.tsx'),
+        // Actions
+        route('vote', './features/room-actions/vote.ts'),
+        route('realtime', './features/room-actions/realtime.ts'),
+        route('heartbeat', './features/room-actions/heartbeat.ts'),
+        route('reveal', './features/room-actions/reveal.ts'),
+        route('reset', './features/room-actions/reset.ts'),
     ]),
 ] satisfies RouteConfig;

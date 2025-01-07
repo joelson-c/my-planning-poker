@@ -1,16 +1,14 @@
-import { useMemo } from 'react';
+import type { VoteResult } from '~/types/voteResult';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
 
 interface ResultIndividualVotesProps {
-    votes: {};
+    voteResult: VoteResult;
 }
 
-export function ResultIndividualVotes({ votes }: ResultIndividualVotesProps) {
-    const individualVotes = useMemo(() => {
-        return Object.values(votes).filter(({ vote }) => !!vote);
-    }, [votes]);
-
+export function ResultIndividualVotes({
+    voteResult: { votesByUser },
+}: ResultIndividualVotesProps) {
     return (
         <Card className="md:col-span-2">
             <CardHeader>
@@ -18,22 +16,22 @@ export function ResultIndividualVotes({ votes }: ResultIndividualVotesProps) {
             </CardHeader>
             <CardContent>
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                    {individualVotes.map((user, index) => (
+                    {votesByUser.map(([nickname, vote]) => (
                         <div
-                            key={index}
+                            key={nickname}
                             className="flex items-center space-x-4"
                         >
                             <Avatar>
                                 <AvatarFallback>
-                                    {user.nickname.slice(0, 1).toUpperCase()}
+                                    {nickname.slice(0, 1).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
                             <div>
                                 <p className="text-sm font-medium">
-                                    {user.nickname}
+                                    {nickname}
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                    Voted: {user.vote}
+                                    Voted: {vote}
                                 </p>
                             </div>
                         </div>

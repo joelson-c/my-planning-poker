@@ -1,6 +1,6 @@
 import { Card, CardContent } from '~/components/ui/card';
 import type { User } from '~/types/user';
-import { VotingUserItem } from './item';
+import { VotingUserItem } from './VotingUserItem';
 
 interface VotingUserItemProps {
     users: User[];

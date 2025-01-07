@@ -2,10 +2,7 @@ import type { SubmitHandler } from 'react-hook-form';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, useSubmit } from 'react-router';
-import {
-    roomJoinForm,
-    type RoomJoinForm,
-} from '~/features/room-entry/roomJoinForm';
+import { roomJoinForm, type RoomJoinForm } from '~/lib/roomJoinForm';
 import { Label } from '~/components/ui/label';
 import { Input } from '~/components/ui/input';
 import { Switch } from '~/components/ui/switch';

@@ -1,16 +1,22 @@
+import type { Room } from '~/types/room';
+import type { User } from '~/types/user';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '~/components/ui/button';
-import { Form } from 'react-router';
-import { useRoomContext } from '~/routes/room/RoomProvider';
+import { useFetcher } from 'react-router';
 
-export function ResultHeader() {
-    const { room, user } = useRoomContext();
+interface ResultHeaderProps {
+    room: Room;
+    currentUser: User;
+}
+
+export function ResultHeader({ room, currentUser }: ResultHeaderProps) {
+    const fetcher = useFetcher();
 
     return (
         <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Voting Results</h1>
-            {!user.isAdmin && (
-                <Form action={`/room/${room.id}/reset`} method="POST">
+            {currentUser.admin && (
+                <fetcher.Form action={`/room/${room.id}/reset`} method="POST">
                     <Button
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                         type="submit"
@@ -18,7 +24,7 @@ export function ResultHeader() {
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Start New Vote
                     </Button>
-                </Form>
+                </fetcher.Form>
             )}
         </div>
     );

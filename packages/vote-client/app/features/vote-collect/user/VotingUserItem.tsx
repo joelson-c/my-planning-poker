@@ -27,15 +27,10 @@ export function VotingUserItem({ user, currentUser }: VotingUserItemProps) {
                 <span className={cn(isUserMine && 'font-semibold')}>
                     {user.nickname}
                 </span>
-                {user.isAdmin && <Crown className="h-4 w-4 text-yellow-500" />}
+                {user.admin && <Crown className="h-4 w-4 text-yellow-500" />}
             </div>
             <div className="flex items-center space-x-2">
-                {user.hasVoted ? (
-                    <CheckCircle2 className="text-green-500" size={20} />
-                ) : (
-                    <XCircle className="text-red-500" size={20} />
-                )}
-                {user.isAdmin && !isUserMine && (
+                {currentUser.admin && !isUserMine && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -47,6 +42,11 @@ export function VotingUserItem({ user, currentUser }: VotingUserItemProps) {
                             <DropdownMenuItem>Make Admin</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                )}
+                {user.hasVoted ? (
+                    <CheckCircle2 className="text-green-500" size={20} />
+                ) : (
+                    <XCircle className="text-red-500" size={20} />
                 )}
             </div>
         </div>

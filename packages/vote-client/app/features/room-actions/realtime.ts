@@ -1,9 +1,7 @@
 import type { Route } from './+types/realtime';
-import { EventSource } from 'eventsource';
-import { ClientResponseError } from 'pocketbase';
-import { eventStream } from 'remix-utils/sse/server';
-import type { Room } from '~/types/room';
 import type { User } from '~/types/user';
+import { EventSource } from 'eventsource';
+import { eventStream } from 'remix-utils/sse/server';
 
 global.EventSource = EventSource;
 
@@ -11,21 +9,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     const { backend } = context;
     const { roomId } = params;
 
-    let room: Room;
-    try {
-        room = await backend
-            .collection('vote_rooms')
-            .getOne(roomId, { expand: 'users' });
-    } catch (error) {
-        if (!(error instanceof ClientResponseError)) {
-            throw error;
-        }
-
-        return new Response('The room does not exist', {
-            status: 404,
-        });
-    }
-
+    const room = await backend.collection('vote_rooms').getOne(roomId);
     const roomUsersFilter = backend.filter('room={:roomId}', {
         roomId: params.roomId,
     });
@@ -123,14 +107,14 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
                     ),
                 );
 
-            backend
+            /* backend
                 .collection('vote_users')
                 .update(backend.authStore.record!.id, {
                     room: '',
                 })
                 .catch((error) =>
                     console.error('Failed to delete room user: %s', error),
-                );
+                ); */
         };
     });
 }

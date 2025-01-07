@@ -1,6 +1,6 @@
 import type { Room } from '~/types/room';
 import { useVotingCards } from '~/hooks/use-voting-cards';
-import { VotingCardItem } from './item';
+import { VotingCardItem } from './VotingCardItem';
 import { useFetcher } from 'react-router';
 import { Fragment, useRef } from 'react';
 

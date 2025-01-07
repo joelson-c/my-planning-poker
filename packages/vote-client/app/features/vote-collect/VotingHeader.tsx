@@ -1,8 +1,8 @@
 import type { Room } from '~/types/room';
 import { Share2 } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
+import { Button } from '../../components/ui/button';
 import { toast } from '~/hooks/use-toast';
-import { RepositoryLink } from '../../../components/repository/link';
+import { RepositoryLink } from '../../components/repository/link';
 
 interface VotingHeaderProps {
     room: Room;
