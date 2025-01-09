@@ -1,13 +1,11 @@
+import type { ReactNode } from 'react';
 import { Card, CardContent } from '~/components/ui/card';
-import type { User } from '~/types/user';
-import { VotingUserItem } from './VotingUserItem';
 
 interface VotingUserItemProps {
-    users: User[];
-    currentUser: User;
+    children: ReactNode;
 }
 
-export function VotingUserList({ users, currentUser }: VotingUserItemProps) {
+export function VotingUserList({ children }: VotingUserItemProps) {
     return (
         <div className="w-full lg:w-1/3">
             <Card>
@@ -15,15 +13,7 @@ export function VotingUserList({ users, currentUser }: VotingUserItemProps) {
                     <h2 className="text-xl font-semibold mb-4">
                         Users in Room
                     </h2>
-                    <div className="space-y-4">
-                        {users.map((user) => (
-                            <VotingUserItem
-                                key={user.id}
-                                user={user}
-                                currentUser={currentUser}
-                            />
-                        ))}
-                    </div>
+                    <div className="space-y-4">{children}</div>
                 </CardContent>
             </Card>
         </div>

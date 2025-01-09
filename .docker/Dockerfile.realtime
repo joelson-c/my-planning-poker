@@ -10,6 +10,7 @@ COPY . .
 
 ENV GOCACHE=/root/.cache/go-build
 RUN --mount=type=cache,target="/root/.cache/go-build" \
+    --mount=type=cache,target=/go/pkg/mod/ \
     CGO_ENABLED=0 GOOS=linux go build -o /usr/local/bin/pocketbase
 
 FROM debian:12 AS release

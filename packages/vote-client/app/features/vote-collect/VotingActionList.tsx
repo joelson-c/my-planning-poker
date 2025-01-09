@@ -14,7 +14,6 @@ export function VotingActionList({ room }: VotingActionsProps) {
             <fetcher.Form action={`/room/${room.id}/reveal`} method="POST">
                 <Button type="submit">Reveal Cards</Button>
             </fetcher.Form>
-            <Button variant="outline">Reset</Button>
         </div>
     );
 }

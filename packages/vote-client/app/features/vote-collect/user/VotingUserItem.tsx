@@ -9,14 +9,34 @@ import {
     DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import { cn } from '~/lib/utils';
+import { useFetcher } from 'react-router';
 
 interface VotingUserItemProps {
     user: User;
-    currentUser: User;
+    showAdminActions?: boolean;
+    isMyself?: boolean;
 }
 
-export function VotingUserItem({ user, currentUser }: VotingUserItemProps) {
-    const isUserMine = user.id === currentUser.id;
+export function VotingUserItem({
+    user,
+    showAdminActions,
+    isMyself,
+}: VotingUserItemProps) {
+    const fetcher = useFetcher();
+
+    function onAdminTransferClick() {
+        fetcher.submit(
+            { target: user.id },
+            { action: `/room/${user.room}/transfer-admin`, method: 'POST' },
+        );
+    }
+
+    function onUserRemoveClick() {
+        fetcher.submit(
+            { target: user.id },
+            { action: `/room/${user.room}/remove-user`, method: 'POST' },
+        );
+    }
 
     return (
         <div className="flex items-center justify-between">
@@ -24,13 +44,13 @@ export function VotingUserItem({ user, currentUser }: VotingUserItemProps) {
                 <Avatar>
                     <AvatarFallback>{user.nickname.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <span className={cn(isUserMine && 'font-semibold')}>
+                <span className={cn(isMyself && 'font-semibold')}>
                     {user.nickname}
                 </span>
                 {user.admin && <Crown className="h-4 w-4 text-yellow-500" />}
             </div>
             <div className="flex items-center space-x-2">
-                {currentUser.admin && !isUserMine && (
+                {showAdminActions && !isMyself && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -39,7 +59,16 @@ export function VotingUserItem({ user, currentUser }: VotingUserItemProps) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem>Make Admin</DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => onAdminTransferClick()}
+                            >
+                                Make Admin
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => onUserRemoveClick()}
+                            >
+                                Remove
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 )}

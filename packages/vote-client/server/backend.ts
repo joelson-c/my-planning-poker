@@ -48,7 +48,7 @@ export async function authWithRoomAndNickname(
     password: string,
 ) {
     const authResponse = await backend.send<RecordAuthResponse<User>>(
-        '/api/room-auth',
+        '/api/vote/collections/vote_rooms/room-auth',
         {
             method: 'POST',
             body: {

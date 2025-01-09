@@ -2,22 +2,30 @@ import type { Route } from './+types/realtime';
 import type { User } from '~/types/user';
 import { EventSource } from 'eventsource';
 import { eventStream } from 'remix-utils/sse/server';
+import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
 
 global.EventSource = EventSource;
 
-export async function loader({ request, params, context }: Route.LoaderArgs) {
-    const { backend } = context;
-    const { roomId } = params;
-
+export async function loader({
+    request,
+    params: { roomId },
+    context: { backend },
+}: Route.LoaderArgs) {
     const room = await backend.collection('vote_rooms').getOne(roomId);
     const roomUsersFilter = backend.filter('room={:roomId}', {
-        roomId: params.roomId,
+        roomId,
     });
 
     const users = await backend.collection('vote_users').getFullList({
         skipTotal: true,
         filter: roomUsersFilter,
     });
+
+    if (!backend.authStore.isValid || !backend.authStore.record) {
+        throw new UnauthorizedError();
+    }
+
+    const currentUserId = backend.authStore.record.id;
 
     return eventStream(request.signal, (send, abort) => {
         async function run() {
@@ -37,6 +45,15 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
                 (event) => {
                     switch (event.action) {
                         case 'delete':
+                            if (event.record.id === currentUserId) {
+                                send({
+                                    event: 'disconnect',
+                                    data: '',
+                                });
+
+                                abort();
+                            }
+
                             usersToSend = usersToSend.filter(
                                 (user) => user.id !== event.record.id,
                             );
