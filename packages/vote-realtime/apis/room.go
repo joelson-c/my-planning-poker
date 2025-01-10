@@ -11,8 +11,12 @@ import (
 	"github.com/pocketbase/pocketbase/tools/router"
 )
 
+type RoomAuthMeta struct {
+	RoomId string `json:"roomId"`
+}
+
 func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
-	subGroup := rg.Group("/collections/vote_rooms/").Bind(apis.RequireAuth("vote_users"))
+	subGroup := rg.Group("/collections/voteRooms/").Bind(apis.RequireAuth("voteUsers"))
 
 	subGroup.POST("room-auth", func(e *core.RequestEvent) error {
 		data := struct {
@@ -26,7 +30,7 @@ func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
 		}
 
 		record, err := e.App.FindFirstRecordByFilter(
-			"vote_users",
+			"voteUsers",
 			"room={:room} && nickname={:nickname}",
 			dbx.Params{"room": data.Room, "nickname": data.Nickname},
 		)
@@ -36,11 +40,15 @@ func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
 			return e.BadRequestError("Invalid credentials", err)
 		}
 
-		return apis.RecordAuthResponse(e, record, "room", nil)
+		meta := RoomAuthMeta{
+			RoomId: data.Room,
+		}
+
+		return apis.RecordAuthResponse(e, record, "room", meta)
 	}).Unbind(apis.DefaultRequireAuthMiddlewareId)
 
 	subGroup.POST("reset/{id}", func(e *core.RequestEvent) error {
-		record, err := e.App.FindRecordById("vote_rooms", e.Request.PathValue("id"))
+		record, err := e.App.FindRecordById("voteRooms", e.Request.PathValue("id"))
 		if err != nil {
 			return e.NotFoundError("", err)
 		}
@@ -62,7 +70,7 @@ func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
 		)
 
 		roomUsers, err := app.FindAllRecords(
-			"vote_users",
+			"voteUsers",
 			dbx.NewExp("room={:room}", dbx.Params{"room": record.Id}),
 			dbx.NewExp("vote != ''"),
 		)
@@ -134,7 +142,7 @@ func getTargetFromRequest(e *core.RequestEvent) (*core.Record, *router.ApiError)
 		return nil, e.BadRequestError("Failed to read request data", err)
 	}
 
-	targetRecord, err := e.App.FindRecordById("vote_users", data.Target)
+	targetRecord, err := e.App.FindRecordById("voteUsers", data.Target)
 	if err != nil {
 		return nil, e.NotFoundError("", err)
 	}

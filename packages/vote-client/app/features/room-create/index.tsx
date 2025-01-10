@@ -4,9 +4,8 @@ import { LoginCard } from '../../components/room-login/LoginCard';
 import { roomJoinForm } from '../../lib/roomJoinForm';
 import { commitSession, getSession } from '~/lib/session.server';
 import { formDataToObject } from '~/lib/utils';
-import { createVoteUser } from '../../lib/roomAuth.server';
+import { createVoteUser, handleAuthError } from '../../lib/roomAuth.server';
 import { LoginForm } from '../../components/room-login/LoginForm';
-import { ClientResponseError } from 'pocketbase';
 import { useSessionErrorToast } from '~/lib/useSessionErrorToast';
 
 export function meta() {
@@ -37,40 +36,17 @@ export async function action({ request, context }: Route.ActionArgs) {
     const joinData = roomJoinForm.parse(inputData);
     const session = await getSession(request.headers.get('Cookie'));
 
-    const room = await backend.collection('vote_rooms').create({
+    const room = await backend.collection('voteRooms').create({
         cardType: ['FIBONACCI'],
         state: ['VOTING'],
     });
 
+    session.set('lastNickname', joinData.nickname);
+
     try {
-        await createVoteUser(backend, joinData, session, room.id, true);
+        await createVoteUser(backend, joinData, room.id, true);
     } catch (error) {
-        if (!(error instanceof ClientResponseError)) {
-            throw error;
-        }
-
-        const isNicknameTaken =
-            typeof error.response.data?.nickname === 'object';
-
-        if (!isNicknameTaken) {
-            console.error(error);
-
-            session.flash(
-                'error',
-                'An error occurred while creating the user.',
-            );
-        }
-
-        return data(
-            {
-                nicknameTaken: isNicknameTaken,
-            },
-            {
-                headers: {
-                    'Set-Cookie': await commitSession(session),
-                },
-            },
-        );
+        return await handleAuthError(error, session);
     }
 
     return redirect(`/room/${room.id}`, {
@@ -81,17 +57,19 @@ export async function action({ request, context }: Route.ActionArgs) {
 }
 
 export default function RoomCreate({
-    loaderData,
+    loaderData: { sessionError, prevNickname },
     actionData,
 }: Route.ComponentProps) {
-    const { sessionError } = loaderData;
     const { nicknameTaken } = actionData || {};
     useSessionErrorToast(sessionError);
 
     return (
         <main>
             <LoginCard>
-                <LoginForm nicknameTaken={nicknameTaken} />
+                <LoginForm
+                    nicknameTaken={nicknameTaken}
+                    prevNickname={prevNickname}
+                />
             </LoginCard>
         </main>
     );

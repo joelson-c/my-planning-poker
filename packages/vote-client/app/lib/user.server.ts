@@ -4,7 +4,7 @@ import type { Backend } from 'server/backend';
 export async function getCurrentUser(backend: Backend) {
     if (
         !backend.authStore.isValid ||
-        backend.authStore.record?.collectionName !== 'vote_users'
+        backend.authStore.record?.collectionName !== 'voteUsers'
     ) {
         return null;
     }
@@ -12,7 +12,7 @@ export async function getCurrentUser(backend: Backend) {
     let currentUser;
     try {
         currentUser = await backend
-            .collection('vote_users')
+            .collection('voteUsers')
             .getOne(backend.authStore.record.id);
     } catch (error) {
         if (!(error instanceof ClientResponseError)) {

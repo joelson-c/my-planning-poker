@@ -19,13 +19,6 @@ interface VotingUserItemProps {
 export function VotingUserItem({ user, isMyself }: VotingUserItemProps) {
     const fetcher = useFetcher();
 
-    function onAdminTransferClick() {
-        fetcher.submit(
-            { target: user.id },
-            { action: `/room/${user.room}/transfer-admin`, method: 'POST' },
-        );
-    }
-
     function onUserRemoveClick() {
         fetcher.submit(
             { target: user.id },
@@ -42,7 +35,7 @@ export function VotingUserItem({ user, isMyself }: VotingUserItemProps) {
                 <span className={cn(isMyself && 'font-semibold')}>
                     {user.nickname}
                 </span>
-                {user.admin && <Crown className="h-4 w-4 text-yellow-500" />}
+                {user.owner && <Crown className="h-4 w-4 text-yellow-500" />}
             </div>
             <div className="flex items-center space-x-2">
                 {!isMyself && (
@@ -54,11 +47,6 @@ export function VotingUserItem({ user, isMyself }: VotingUserItemProps) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                                onClick={() => onAdminTransferClick()}
-                            >
-                                Make Admin
-                            </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => onUserRemoveClick()}
                             >

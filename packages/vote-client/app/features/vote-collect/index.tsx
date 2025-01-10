@@ -26,7 +26,7 @@ export async function loader({
     }
 
     const roomWithStateOnly = await backend
-        .collection('vote_rooms')
+        .collection('voteRooms')
         .getOne(currentUser.room, { fields: 'state, id' });
 
     if (roomWithStateOnly.state === 'REVEAL') {
@@ -70,7 +70,7 @@ export default function VoteCollect({
 
                         return (
                             <VotingUserItem
-                                key={[user.id, user.admin].join('-')}
+                                key={user.id}
                                 user={user}
                                 isMyself={isMyself}
                             />

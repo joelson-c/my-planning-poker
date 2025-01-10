@@ -27,14 +27,14 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     }
 
     const roomWithStateOnly = await backend
-        .collection('vote_rooms')
+        .collection('voteRooms')
         .getOne(currentUser.room, { fields: 'state, id' });
 
     if (roomWithStateOnly.state === 'VOTING') {
         return redirect(`/room/${roomWithStateOnly.id}`);
     }
 
-    const roomUsers = await backend.collection('vote_users').getFullList({
+    const roomUsers = await backend.collection('voteUsers').getFullList({
         filter: backend.filter('room={:roomId}', { roomId }),
     });
 

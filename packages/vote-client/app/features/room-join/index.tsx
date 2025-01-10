@@ -4,7 +4,7 @@ import { LoginCard } from '../../components/room-login/LoginCard';
 import { roomJoinForm } from '../../lib/roomJoinForm';
 import { commitSession, getSession } from '~/lib/session.server';
 import { formDataToObject } from '~/lib/utils';
-import { createVoteUser } from '../../lib/roomAuth.server';
+import { createVoteUser, handleAuthError } from '../../lib/roomAuth.server';
 import { ClientResponseError } from 'pocketbase';
 import { LoginForm } from '../../components/room-login/LoginForm';
 import { useSessionErrorToast } from '~/lib/useSessionErrorToast';
@@ -40,7 +40,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     let room;
     try {
         room = await backend
-            .collection('vote_rooms')
+            .collection('voteRooms')
             .getFirstListItem(backend.filter('id={:roomId}', { roomId }));
     } catch (error) {
         if (!(error instanceof ClientResponseError)) {
@@ -52,42 +52,15 @@ export async function action({ request, params, context }: Route.ActionArgs) {
             'The room does not exist, is closed, or is full.',
         );
 
-        return redirect('/', {
-            headers: {
-                'Set-Cookie': await commitSession(session),
-            },
-        });
+        return null;
     }
 
     const joinData = roomJoinForm.parse(inputData);
 
     try {
-        await createVoteUser(backend, joinData, session, roomId);
+        await createVoteUser(backend, joinData, roomId);
     } catch (error) {
-        if (!(error instanceof ClientResponseError)) {
-            throw error;
-        }
-
-        const isNicknameTaken =
-            typeof error.response.data?.nickname === 'object';
-
-        if (!isNicknameTaken) {
-            session.flash(
-                'error',
-                'An error occurred while creating the user.',
-            );
-        }
-
-        return data(
-            {
-                nicknameTaken: isNicknameTaken,
-            },
-            {
-                headers: {
-                    'Set-Cookie': await commitSession(session),
-                },
-            },
-        );
+        return await handleAuthError(error, session);
     }
 
     return redirect(`/room/${room.id}`, {

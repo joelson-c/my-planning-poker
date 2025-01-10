@@ -9,7 +9,7 @@ export async function action({ context }: Route.ActionArgs) {
         throw new UnauthorizedError();
     }
 
-    await backend.collection('vote_rooms').update(currentUser.room, {
+    await backend.collection('voteRooms').update(currentUser.room, {
         state: 'REVEAL',
     });
 

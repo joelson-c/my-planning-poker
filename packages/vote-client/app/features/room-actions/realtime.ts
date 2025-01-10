@@ -11,12 +11,12 @@ export async function loader({
     params: { roomId },
     context: { backend },
 }: Route.LoaderArgs) {
-    const room = await backend.collection('vote_rooms').getOne(roomId);
+    const room = await backend.collection('voteRooms').getOne(roomId);
     const roomUsersFilter = backend.filter('room={:roomId}', {
         roomId,
     });
 
-    const users = await backend.collection('vote_users').getFullList({
+    const users = await backend.collection('voteUsers').getFullList({
         skipTotal: true,
         filter: roomUsersFilter,
     });
@@ -32,7 +32,7 @@ export async function loader({
             let usersToSend: User[] = users;
 
             await backend
-                .collection('vote_rooms')
+                .collection('voteRooms')
                 .subscribe(room.id, (event) => {
                     send({
                         event: 'room',
@@ -40,7 +40,7 @@ export async function loader({
                     });
                 });
 
-            await backend.collection('vote_users').subscribe(
+            await backend.collection('voteUsers').subscribe(
                 '*',
                 (event) => {
                     switch (event.action) {
@@ -105,7 +105,7 @@ export async function loader({
 
         return () => {
             backend
-                .collection('vote_rooms')
+                .collection('voteRooms')
                 .unsubscribe(roomId)
                 .catch((error) =>
                     console.error(
@@ -115,7 +115,7 @@ export async function loader({
                 );
 
             backend
-                .collection('vote_users')
+                .collection('voteUsers')
                 .unsubscribe('*')
                 .catch((error) =>
                     console.error(
@@ -125,7 +125,7 @@ export async function loader({
                 );
 
             /* backend
-                .collection('vote_users')
+                .collection('voteUsers')
                 .update(backend.authStore.record!.id, {
                     room: '',
                 })

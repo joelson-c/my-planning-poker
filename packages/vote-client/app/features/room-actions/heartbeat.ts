@@ -10,7 +10,7 @@ export async function action({ context }: Route.LoaderArgs) {
     }
 
     /*  await backend
-        .collection('vote_users')
+        .collection('voteUsers')
         .update(backend.authStore.record!.id, {
             updated: new Date().toISOString(),
         }); */

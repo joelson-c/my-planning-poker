@@ -12,7 +12,6 @@ export type CachedUser = {
 
 type SessionData = {
     lastNickname: string;
-    lastCreatedUserId: string;
 };
 
 type SessionFlashData = {

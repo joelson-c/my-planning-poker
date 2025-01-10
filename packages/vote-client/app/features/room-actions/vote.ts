@@ -20,7 +20,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     );
 
     const user = await backend
-        .collection('vote_users')
+        .collection('voteUsers')
         .update(backend.authStore.record!.id, {
             vote,
         });

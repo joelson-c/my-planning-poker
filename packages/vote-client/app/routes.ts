@@ -18,7 +18,6 @@ export default [
         route('heartbeat', './features/room-actions/heartbeat.ts'),
         route('reveal', './features/room-actions/reveal.ts'),
         route('reset', './features/room-actions/reset.ts'),
-        route('transfer-admin', './features/room-actions/transferAdmin.ts'),
         route('remove-user', './features/room-actions/removeUser.ts'),
     ]),
 ] satisfies RouteConfig;

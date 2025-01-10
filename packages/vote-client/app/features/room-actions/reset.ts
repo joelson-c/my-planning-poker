@@ -15,7 +15,7 @@ export async function action({
     }
 
     await backend.send<RecordAuthResponse<Room>>(
-        `/api/vote/collections/vote_rooms/reset/${roomId}`,
+        `/api/vote/collections/voteRooms/reset/${roomId}`,
         {
             method: 'POST',
         },

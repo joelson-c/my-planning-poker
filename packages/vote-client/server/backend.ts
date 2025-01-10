@@ -8,8 +8,8 @@ import type { User } from '~/types/user';
 
 interface TypedPocketBase extends PocketBase {
     collection(idOrName: string): RecordService; // default fallback for any other collection
-    collection(idOrName: 'vote_users'): RecordService<User>;
-    collection(idOrName: 'vote_rooms'): RecordService<Room>;
+    collection(idOrName: 'voteUsers'): RecordService<User>;
+    collection(idOrName: 'voteRooms'): RecordService<Room>;
 }
 
 export type Backend = TypedPocketBase;
@@ -31,7 +31,7 @@ export async function createBackend(request: Request, response: Response) {
     try {
         // get an up-to-date auth store state by verifying and refreshing the loaded auth record (if any)
         if (pb.authStore.isValid) {
-            await pb.collection('vote_users').authRefresh();
+            await pb.collection('voteUsers').authRefresh();
         }
     } catch {
         // clear the auth store on failed refresh
@@ -48,7 +48,7 @@ export async function authWithRoomAndNickname(
     password: string,
 ) {
     const authResponse = await backend.send<RecordAuthResponse<User>>(
-        '/api/vote/collections/vote_rooms/room-auth',
+        '/api/vote/collections/voteRooms/room-auth',
         {
             method: 'POST',
             body: {

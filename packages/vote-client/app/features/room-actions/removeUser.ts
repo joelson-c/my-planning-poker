@@ -24,7 +24,7 @@ export async function action({
     );
 
     await backend.send<RecordAuthResponse<Room>>(
-        `/api/vote/collections/vote_rooms/remove-user`,
+        `/api/vote/collections/voteRooms/remove-user`,
         {
             method: 'POST',
             body: {
