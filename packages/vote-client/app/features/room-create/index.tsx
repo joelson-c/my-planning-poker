@@ -43,13 +43,14 @@ export async function action({ request, context }: Route.ActionArgs) {
 
     session.set('lastNickname', joinData.nickname);
 
+    let user;
     try {
-        await createVoteUser(backend, joinData, room.id, true);
+        user = await createVoteUser(backend, joinData, room.id);
     } catch (error) {
         return await handleAuthError(error, session);
     }
 
-    return redirect(`/room/${room.id}`, {
+    return redirect(`/room/${user.room}`, {
         headers: {
             'Set-Cookie': await commitSession(session),
         },

@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import { useFetcher } from 'react-router';
 
-const HEARTBEAT_INTERVAL_MS = 1000 * 60 * 2;
+const HEARTBEAT_INTERVAL_MS = 1000 * 60; // 1 minute
 
-export function useHeartbeat(roomId: string) {
+export function useHeartbeat() {
     const fetcher = useFetcher();
 
     useEffect(() => {
         function sendHeartbeat() {
             fetcher.submit(null, {
-                action: `/room/${roomId}/heartbeat`,
+                action: `/heartbeat`,
                 method: 'POST',
             });
         }
@@ -22,5 +22,5 @@ export function useHeartbeat(roomId: string) {
         sendHeartbeat();
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [roomId]);
+    }, []);
 }

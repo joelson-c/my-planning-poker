@@ -1,4 +1,3 @@
-import 'react-router';
 import { createRequestHandler } from '@react-router/express';
 import express from 'express';
 import { createBackend, type Backend } from './backend';
@@ -23,6 +22,7 @@ app.use(async (req, res, next) => {
     const requestHandler = createRequestHandler({
         // @ts-expect-error - virtual module provided by React Router at build time
         build: () => import('virtual:react-router/server-build'),
+        mode: import.meta.env.MODE,
         getLoadContext() {
             return {
                 backend,

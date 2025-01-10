@@ -1,7 +1,6 @@
 import type { Route } from './+types';
 import { data, redirect } from 'react-router';
 import { commitSession, getSession } from '~/lib/session.server';
-import { useHeartbeat } from '../../lib/useHeartbeat';
 import { VotingActionList } from './VotingActionList';
 import { VotingCardList } from './card/VotingCardList';
 import { VotingHeader } from './VotingHeader';
@@ -10,6 +9,7 @@ import { useRoom } from '~/lib/useRoom';
 import { getCurrentUser } from '~/lib/user.server';
 import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
 import { VotingUserItem } from './user/VotingUserItem';
+import { useHeartbeat } from '~/lib/useHeartbeat';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];
@@ -50,7 +50,7 @@ export default function VoteCollect({
     params: { roomId },
 }: Route.ComponentProps) {
     const { room, users } = useRoom(roomId);
-    useHeartbeat(roomId);
+    useHeartbeat();
 
     if (!room) {
         return <p>Loading..</p>;

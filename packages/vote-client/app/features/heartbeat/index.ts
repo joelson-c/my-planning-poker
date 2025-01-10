@@ -1,4 +1,4 @@
-import type { Route } from './+types/heartbeat';
+import type { Route } from './+types';
 
 export async function action({ context }: Route.LoaderArgs) {
     const { backend } = context;
@@ -9,11 +9,9 @@ export async function action({ context }: Route.LoaderArgs) {
         });
     }
 
-    /*  await backend
-        .collection('voteUsers')
-        .update(backend.authStore.record!.id, {
-            updated: new Date().toISOString(),
-        }); */
+    await backend.send(`/api/vote/heartbeat`, {
+        method: 'POST',
+    });
 
     return new Response(null, {
         status: 201,

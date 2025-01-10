@@ -26,6 +26,7 @@
         "compression": "^1.7.5",
         "eventsource": "^3.0.2",
         "express": "^4.21.2",
+        "helmet": "^8.0.0",
         "isbot": "^5.1.19",
         "jsonwebtoken": "^9.0.2",
         "lucide-react": "^0.469.0",

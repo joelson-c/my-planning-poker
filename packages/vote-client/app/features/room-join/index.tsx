@@ -1,12 +1,11 @@
 import type { Route } from './+types';
 import { data, redirect } from 'react-router';
-import { LoginCard } from '../../components/room-login/LoginCard';
-import { roomJoinForm } from '../../lib/roomJoinForm';
+import { LoginCard } from '~/components/room-login/LoginCard';
+import { roomJoinForm } from '~/lib/roomJoinForm';
 import { commitSession, getSession } from '~/lib/session.server';
 import { formDataToObject } from '~/lib/utils';
-import { createVoteUser, handleAuthError } from '../../lib/roomAuth.server';
-import { ClientResponseError } from 'pocketbase';
-import { LoginForm } from '../../components/room-login/LoginForm';
+import { createVoteUser, handleAuthError } from '~/lib/roomAuth.server';
+import { LoginForm } from '~/components/room-login/LoginForm';
 import { useSessionErrorToast } from '~/lib/useSessionErrorToast';
 
 export function meta() {
@@ -37,33 +36,16 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     const inputData = formDataToObject(await request.formData());
     const session = await getSession(request.headers.get('Cookie'));
 
-    let room;
-    try {
-        room = await backend
-            .collection('voteRooms')
-            .getFirstListItem(backend.filter('id={:roomId}', { roomId }));
-    } catch (error) {
-        if (!(error instanceof ClientResponseError)) {
-            throw error;
-        }
-
-        session.flash(
-            'error',
-            'The room does not exist, is closed, or is full.',
-        );
-
-        return null;
-    }
-
     const joinData = roomJoinForm.parse(inputData);
 
+    let user;
     try {
-        await createVoteUser(backend, joinData, roomId);
+        user = await createVoteUser(backend, joinData, roomId);
     } catch (error) {
         return await handleAuthError(error, session);
     }
 
-    return redirect(`/room/${room.id}`, {
+    return redirect(`/room/${user.room}`, {
         headers: {
             'Set-Cookie': await commitSession(session),
         },

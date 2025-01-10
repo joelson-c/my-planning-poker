@@ -15,9 +15,10 @@ export default [
         // Actions
         route('vote', './features/room-actions/vote.ts'),
         route('realtime', './features/room-actions/realtime.ts'),
-        route('heartbeat', './features/room-actions/heartbeat.ts'),
         route('reveal', './features/room-actions/reveal.ts'),
         route('reset', './features/room-actions/reset.ts'),
         route('remove-user', './features/room-actions/removeUser.ts'),
     ]),
+
+    route('/heartbeat', './features/heartbeat/index.ts'),
 ] satisfies RouteConfig;

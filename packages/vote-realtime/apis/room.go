@@ -1,54 +1,76 @@
 package apis
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/pocketbase/pocketbase/tools/types"
-
+	"github.com/joelson-c/vote-realtime/models"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/router"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 type RoomAuthMeta struct {
 	RoomId string `json:"roomId"`
 }
 
-func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
-	subGroup := rg.Group("/collections/voteRooms/").Bind(apis.RequireAuth("voteUsers"))
+func BindRoomApis(rg *router.RouterGroup[*core.RequestEvent]) {
+	subGroup := rg.Group(fmt.Sprintf("/collections/%s/", models.CollectionNameVoteRooms)).Bind(apis.RequireAuth("voteUsers"))
 
 	subGroup.POST("room-auth", func(e *core.RequestEvent) error {
 		data := struct {
-			Room     string `json:"room"     form:"room"`
-			Nickname string `json:"nickname" form:"nickname"`
-			Password string `json:"password" form:"password"`
+			Room       string `json:"room"     form:"room"`
+			Nickname   string `json:"nickname" form:"nickname"`
+			IsObserver bool   `json:"isObserver" form:"isObserver"`
 		}{}
 
 		if err := e.BindBody(&data); err != nil {
 			return e.BadRequestError("Failed to read request data", err)
 		}
 
-		record, err := e.App.FindFirstRecordByFilter(
-			"voteUsers",
-			"room={:room} && nickname={:nickname}",
-			dbx.Params{"room": data.Room, "nickname": data.Nickname},
-		)
-
-		if err != nil || !record.ValidatePassword(data.Password) {
-			// return generic 400 error as a basic enumeration protection
-			return e.BadRequestError("Invalid credentials", err)
+		room, err := e.App.FindRecordById(models.CollectionNameVoteRooms, data.Room)
+		if err != nil {
+			return e.NotFoundError("The requested room wasn't found.", err)
 		}
 
-		meta := RoomAuthMeta{
+		if room.GetBool("closed") {
+			return e.BadRequestError("The requested room is closed.", nil)
+		}
+
+		totalUsers, err := e.App.CountRecords(models.CollectionNameVoteUsers, dbx.HashExp{"room": room.Id})
+		if err != nil {
+			return err
+		}
+
+		if (totalUsers + 1) > models.MaxUsersByRoom {
+			return e.TooManyRequestsError("The room has reached the maximum number of users.", nil)
+		}
+
+		collection, err := e.App.FindCollectionByNameOrId(models.CollectionNameVoteUsers)
+		if err != nil {
+			return err
+		}
+
+		userRecord := core.NewRecord(collection)
+		userRecord.Set("nickname", data.Nickname)
+		userRecord.Set("room", data.Room)
+		userRecord.Set("observer", data.IsObserver)
+		userRecord.Set("owner", totalUsers == 0)
+		userRecord.Set("lastActive", types.NowDateTime())
+		userRecord.SetRandomPassword()
+		if err := e.App.Save(userRecord); err != nil {
+			return err
+		}
+
+		return apis.RecordAuthResponse(e, userRecord, "room", &RoomAuthMeta{
 			RoomId: data.Room,
-		}
-
-		return apis.RecordAuthResponse(e, record, "room", meta)
+		})
 	}).Unbind(apis.DefaultRequireAuthMiddlewareId)
 
 	subGroup.POST("reset/{id}", func(e *core.RequestEvent) error {
-		record, err := e.App.FindRecordById("voteRooms", e.Request.PathValue("id"))
+		record, err := e.App.FindRecordById(models.CollectionNameVoteRooms, e.Request.PathValue("id"))
 		if err != nil {
 			return e.NotFoundError("", err)
 		}
@@ -64,12 +86,12 @@ func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
 			return e.ForbiddenError("", err)
 		}
 
-		app.Logger().Info(
+		e.App.Logger().Info(
 			"Resetting votes for room",
 			"room", record.Id,
 		)
 
-		roomUsers, err := app.FindAllRecords(
+		roomUsers, err := e.App.FindAllRecords(
 			"voteUsers",
 			dbx.NewExp("room={:room}", dbx.Params{"room": record.Id}),
 			dbx.NewExp("vote != ''"),
@@ -79,7 +101,7 @@ func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
 			return err
 		}
 
-		app.RunInTransaction(func(txApp core.App) error {
+		e.App.RunInTransaction(func(txApp core.App) error {
 			for _, user := range roomUsers {
 				user.Set("vote", nil)
 
@@ -116,9 +138,9 @@ func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
 			return e.ForbiddenError("", err)
 		}
 
-		settings := app.Settings()
+		settings := e.App.Settings()
 		if settings.Logs.LogAuthId {
-			app.Logger().Info(
+			e.App.Logger().Info(
 				"Removing user from room",
 				"room", e.Auth.GetString("room"),
 				"user", targetRecord.Id,
@@ -142,7 +164,7 @@ func getTargetFromRequest(e *core.RequestEvent) (*core.Record, *router.ApiError)
 		return nil, e.BadRequestError("Failed to read request data", err)
 	}
 
-	targetRecord, err := e.App.FindRecordById("voteUsers", data.Target)
+	targetRecord, err := e.App.FindRecordById(models.CollectionNameVoteUsers, data.Target)
 	if err != nil {
 		return nil, e.NotFoundError("", err)
 	}

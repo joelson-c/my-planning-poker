@@ -24,18 +24,13 @@ export function useRoom(roomId: string) {
         enabled: disconnect === null,
     });
 
-    const error = useEventSource(realtimeUrl, {
-        event: 'error',
-        enabled: disconnect === null,
-    });
-
     useEffect(() => {
-        if (!error && !disconnect) {
+        if (!disconnect) {
             return;
         }
 
         revalidator.revalidate();
-    }, [error, disconnect, revalidator]);
+    }, [disconnect, revalidator]);
 
     useEffect(() => {
         if (!room) {

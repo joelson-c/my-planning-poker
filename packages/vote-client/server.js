@@ -1,6 +1,6 @@
 import compression from 'compression';
 import express from 'express';
-import morgan from 'morgan';
+import helmet from 'helmet';
 
 // Short-circuit the type-checking of the built output.
 const BUILD_PATH = './build/server/index.js';
@@ -11,7 +11,17 @@ const HOST = process.env.HOST || 'localhost';
 const app = express();
 
 app.use(compression());
-app.disable('x-powered-by');
+app.use(
+    helmet({
+        xPoweredBy: false,
+        contentSecurityPolicy: {
+            directives: {
+                connectSrc: ["'self'", 'ws:', 'wss:'],
+                scriptSrc: ["'self'", "'unsafe-inline'"],
+            },
+        },
+    }),
+);
 //app.use(morgan('tiny'));
 
 async function createProdServer() {
