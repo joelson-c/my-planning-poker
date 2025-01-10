@@ -13,15 +13,10 @@ import { useFetcher } from 'react-router';
 
 interface VotingUserItemProps {
     user: User;
-    showAdminActions?: boolean;
     isMyself?: boolean;
 }
 
-export function VotingUserItem({
-    user,
-    showAdminActions,
-    isMyself,
-}: VotingUserItemProps) {
+export function VotingUserItem({ user, isMyself }: VotingUserItemProps) {
     const fetcher = useFetcher();
 
     function onAdminTransferClick() {
@@ -50,7 +45,7 @@ export function VotingUserItem({
                 {user.admin && <Crown className="h-4 w-4 text-yellow-500" />}
             </div>
             <div className="flex items-center space-x-2">
-                {showAdminActions && !isMyself && (
+                {!isMyself && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">

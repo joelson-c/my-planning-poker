@@ -50,7 +50,7 @@ func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
 			return e.BadRequestError("Failed to retrieve request info", err)
 		}
 
-		rule := types.Pointer("@request.auth.admin = true && state = 'REVEAL'")
+		rule := types.Pointer("@request.auth.room = id && state = 'REVEAL'")
 		canAccess, err := e.App.CanAccessRecord(record, requestInfo, rule)
 		if !canAccess {
 			return e.ForbiddenError("", err)
@@ -91,51 +91,6 @@ func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
 		return e.JSON(http.StatusOK, record)
 	})
 
-	subGroup.POST("transfer-admin", func(e *core.RequestEvent) error {
-		targetRecord, targetErr := getTargetFromRequest(e)
-		if targetErr != nil {
-			return targetErr
-		}
-
-		requestInfo, err := e.RequestInfo()
-		if err != nil {
-			return e.BadRequestError("Failed to retrieve request info", err)
-		}
-
-		rule := types.Pointer("@request.auth.admin = true && @request.auth.room = room && admin = false && @request.auth.id != id")
-		canAccess, err := e.App.CanAccessRecord(targetRecord, requestInfo, rule)
-		if !canAccess {
-			return e.ForbiddenError("", err)
-		}
-
-		currentUser := e.Auth.Clone()
-		settings := app.Settings()
-		if settings.Logs.LogAuthId {
-			app.Logger().Info(
-				"Transfering admin rights for room",
-				"room", currentUser.GetString("room"),
-				"from", currentUser.Id,
-				"to", targetRecord.Id,
-			)
-		}
-
-		app.RunInTransaction(func(txApp core.App) error {
-			currentUser.Set("admin", false)
-			if err := txApp.Save(currentUser); err != nil {
-				return err
-			}
-
-			targetRecord.Set("admin", true)
-			if err := txApp.Save(targetRecord); err != nil {
-				return err
-			}
-
-			return nil
-		})
-
-		return e.JSON(http.StatusOK, targetRecord)
-	})
-
 	subGroup.POST("remove-user", func(e *core.RequestEvent) error {
 		targetRecord, targetErr := getTargetFromRequest(e)
 		if targetErr != nil {
@@ -147,7 +102,7 @@ func BindRoomApis(app core.App, rg *router.RouterGroup[*core.RequestEvent]) {
 			return e.BadRequestError("Failed to retrieve request info", err)
 		}
 
-		rule := types.Pointer("@request.auth.admin = true && @request.auth.room = room && admin = false && @request.auth.id != id")
+		rule := types.Pointer("@request.auth.room = room && @request.auth.id != id")
 		canAccess, err := e.App.CanAccessRecord(targetRecord, requestInfo, rule)
 		if !canAccess {
 			return e.ForbiddenError("", err)

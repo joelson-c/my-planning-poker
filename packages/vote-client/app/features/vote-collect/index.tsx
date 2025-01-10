@@ -10,7 +10,6 @@ import { useRoom } from '~/lib/useRoom';
 import { getCurrentUser } from '~/lib/user.server';
 import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
 import { VotingUserItem } from './user/VotingUserItem';
-import { useMemo } from 'react';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];
@@ -53,14 +52,6 @@ export default function VoteCollect({
     const { room, users } = useRoom(roomId);
     useHeartbeat(roomId);
 
-    const myUser = useMemo(() => {
-        if (!users) {
-            return null;
-        }
-
-        return users.find((user) => user.id === currentUserId);
-    }, [users, currentUserId]);
-
     if (!room) {
         return <p>Loading..</p>;
     }
@@ -71,7 +62,7 @@ export default function VoteCollect({
             <div className="flex flex-col lg:flex-row gap-8">
                 <div className="flex flex-col w-full">
                     <VotingCardList room={room} />
-                    {myUser?.admin && <VotingActionList room={room} />}
+                    <VotingActionList room={room} />
                 </div>
                 <VotingUserList>
                     {users?.map((user) => {
@@ -82,7 +73,6 @@ export default function VoteCollect({
                                 key={[user.id, user.admin].join('-')}
                                 user={user}
                                 isMyself={isMyself}
-                                showAdminActions={myUser?.admin}
                             />
                         );
                     })}

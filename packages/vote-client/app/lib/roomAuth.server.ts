@@ -12,7 +12,7 @@ async function createNewUser(
     session: AppSession,
     { nickname, isObserver }: RoomJoinForm,
     roomId: string,
-    userShouldBeAdmin: boolean = false,
+    isRoomOwner: boolean = false,
 ) {
     const lastCreatedUserId = session.get('lastCreatedUserId');
     // Cleanup old connections
@@ -30,7 +30,7 @@ async function createNewUser(
         observer: isObserver,
         password: randomPassword,
         passwordConfirm: randomPassword,
-        admin: userShouldBeAdmin,
+        owner: isRoomOwner,
         room: roomId,
     });
 
@@ -45,7 +45,7 @@ export async function createVoteUser(
     joinData: RoomJoinForm,
     session: AppSession,
     roomId: string,
-    userShouldBeAdmin: boolean = false,
+    isRoomOwner: boolean = false,
 ) {
-    return createNewUser(backend, session, joinData, roomId, userShouldBeAdmin);
+    return createNewUser(backend, session, joinData, roomId, isRoomOwner);
 }

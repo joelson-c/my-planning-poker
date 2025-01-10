@@ -47,6 +47,8 @@ services:
                 - action: rebuild
                   path: ./packages/vote-realtime
                   target: /usr/src/app
+                  ignore:
+                      - migrations
 
     proxy:
         image: caddy:2.8
