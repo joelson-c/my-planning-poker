@@ -1,4 +1,4 @@
-import { Github } from '~/components/icons/github';
+import { GithubIcon } from '~/components/icons/GithubIcon';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent } from '~/components/ui/card';
 
@@ -25,7 +25,7 @@ export function RepositoryBanner() {
                         target="_blank"
                         rel="noreferrer"
                     >
-                        <Github className="mr-2 h-4 w-4" />
+                        <GithubIcon className="mr-2 h-4 w-4" />
                         Star on GitHub
                     </a>
                 </Button>

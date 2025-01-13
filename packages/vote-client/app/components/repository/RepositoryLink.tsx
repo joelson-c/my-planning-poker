@@ -1,11 +1,12 @@
 import type { ComponentPropsWithoutRef } from 'react';
 import { cn } from '~/lib/utils';
 import { Button } from '../ui/button';
-import { Github } from '../icons/github';
+import { GithubIcon } from '../icons/GithubIcon';
 
-interface RepositoryLinkProps extends ComponentPropsWithoutRef<typeof Button> {}
-
-export function RepositoryLink({ className, ...props }: RepositoryLinkProps) {
+export function RepositoryLink({
+    className,
+    ...props
+}: ComponentPropsWithoutRef<typeof Button>) {
     return (
         <Button
             {...props}
@@ -18,7 +19,7 @@ export function RepositoryLink({ className, ...props }: RepositoryLinkProps) {
                 target="_blank"
                 rel="noreferrer"
             >
-                <Github className="mr-2 h-4 w-4" />
+                <GithubIcon className="mr-2 h-4 w-4" />
                 View on GitHub
             </a>
         </Button>

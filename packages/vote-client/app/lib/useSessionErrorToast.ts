@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { toast } from '~/hooks/use-toast';
+import { toast } from '~/lib/useToast';
 
 export function useSessionErrorToast(sessionError: string | undefined) {
     useEffect(() => {

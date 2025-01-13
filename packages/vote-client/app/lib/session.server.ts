@@ -25,11 +25,13 @@ export const sessionCookie = createCookie('__session', {
     secure: true,
 });
 
-const { getSession, commitSession, destroySession } =
-    createCookieSessionStorage<SessionData, SessionFlashData>({
-        cookie: sessionCookie,
-    });
+const sessionStorage = createCookieSessionStorage<
+    SessionData,
+    SessionFlashData
+>({
+    cookie: sessionCookie,
+});
 
 export type AppSession = Session<SessionData, SessionFlashData>;
 
-export { getSession, commitSession, destroySession };
+export const { getSession, commitSession, destroySession } = sessionStorage;

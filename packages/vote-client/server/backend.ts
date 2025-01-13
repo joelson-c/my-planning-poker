@@ -3,7 +3,7 @@ import PocketBase, {
     type RecordAuthResponse,
     type RecordService,
 } from 'pocketbase';
-import type { RoomJoinForm } from '~/lib/roomJoinForm';
+import type { RoomJoinShema } from '~/lib/roomFormSchema';
 import type { Room } from '~/types/room';
 import type { User } from '~/types/user';
 
@@ -44,16 +44,16 @@ export async function createBackend(request: Request, response: Response) {
 
 export async function authWithRoomAndUserId(
     backend: Backend,
-    room: string,
-    joinData: RoomJoinForm,
+    joinData: RoomJoinShema,
 ) {
     const authResponse = await backend.send<RecordAuthResponse<User>>(
         '/api/vote/collections/voteRooms/room-auth',
         {
             method: 'POST',
             body: {
-                room,
-                ...joinData,
+                room: joinData.roomId,
+                nickname: joinData.nickname,
+                isObserver: joinData.isObserver,
             },
         },
     );

@@ -1,4 +1,4 @@
-import type { RoomJoinForm } from './roomJoinForm';
+import type { RoomJoinShema } from './roomFormSchema';
 import { data } from 'react-router';
 import { ClientResponseError } from 'pocketbase';
 import { authWithRoomAndUserId, type Backend } from 'server/backend';
@@ -7,12 +7,11 @@ import { commitSession, type AppSession } from './session.server';
 
 export async function createVoteUser(
     backend: Backend,
-    joinData: RoomJoinForm,
-    roomId: string,
+    joinData: RoomJoinShema,
 ) {
     let user;
     try {
-        user = await authWithRoomAndUserId(backend, roomId, joinData);
+        user = await authWithRoomAndUserId(backend, joinData);
     } catch (error) {
         if (!(error instanceof ClientResponseError)) {
             throw error;

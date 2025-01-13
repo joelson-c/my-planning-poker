@@ -2,7 +2,12 @@ import type { SubmitHandler } from 'react-hook-form';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, useSubmit } from 'react-router';
-import { roomJoinForm, type RoomJoinForm } from '~/lib/roomJoinForm';
+import {
+    roomCreateSchema,
+    roomJoinSchema,
+    type RoomCreateSchema,
+    type RoomJoinShema,
+} from '~/lib/roomFormSchema';
 import { Label } from '~/components/ui/label';
 import { Input } from '~/components/ui/input';
 import { Switch } from '~/components/ui/switch';
@@ -12,6 +17,7 @@ interface LoginFormProps {
     roomId?: string;
     prevNickname?: string;
     nicknameTaken?: boolean;
+    schema: typeof roomJoinSchema | typeof roomCreateSchema;
 }
 
 let hasAddedServerErrors = false;
@@ -20,6 +26,7 @@ export function LoginForm({
     roomId,
     prevNickname,
     nicknameTaken,
+    schema,
 }: LoginFormProps) {
     const submit = useSubmit();
 
@@ -29,16 +36,24 @@ export function LoginForm({
         control,
         formState: { errors },
         setError,
-    } = useForm<RoomJoinForm & { isObserver: boolean }>({
-        resolver: zodResolver(roomJoinForm),
+    } = useForm<RoomCreateSchema & RoomJoinShema>({
+        resolver: zodResolver(schema),
+        criteriaMode: 'all',
+        defaultValues: {
+            roomId: roomId || '',
+            nickname: prevNickname || '',
+        },
     });
 
-    const onSubmit: SubmitHandler<Record<string, unknown>> = (_, event) => {
+    const onSubmit: SubmitHandler<Record<string, unknown>> = async (
+        _,
+        event,
+    ) => {
+        await submit(event!.target);
         hasAddedServerErrors = false;
-        submit(event!.target);
     };
 
-    if (nicknameTaken && !hasAddedServerErrors) {
+    if (nicknameTaken && errors.nickname?.type !== 'nickname-taken') {
         setError('nickname', {
             type: 'nickname-taken',
             message: 'The nickname is already taken.',
@@ -46,6 +61,8 @@ export function LoginForm({
 
         hasAddedServerErrors = true;
     }
+
+    const isJoining = schema === roomJoinSchema;
 
     return (
         <Form method="post" onSubmit={handleSubmit(onSubmit)}>
@@ -56,7 +73,6 @@ export function LoginForm({
                         id="nickname"
                         placeholder="Enter your nickname"
                         aria-invalid={errors.nickname ? 'true' : 'false'}
-                        defaultValue={prevNickname}
                         {...register('nickname')}
                     />
                     {errors.nickname && (
@@ -65,11 +81,23 @@ export function LoginForm({
                         </p>
                     )}
                 </div>
-                {roomId && (
-                    <div className="space-y-2">
-                        <Label htmlFor="roomid">Room ID</Label>
-                        <Input value={roomId} id="roomId" disabled />
-                    </div>
+                {isJoining && (
+                    <>
+                        <div className="space-y-2">
+                            <Label htmlFor="roomId">Room ID</Label>
+                            <Input
+                                id="roomId"
+                                readOnly={!!roomId}
+                                aria-invalid={errors.roomId ? 'true' : 'false'}
+                                {...register('roomId')}
+                            />
+                        </div>
+                        {errors.roomId && (
+                            <p className="text-sm text-red-500" role="alert">
+                                {errors.roomId.message}
+                            </p>
+                        )}
+                    </>
                 )}
                 <div className="flex items-center space-x-2">
                     <Controller
@@ -92,7 +120,7 @@ export function LoginForm({
                     <Label htmlFor="is-observer">Join as Observer</Label>
                 </div>
                 <Button type="submit" className="w-full">
-                    {roomId ? 'Join Room' : 'Create New Room'}
+                    {isJoining ? 'Join Room' : 'Create New Room'}
                 </Button>
             </div>
         </Form>

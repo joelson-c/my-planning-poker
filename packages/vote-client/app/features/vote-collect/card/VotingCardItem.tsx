@@ -1,8 +1,8 @@
 import type { ComponentProps } from 'react';
-import { Card, CardContent } from '~/components/ui/card';
+import { Button } from '~/components/ui/button';
 import { cn } from '~/lib/utils';
 
-interface VotingCardItemProps extends ComponentProps<typeof Card> {
+interface VotingCardItemProps extends ComponentProps<typeof Button> {
     value: string;
     selected?: boolean;
 }
@@ -14,17 +14,12 @@ export function VotingCardItem({
     ...props
 }: VotingCardItemProps) {
     return (
-        <Card
+        <Button
             {...props}
-            className={cn(
-                'cursor-pointer transition-all',
-                selected && 'ring-2 ring-blue-500',
-                className,
-            )}
+            variant={selected ? 'default' : 'outline'}
+            className={cn('h-16 lg:h-20 text-2xl', className)}
         >
-            <CardContent className="flex items-center justify-center h-20 py-6">
-                <span className="text-2xl font-bold">{value}</span>
-            </CardContent>
-        </Card>
+            {value}
+        </Button>
     );
 }

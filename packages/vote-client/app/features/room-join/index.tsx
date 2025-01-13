@@ -1,18 +1,22 @@
 import type { Route } from './+types';
-import { data, redirect } from 'react-router';
+import { data, Link, redirect } from 'react-router';
 import { LoginCard } from '~/components/room-login/LoginCard';
-import { roomJoinForm } from '~/lib/roomJoinForm';
+import { roomJoinSchema } from '~/lib/roomFormSchema';
 import { commitSession, getSession } from '~/lib/session.server';
 import { formDataToObject } from '~/lib/utils';
 import { createVoteUser, handleAuthError } from '~/lib/roomAuth.server';
 import { LoginForm } from '~/components/room-login/LoginForm';
 import { useSessionErrorToast } from '~/lib/useSessionErrorToast';
+import { Button } from '~/components/ui/button';
 
 export function meta() {
     return [{ title: 'Join Planning Poker Room' }];
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({
+    request,
+    params: { roomId },
+}: Route.LoaderArgs) {
     const session = await getSession(request.headers.get('Cookie'));
     const sessionError = session.get('error');
     const prevNickname = session.get('lastNickname');
@@ -21,6 +25,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         {
             sessionError,
             prevNickname,
+            roomId,
         },
         {
             headers: {
@@ -30,17 +35,18 @@ export async function loader({ request }: Route.LoaderArgs) {
     );
 }
 
-export async function action({ request, params, context }: Route.ActionArgs) {
-    const { roomId } = params;
-    const { backend } = context;
+export async function action({
+    request,
+    context: { backend },
+}: Route.ActionArgs) {
     const inputData = formDataToObject(await request.formData());
     const session = await getSession(request.headers.get('Cookie'));
 
-    const joinData = roomJoinForm.parse(inputData);
+    const joinData = roomJoinSchema.parse(inputData);
 
     let user;
     try {
-        user = await createVoteUser(backend, joinData, roomId);
+        user = await createVoteUser(backend, joinData);
     } catch (error) {
         return await handleAuthError(error, session);
     }
@@ -62,14 +68,18 @@ export default function RoomJoin({
     useSessionErrorToast(sessionError);
 
     return (
-        <main>
-            <LoginCard>
+        <LoginCard title="Join a Room">
+            <div className="flex flex-col gap-4">
                 <LoginForm
                     roomId={roomId}
                     prevNickname={prevNickname}
                     nicknameTaken={nicknameTaken}
+                    schema={roomJoinSchema}
                 />
-            </LoginCard>
-        </main>
+                <Button variant="link" asChild>
+                    <Link to="/">Create a new room</Link>
+                </Button>
+            </div>
+        </LoginCard>
     );
 }

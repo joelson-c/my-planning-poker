@@ -1,12 +1,13 @@
 import type { Route } from './+types';
-import { data, redirect } from 'react-router';
+import { data, Link, redirect } from 'react-router';
 import { LoginCard } from '../../components/room-login/LoginCard';
-import { roomJoinForm } from '../../lib/roomJoinForm';
+import { roomCreateSchema } from '../../lib/roomFormSchema';
 import { commitSession, getSession } from '~/lib/session.server';
 import { formDataToObject } from '~/lib/utils';
 import { createVoteUser, handleAuthError } from '../../lib/roomAuth.server';
 import { LoginForm } from '../../components/room-login/LoginForm';
 import { useSessionErrorToast } from '~/lib/useSessionErrorToast';
+import { Button } from '~/components/ui/button';
 
 export function meta() {
     return [{ title: 'My Planning Poker' }];
@@ -33,7 +34,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 export async function action({ request, context }: Route.ActionArgs) {
     const { backend } = context;
     const inputData = formDataToObject(await request.formData());
-    const joinData = roomJoinForm.parse(inputData);
+    const joinData = roomCreateSchema.parse(inputData);
     const session = await getSession(request.headers.get('Cookie'));
 
     const room = await backend.collection('voteRooms').create({
@@ -45,7 +46,10 @@ export async function action({ request, context }: Route.ActionArgs) {
 
     let user;
     try {
-        user = await createVoteUser(backend, joinData, room.id);
+        user = await createVoteUser(backend, {
+            ...joinData,
+            roomId: room.id,
+        });
     } catch (error) {
         return await handleAuthError(error, session);
     }
@@ -65,13 +69,17 @@ export default function RoomCreate({
     useSessionErrorToast(sessionError);
 
     return (
-        <main>
-            <LoginCard>
+        <LoginCard title="Create a Room">
+            <div className="flex flex-col gap-4">
                 <LoginForm
                     nicknameTaken={nicknameTaken}
                     prevNickname={prevNickname}
+                    schema={roomCreateSchema}
                 />
-            </LoginCard>
-        </main>
+                <Button variant="link" asChild>
+                    <Link to="/join">Join a Room</Link>
+                </Button>
+            </div>
+        </LoginCard>
     );
 }

@@ -1,9 +1,9 @@
-import { RepositoryBanner } from '~/components/repository/banner';
+import type { Route } from './+types';
+import { RepositoryBanner } from '~/components/repository/RepositoryBanner';
 import { ResultHeader } from './ResultHeader';
 import { ResultIndividualVotes } from './ResultIndividualVotes';
 import { ResultSummary } from './ResultSummary';
 import { ResultVoteDistribution } from './ResultVoteDistribution';
-import type { Route } from './+types';
 import { useRoom } from '~/lib/useRoom';
 import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
 import { getCurrentUser } from '~/lib/user.server';
@@ -72,12 +72,11 @@ export async function loader({ params, context }: Route.LoaderArgs) {
             average,
             mediam,
         },
-        currentUser,
     };
 }
 
 export default function VoteResults({
-    loaderData: { currentUser, voteResult },
+    loaderData: { voteResult },
     params: { roomId },
 }: Route.ComponentProps) {
     const { room } = useRoom(roomId);
@@ -87,14 +86,14 @@ export default function VoteResults({
     }
 
     return (
-        <main className="container mx-auto p-4">
-            <ResultHeader room={room} currentUser={currentUser} />
+        <>
+            <ResultHeader room={room} />
             <RepositoryBanner />
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 lg:gap-8 md:grid-cols-2">
                 <ResultVoteDistribution voteResult={voteResult} />
                 <ResultSummary voteResult={voteResult} />
                 <ResultIndividualVotes voteResult={voteResult} />
             </div>
-        </main>
+        </>
     );
 }

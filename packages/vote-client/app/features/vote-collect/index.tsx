@@ -3,13 +3,21 @@ import { data, redirect } from 'react-router';
 import { commitSession, getSession } from '~/lib/session.server';
 import { VotingActionList } from './VotingActionList';
 import { VotingCardList } from './card/VotingCardList';
-import { VotingHeader } from './VotingHeader';
 import { VotingUserList } from './user/VotingUserList';
 import { useRoom } from '~/lib/useRoom';
 import { getCurrentUser } from '~/lib/user.server';
 import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
 import { VotingUserItem } from './user/VotingUserItem';
 import { useHeartbeat } from '~/lib/useHeartbeat';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '~/components/ui/card';
+import { Separator } from '~/components/ui/separator';
+import { TypographyH2 } from '~/components/ui/typography';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];
@@ -36,6 +44,7 @@ export async function loader({
     return data(
         {
             currentUserId: currentUser.id,
+            isObserver: currentUser.observer,
         },
         {
             headers: {
@@ -46,7 +55,7 @@ export async function loader({
 }
 
 export default function VoteCollect({
-    loaderData: { currentUserId },
+    loaderData: { currentUserId, isObserver },
     params: { roomId },
 }: Route.ComponentProps) {
     const { room, users } = useRoom(roomId);
@@ -57,13 +66,21 @@ export default function VoteCollect({
     }
 
     return (
-        <main className="container mx-auto p-4 min-h-screen">
-            <VotingHeader room={room} />
+        <>
             <div className="flex flex-col lg:flex-row gap-8">
-                <div className="flex flex-col w-full">
-                    <VotingCardList room={room} />
-                    <VotingActionList room={room} />
-                </div>
+                <Card className="flex flex-col w-full pt-6">
+                    <CardHeader>
+                        <CardTitle>
+                            <TypographyH2>Cast Your Vote</TypographyH2>
+                        </CardTitle>
+                        <CardDescription>Room ID: {roomId}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <VotingCardList room={room} disabled={isObserver} />
+                        <Separator className="my-6" />
+                        <VotingActionList room={room} />
+                    </CardContent>
+                </Card>
                 <VotingUserList>
                     {users?.map((user) => {
                         const isMyself = user.id === currentUserId;
@@ -78,6 +95,6 @@ export default function VoteCollect({
                     })}
                 </VotingUserList>
             </div>
-        </main>
+        </>
     );
 }

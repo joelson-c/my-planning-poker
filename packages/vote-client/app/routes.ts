@@ -7,7 +7,7 @@ import {
 
 export default [
     index('./features/room-create/index.tsx'),
-    route('/join/:roomId', './features/room-join/index.tsx'),
+    route('/join/:roomId?', './features/room-join/index.tsx'),
 
     ...prefix('/room/:roomId', [
         index('./features/vote-collect/index.tsx'),

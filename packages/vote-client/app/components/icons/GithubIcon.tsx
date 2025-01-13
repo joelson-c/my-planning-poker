@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 
-export function Github(props: ComponentProps<'svg'>) {
+export function GithubIcon(props: ComponentProps<'svg'>) {
     return (
         <svg
             role="img"
