@@ -63,16 +63,13 @@ export async function action({ request, context }: Route.ActionArgs) {
 
 export default function RoomCreate({
     loaderData: { sessionError, prevNickname },
-    actionData,
 }: Route.ComponentProps) {
-    const { nicknameTaken } = actionData || {};
     useSessionErrorToast(sessionError);
 
     return (
         <LoginCard title="Create a Room">
             <div className="flex flex-col gap-4">
                 <LoginForm
-                    nicknameTaken={nicknameTaken}
                     prevNickname={prevNickname}
                     schema={roomCreateSchema}
                 />

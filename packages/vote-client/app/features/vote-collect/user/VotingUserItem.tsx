@@ -11,7 +11,7 @@ interface VotingUserItemProps {
 export function VotingUserItem({ user, isMyself }: VotingUserItemProps) {
     return (
         <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 flex-grow">
+            <div className="flex items-center gap-2 flex-grow">
                 <Avatar>
                     <AvatarFallback>{user.nickname.charAt(0)}</AvatarFallback>
                 </Avatar>
@@ -19,7 +19,7 @@ export function VotingUserItem({ user, isMyself }: VotingUserItemProps) {
                     {user.nickname} {user.observer && <>(Observer)</>}
                 </span>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
                 {!isMyself && <VotingUserActions user={user} />}
                 <span
                     className={cn(

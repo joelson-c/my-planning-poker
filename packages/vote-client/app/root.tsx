@@ -1,7 +1,18 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import type { PropsWithChildren } from 'react';
+import type { Route } from './+types/root';
+import {
+    isRouteErrorResponse,
+    Links,
+    Meta,
+    Outlet,
+    Scripts,
+    ScrollRestoration,
+} from 'react-router';
 import { Toaster } from './components/ui/toaster';
 import styles from './tailwind.css?url';
+import { UnauthorizedError as UnauthorizedErrorComponent } from './components/errors/UnauthorizedError';
+import { GenericError } from './components/errors/GenericError';
+import { Header } from './components/Header';
 
 export function links() {
     return [
@@ -19,6 +30,15 @@ export function links() {
     ];
 }
 
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+    const isAuthError = isRouteErrorResponse(error) && error.status === 401;
+    if (isAuthError) {
+        return <UnauthorizedErrorComponent />;
+    }
+
+    return <GenericError />;
+}
+
 export function Layout({ children }: PropsWithChildren) {
     return (
         <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
@@ -33,14 +53,10 @@ export function Layout({ children }: PropsWithChildren) {
             </head>
             <body>
                 <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-                    <header className="p-4 bg-white dark:bg-gray-800 shadow">
-                        <div className="container mx-auto flex justify-between items-center">
-                            <h1 className="text-2xl font-bold">
-                                Planning Poker
-                            </h1>
-                        </div>
-                    </header>
-                    <main className="container mx-auto p-4">{children}</main>
+                    <Header />
+                    <main className="container mx-auto pb-4 sm:pb-0">
+                        {children}
+                    </main>
                 </div>
                 <ScrollRestoration />
                 <Scripts />

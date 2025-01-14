@@ -17,11 +17,11 @@ func init() {
 			{
 				Label:       "/api/vote/collections/voteRooms/",
 				Duration:    5,
-				MaxRequests: 10,
+				MaxRequests: 20,
 			},
 			{
 				Label:       "/api/vote/",
-				Duration:    60,
+				Duration:    20,
 				MaxRequests: 5,
 			},
 			{

@@ -1,13 +1,9 @@
 import type { Route } from './+types';
 import { data, redirect } from 'react-router';
 import { commitSession, getSession } from '~/lib/session.server';
-import { VotingActionList } from './VotingActionList';
-import { VotingCardList } from './card/VotingCardList';
 import { VotingUserList } from './user/VotingUserList';
 import { useRoom } from '~/lib/useRoom';
 import { getCurrentUser } from '~/lib/user.server';
-import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
-import { VotingUserItem } from './user/VotingUserItem';
 import { useHeartbeat } from '~/lib/useHeartbeat';
 import {
     Card,
@@ -16,8 +12,8 @@ import {
     CardHeader,
     CardTitle,
 } from '~/components/ui/card';
-import { Separator } from '~/components/ui/separator';
 import { TypographyH2 } from '~/components/ui/typography';
+import { VotingCard } from './card/VotingCard';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];
@@ -26,11 +22,12 @@ export function meta() {
 export async function loader({
     request,
     context: { backend },
+    params: { roomId },
 }: Route.LoaderArgs) {
     const session = await getSession(request.headers.get('Cookie'));
     const currentUser = await getCurrentUser(backend);
     if (!currentUser) {
-        throw new UnauthorizedError();
+        return redirect(`/join/${roomId}`);
     }
 
     const roomWithStateOnly = await backend
@@ -61,14 +58,10 @@ export default function VoteCollect({
     const { room, users } = useRoom(roomId);
     useHeartbeat();
 
-    if (!room) {
-        return <p>Loading..</p>;
-    }
-
     return (
         <>
-            <div className="flex flex-col lg:flex-row gap-8">
-                <Card className="flex flex-col w-full pt-6">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+                <Card className="flex flex-col w-full">
                     <CardHeader>
                         <CardTitle>
                             <TypographyH2>Cast Your Vote</TypographyH2>
@@ -76,24 +69,20 @@ export default function VoteCollect({
                         <CardDescription>Room ID: {roomId}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <VotingCardList room={room} disabled={isObserver} />
-                        <Separator className="my-6" />
-                        <VotingActionList room={room} />
+                        <VotingCard room={room} disabled={isObserver} />
                     </CardContent>
                 </Card>
-                <VotingUserList>
-                    {users?.map((user) => {
-                        const isMyself = user.id === currentUserId;
-
-                        return (
-                            <VotingUserItem
-                                key={user.id}
-                                user={user}
-                                isMyself={isMyself}
-                            />
-                        );
-                    })}
-                </VotingUserList>
+                <Card className="w-full lg:w-1/3">
+                    <CardHeader>
+                        <CardTitle>Users in Room</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <VotingUserList
+                            users={users}
+                            currentUserId={currentUserId}
+                        />
+                    </CardContent>
+                </Card>
             </div>
         </>
     );

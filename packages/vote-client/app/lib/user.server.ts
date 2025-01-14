@@ -1,5 +1,5 @@
-import { ClientResponseError } from 'pocketbase';
 import type { Backend } from 'server/backend';
+import { ClientResponseError } from 'pocketbase';
 
 export async function getCurrentUser(backend: Backend) {
     if (

@@ -2,32 +2,14 @@ import type { RoomJoinShema } from './roomFormSchema';
 import { data } from 'react-router';
 import { ClientResponseError } from 'pocketbase';
 import { authWithRoomAndUserId, type Backend } from 'server/backend';
-import { NicknameTakenError } from './errors/NicknameTakenError';
 import { commitSession, type AppSession } from './session.server';
 
 export async function createVoteUser(
     backend: Backend,
     joinData: RoomJoinShema,
 ) {
-    let user;
-    try {
-        user = await authWithRoomAndUserId(backend, joinData);
-    } catch (error) {
-        if (!(error instanceof ClientResponseError)) {
-            throw error;
-        }
-
-        const isNicknameTaken =
-            typeof error.response.data?.nickname === 'object';
-
-        if (isNicknameTaken) {
-            throw new NicknameTakenError();
-        }
-
-        throw error;
-    }
-
-    return user.record;
+    const { record } = await authWithRoomAndUserId(backend, joinData);
+    return record;
 }
 
 export async function handleAuthError(error: unknown, session: AppSession) {
@@ -40,22 +22,15 @@ export async function handleAuthError(error: unknown, session: AppSession) {
         );
     }
 
-    const shouldNotThrow =
-        error instanceof ClientResponseError ||
-        error instanceof NicknameTakenError;
+    const shouldNotThrow = error instanceof ClientResponseError;
 
     if (!shouldNotThrow) {
         throw error;
     }
 
-    return data(
-        {
-            nicknameTaken: error instanceof NicknameTakenError,
+    return data(null, {
+        headers: {
+            'Set-Cookie': await commitSession(session),
         },
-        {
-            headers: {
-                'Set-Cookie': await commitSession(session),
-            },
-        },
-    );
+    });
 }

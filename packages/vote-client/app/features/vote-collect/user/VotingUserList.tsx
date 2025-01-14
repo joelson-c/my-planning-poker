@@ -1,21 +1,30 @@
-import type { ReactNode } from 'react';
-import { Card, CardContent } from '~/components/ui/card';
+import type { User } from '~/types/user';
+import { VotingUserItem } from './VotingUserItem';
+import { VotingUserListSkeleton } from './VotingUserListSkeleton';
 
 interface VotingUserItemProps {
-    children: ReactNode;
+    users?: User[] | null;
+    currentUserId: string;
 }
 
-export function VotingUserList({ children }: VotingUserItemProps) {
+export function VotingUserList({ users, currentUserId }: VotingUserItemProps) {
+    if (!users) {
+        return <VotingUserListSkeleton />;
+    }
+
     return (
-        <div className="w-full lg:w-1/3">
-            <Card>
-                <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">
-                        Users in Room
-                    </h2>
-                    <div className="space-y-4">{children}</div>
-                </CardContent>
-            </Card>
+        <div className="space-y-4">
+            {users?.map((user) => {
+                const isMyself = user.id === currentUserId;
+
+                return (
+                    <VotingUserItem
+                        key={user.id}
+                        user={user}
+                        isMyself={isMyself}
+                    />
+                );
+            })}
         </div>
     );
 }

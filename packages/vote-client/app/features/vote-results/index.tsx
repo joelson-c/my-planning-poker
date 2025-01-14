@@ -8,6 +8,7 @@ import { useRoom } from '~/lib/useRoom';
 import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
 import { getCurrentUser } from '~/lib/user.server';
 import { redirect } from 'react-router';
+import { FullPageLoader } from '~/components/FullPageLoader';
 
 export function meta() {
     return [{ title: 'Planning Poker Results' }];
@@ -82,7 +83,7 @@ export default function VoteResults({
     const { room } = useRoom(roomId);
 
     if (!room) {
-        return <p>Loading..</p>;
+        return <FullPageLoader />;
     }
 
     return (

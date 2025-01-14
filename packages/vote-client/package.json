@@ -29,7 +29,6 @@
         "express": "^4.21.2",
         "helmet": "^8.0.0",
         "isbot": "^5.1.19",
-        "jsonwebtoken": "^9.0.2",
         "lucide-react": "^0.469.0",
         "morgan": "^1.10.0",
         "pocketbase": "^0.24.0",
@@ -39,7 +38,6 @@
         "react-router": "^7.1.1",
         "react-router-dom": "^7.1.1",
         "remix-utils": "^8.0.0",
-        "source-map-support": "^0.5.21",
         "tailwind-merge": "^2.6.0",
         "zod": "^3.24.1"
     },

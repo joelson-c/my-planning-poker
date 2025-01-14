@@ -16,18 +16,10 @@ import { Button } from '~/components/ui/button';
 interface LoginFormProps {
     roomId?: string;
     prevNickname?: string;
-    nicknameTaken?: boolean;
     schema: typeof roomJoinSchema | typeof roomCreateSchema;
 }
 
-let hasAddedServerErrors = false;
-
-export function LoginForm({
-    roomId,
-    prevNickname,
-    nicknameTaken,
-    schema,
-}: LoginFormProps) {
+export function LoginForm({ roomId, prevNickname, schema }: LoginFormProps) {
     const submit = useSubmit();
 
     const {
@@ -35,7 +27,6 @@ export function LoginForm({
         handleSubmit,
         control,
         formState: { errors },
-        setError,
     } = useForm<RoomCreateSchema & RoomJoinShema>({
         resolver: zodResolver(schema),
         criteriaMode: 'all',
@@ -50,17 +41,7 @@ export function LoginForm({
         event,
     ) => {
         await submit(event!.target);
-        hasAddedServerErrors = false;
     };
-
-    if (nicknameTaken && errors.nickname?.type !== 'nickname-taken') {
-        setError('nickname', {
-            type: 'nickname-taken',
-            message: 'The nickname is already taken.',
-        });
-
-        hasAddedServerErrors = true;
-    }
 
     const isJoining = schema === roomJoinSchema;
 

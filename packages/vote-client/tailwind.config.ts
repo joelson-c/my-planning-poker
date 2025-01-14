@@ -6,6 +6,12 @@ export default {
     content: ['./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}'],
     theme: {
         extend: {
+            container: {
+                padding: {
+                    DEFAULT: '1rem',
+                    sm: '0',
+                },
+            },
             fontFamily: {
                 sans: ['"Inter"', ...defaultTheme.fontFamily.sans],
             },

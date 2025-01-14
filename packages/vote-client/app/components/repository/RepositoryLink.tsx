@@ -19,7 +19,7 @@ export function RepositoryLink({
                 target="_blank"
                 rel="noreferrer"
             >
-                <GithubIcon className="mr-2 h-4 w-4" />
+                <GithubIcon className="dark:text-white mr-2 h-4 w-4" />
                 View on GitHub
             </a>
         </Button>
