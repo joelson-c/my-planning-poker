@@ -1,9 +1,6 @@
 import type { Route } from './+types';
-import { data, redirect } from 'react-router';
-import { commitSession, getSession } from '~/lib/session.server';
+import { redirect } from 'react-router';
 import { VotingUserList } from './user/VotingUserList';
-import { useRoom } from '~/lib/useRoom';
-import { getCurrentUser } from '~/lib/user.server';
 import { useHeartbeat } from '~/lib/useHeartbeat';
 import {
     Card,
@@ -14,23 +11,23 @@ import {
 } from '~/components/ui/card';
 import { TypographyH2 } from '~/components/ui/typography';
 import { VotingCard } from './card/VotingCard';
+import { backendClient } from '~/lib/backend/client';
+import { useRoom } from '~/lib/useRoom';
+import { useRoomUsers } from '~/lib/useRoomUsers';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];
 }
 
-export async function loader({
-    request,
-    context: { backend },
+export async function clientLoader({
     params: { roomId },
-}: Route.LoaderArgs) {
-    const session = await getSession(request.headers.get('Cookie'));
-    const currentUser = await getCurrentUser(backend);
+}: Route.ClientLoaderArgs) {
+    const currentUser = backendClient.authStore.record;
     if (!currentUser) {
         return redirect(`/join/${roomId}`);
     }
 
-    const roomWithStateOnly = await backend
+    const roomWithStateOnly = await backendClient
         .collection('voteRooms')
         .getOne(currentUser.room, { fields: 'state, id' });
 
@@ -38,24 +35,18 @@ export async function loader({
         return redirect(`/room/${roomWithStateOnly.id}/result`);
     }
 
-    return data(
-        {
-            currentUserId: currentUser.id,
-            isObserver: currentUser.observer,
-        },
-        {
-            headers: {
-                'Set-Cookie': await commitSession(session),
-            },
-        },
-    );
+    return {
+        currentUserId: currentUser.id,
+        isObserver: currentUser.observer,
+    };
 }
 
 export default function VoteCollect({
     loaderData: { currentUserId, isObserver },
     params: { roomId },
 }: Route.ComponentProps) {
-    const { room, users } = useRoom(roomId);
+    const room = useRoom(roomId);
+    const users = useRoomUsers(roomId, currentUserId);
     useHeartbeat();
 
     return (

@@ -4,23 +4,11 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import autoprefixer from 'autoprefixer';
 import tailwindcss from 'tailwindcss';
 
-export default defineConfig(({ isSsrBuild }) => ({
-    build: {
-        target: 'esnext',
-        rollupOptions: isSsrBuild
-            ? {
-                  input: './server/app.ts',
-              }
-            : undefined,
-    },
+export default defineConfig({
     css: {
         postcss: {
             plugins: [tailwindcss, autoprefixer],
         },
     },
-    plugins: [
-        /* devServer({ entry: './server/app.ts', adapter }), */
-        reactRouter(),
-        tsconfigPaths(),
-    ],
-}));
+    plugins: [reactRouter(), tsconfigPaths()],
+});

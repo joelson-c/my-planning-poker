@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+
+FROM node:lts AS install
+WORKDIR /usr/src/app
+RUN --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=package-lock.json,target=package-lock.json \
+    --mount=type=bind,source=packages/vote-client/package.json,target=packages/vote-client/package.json \
+    --mount=type=bind,source=.husky/install.mjs,target=.husky/install.mjs \
+    --mount=type=cache,target=/root/.npm \
+    npm ci
+
+FROM node:lts-alpine AS release
+WORKDIR /usr/src/app
+COPY --from=install --chown=node /usr/src/app/node_modules node_modules
+COPY --chown=node packages/vote-client ./packages/vote-client
+COPY --chown=node package.json package-lock.json tsconfig.json ./
+
+WORKDIR /usr/src/app/packages/vote-client
+RUN if [ "$NODE_ENV" = "production" ]; then \
+    npm run build && npm prune --omit-dev; \
+    fi
+
+USER node
+ENV HOST=0.0.0.0
+ENV PORT=5173
+ENV NODE_ENV=production
+EXPOSE 5173
+
+ENTRYPOINT [ "npm", "start" ]

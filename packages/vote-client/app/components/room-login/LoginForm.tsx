@@ -15,7 +15,7 @@ import { Button } from '~/components/ui/button';
 
 interface LoginFormProps {
     roomId?: string;
-    prevNickname?: string;
+    prevNickname?: string | null;
     schema: typeof roomJoinSchema | typeof roomCreateSchema;
 }
 

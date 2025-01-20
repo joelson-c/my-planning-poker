@@ -31,6 +31,8 @@ export function links() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+    console.error(error);
+
     const isAuthError = isRouteErrorResponse(error) && error.status === 401;
     if (isAuthError) {
         return <UnauthorizedErrorComponent />;

@@ -1,57 +1,44 @@
-import type { Room, RoomState } from '~/types/room';
-import type { User } from '~/types/user';
-import { useEffect, useRef } from 'react';
-import { useRevalidator } from 'react-router';
-import { useDecodedEvent } from './useEventSource';
-import { useEventSource } from 'remix-utils/sse/react';
+import type { Room } from '~/types/room';
+import { useCallback, useSyncExternalStore } from 'react';
+import { backendClient } from './backend/client';
+import { ClientResponseError } from 'pocketbase';
+
+let roomData: Room | undefined = undefined;
+
+function subscribeToRoom(roomId: string, onStoreChange: VoidFunction) {
+    backendClient
+        .collection('voteRooms')
+        .getOne(roomId)
+        .then((room) => {
+            roomData = room;
+            onStoreChange();
+        })
+        .catch((error) => {
+            if (error instanceof ClientResponseError && !error.isAbort) {
+                throw error;
+            }
+        });
+
+    backendClient.collection('voteRooms').subscribe(roomId, (event) => {
+        roomData = event.record;
+        onStoreChange();
+    });
+
+    return () => {
+        backendClient
+            .collection('voteRooms')
+            .unsubscribe(roomId)
+            .catch(() => {
+                // DO NOTHING
+            });
+    };
+}
 
 export function useRoom(roomId: string) {
-    const realtimeUrl = `/room/${roomId}/realtime`;
-    const revalidator = useRevalidator();
-    const prevRoomState = useRef<RoomState | null>(null);
+    const subscribe = useCallback(
+        (onStoreChange: VoidFunction) => subscribeToRoom(roomId, onStoreChange),
+        [roomId],
+    );
 
-    const disconnect = useEventSource(realtimeUrl, {
-        event: 'disconnect',
-    });
-
-    const room = useDecodedEvent<Room>(realtimeUrl, {
-        event: 'room',
-        enabled: disconnect === null,
-    });
-
-    const users = useDecodedEvent<User[]>(realtimeUrl, {
-        event: 'users',
-        enabled: disconnect === null,
-    });
-
-    useEffect(() => {
-        if (!disconnect) {
-            return;
-        }
-
-        revalidator.revalidate();
-    }, [disconnect, revalidator]);
-
-    useEffect(() => {
-        if (!room) {
-            return;
-        }
-
-        if (!prevRoomState.current) {
-            prevRoomState.current = room.state;
-            return;
-        }
-
-        if (prevRoomState.current === room.state) {
-            return;
-        }
-
-        prevRoomState.current = room.state;
-        revalidator.revalidate();
-    }, [room, revalidator]);
-
-    return {
-        room,
-        users,
-    };
+    return useSyncExternalStore(subscribe, () => roomData);
 }

@@ -5,38 +5,29 @@ import { ResultIndividualVotes } from './ResultIndividualVotes';
 import { ResultSummary } from './ResultSummary';
 import { ResultVoteDistribution } from './ResultVoteDistribution';
 import { useRoom } from '~/lib/useRoom';
-import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
-import { getCurrentUser } from '~/lib/user.server';
-import { redirect } from 'react-router';
-import { FullPageLoader } from '~/components/FullPageLoader';
+import { redirect, useRevalidator } from 'react-router';
+import { getCurrentUserOrThrow } from '~/lib/backend/auth';
+import { backendClient } from '~/lib/backend/client';
+import { useEffect } from 'react';
 
 export function meta() {
     return [{ title: 'Planning Poker Results' }];
 }
 
-export async function loader({ params, context }: Route.LoaderArgs) {
-    const { backend } = context;
-    const { roomId } = params;
-
-    if (!backend.authStore.isValid) {
-        throw new UnauthorizedError();
-    }
-
-    const currentUser = await getCurrentUser(backend);
-    if (!currentUser) {
-        throw new UnauthorizedError();
-    }
-
-    const roomWithStateOnly = await backend
+export async function clientLoader({
+    params: { roomId },
+}: Route.ClientLoaderArgs) {
+    const currentUser = getCurrentUserOrThrow();
+    const room = await backendClient
         .collection('voteRooms')
-        .getOne(currentUser.room, { fields: 'state, id' });
+        .getOne(currentUser.room);
 
-    if (roomWithStateOnly.state === 'VOTING') {
-        return redirect(`/room/${roomWithStateOnly.id}`);
+    if (room.state === 'VOTING') {
+        return redirect(`/room/${room.id}`);
     }
 
-    const roomUsers = await backend.collection('voteUsers').getFullList({
-        filter: backend.filter('room={:roomId}', { roomId }),
+    const roomUsers = await backendClient.collection('voteUsers').getFullList({
+        filter: backendClient.filter('room={:roomId}', { roomId }),
     });
 
     const userWithNonEmptyVotes = roomUsers.filter(
@@ -66,6 +57,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
     const mediam = total > 0 ? allVotesValues.sort()[Math.floor(total / 2)] : 0;
 
     return {
+        room,
         voteResult: {
             distribution,
             total,
@@ -77,14 +69,20 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 }
 
 export default function VoteResults({
-    loaderData: { voteResult },
+    loaderData: { voteResult, room },
     params: { roomId },
 }: Route.ComponentProps) {
-    const { room } = useRoom(roomId);
-
-    if (!room) {
-        return <FullPageLoader />;
-    }
+    const realtimeRoom = useRoom(roomId);
+    const revalidator = useRevalidator();
+    useEffect(() => {
+        if (
+            realtimeRoom &&
+            realtimeRoom.state === 'VOTING' &&
+            revalidator.state !== 'idle'
+        ) {
+            revalidator.revalidate();
+        }
+    }, [realtimeRoom, revalidator]);
 
     return (
         <>

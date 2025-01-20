@@ -20,11 +20,6 @@ func init() {
 				MaxRequests: 20,
 			},
 			{
-				Label:       "/api/vote/",
-				Duration:    20,
-				MaxRequests: 5,
-			},
-			{
 				Label:       "/api/vote/collections/voteRooms/room-auth",
 				Duration:    3,
 				MaxRequests: 2,

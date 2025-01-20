@@ -1,6 +1,5 @@
 import type { User } from '~/types/user';
 import { CircleEllipsis } from 'lucide-react';
-import { useFetcher } from 'react-router';
 import { Button } from '~/components/ui/button';
 import {
     DropdownMenu,
@@ -8,18 +7,22 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
+import { backendClient } from '~/lib/backend/client';
 
 interface VotingUserActionsProps {
     user: User;
 }
 
 export function VotingUserActions({ user }: VotingUserActionsProps) {
-    const fetcher = useFetcher();
-
-    function onUserRemoveClick() {
-        fetcher.submit(
-            { target: user.id },
-            { action: `/room/${user.room}/remove-user`, method: 'POST' },
+    async function onUserRemoveClick() {
+        await backendClient.send(
+            `/api/vote/collections/voteRooms/remove-user`,
+            {
+                method: 'POST',
+                body: {
+                    target: user.id,
+                },
+            },
         );
     }
 

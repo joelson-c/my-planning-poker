@@ -1,8 +1,9 @@
 import type { Room } from '~/types/room';
-import { useFetcher } from 'react-router';
 import { Button } from '~/components/ui/button';
 import { toast } from '~/lib/useToast';
 import { Share2 } from 'lucide-react';
+import { backendClient } from '~/lib/backend/client';
+import { useRevalidator } from 'react-router';
 
 interface VotingActionsProps {
     room: Room;
@@ -29,13 +30,19 @@ async function copyRoomToClipboard(room: Room) {
 }
 
 export function VotingActionList({ room }: VotingActionsProps) {
-    const fetcher = useFetcher();
+    const revalidate = useRevalidator();
+
+    async function revealCards() {
+        await backendClient.collection('voteRooms').update(room.id, {
+            state: 'REVEAL',
+        });
+
+        revalidate.revalidate();
+    }
 
     return (
         <div className="flex justify-center space-x-6">
-            <fetcher.Form action={`/room/${room.id}/reveal`} method="POST">
-                <Button type="submit">Reveal Cards</Button>
-            </fetcher.Form>
+            <Button onClick={revealCards}>Reveal Cards</Button>
             <Button
                 onClick={() => copyRoomToClipboard(room)}
                 variant="secondary"

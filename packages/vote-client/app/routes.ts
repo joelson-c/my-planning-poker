@@ -12,13 +12,5 @@ export default [
     ...prefix('/room/:roomId', [
         index('./features/vote-collect/index.tsx'),
         route('result', './features/vote-results/index.tsx'),
-        // Actions
-        route('vote', './features/room-actions/vote.ts'),
-        route('realtime', './features/room-actions/realtime.ts'),
-        route('reveal', './features/room-actions/reveal.ts'),
-        route('reset', './features/room-actions/reset.ts'),
-        route('remove-user', './features/room-actions/removeUser.ts'),
     ]),
-
-    route('/heartbeat', './features/heartbeat/index.ts'),
 ] satisfies RouteConfig;

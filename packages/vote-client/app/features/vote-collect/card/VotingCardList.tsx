@@ -1,8 +1,9 @@
 import type { Room } from '~/types/room';
 import { useVotingCards } from '~/lib/useVotingCards';
 import { VotingCardItem } from './VotingCardItem';
-import { useFetcher } from 'react-router';
-import { Fragment, useRef } from 'react';
+import { Fragment, useOptimistic, useState } from 'react';
+import { getCurrentUserOrThrow } from '~/lib/backend/auth';
+import { backendClient } from '~/lib/backend/client';
 
 interface VotingActionsProps {
     room: Room;
@@ -11,41 +12,36 @@ interface VotingActionsProps {
 
 export function VotingCardList({ room, disabled }: VotingActionsProps) {
     const cards = useVotingCards(room.cardType);
-    const voteFetcher = useFetcher();
-    const formRef = useRef<HTMLFormElement>(null);
-    const valueInputRef = useRef<HTMLInputElement>(null);
+    const [selectedCard, setSelectedCard] = useState<string | undefined>();
+    const [optimisticCard, setOptimisticCard] = useOptimistic<
+        typeof selectedCard,
+        string
+    >(selectedCard, (_, newCard) => newCard);
 
-    const onCardSelected = (card: string) => {
-        if (!valueInputRef.current) {
-            return;
-        }
+    const onCardSelected = async (card: string) => {
+        setOptimisticCard(card);
+        const currentUser = getCurrentUserOrThrow();
+        const user = await backendClient
+            .collection('voteUsers')
+            .update(currentUser.id, {
+                vote: card,
+            });
 
-        valueInputRef.current.value = card;
-        voteFetcher.submit(formRef.current);
+        setSelectedCard(user?.vote);
     };
 
-    const selectedCard =
-        voteFetcher.data?.value ||
-        (voteFetcher.formData?.get('value') as string | undefined);
-
     return (
-        <voteFetcher.Form
-            action={`/room/${room.id}/vote`}
-            method="post"
-            ref={formRef}
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 lg:gap-4"
-        >
-            <input type="hidden" name="value" ref={valueInputRef} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 lg:gap-4">
             {cards.map((card) => (
                 <Fragment key={card}>
                     <VotingCardItem
                         value={card}
-                        selected={card === selectedCard}
+                        selected={card === optimisticCard}
                         onClick={() => onCardSelected(card)}
                         disabled={disabled}
                     />
                 </Fragment>
             ))}
-        </voteFetcher.Form>
+        </div>
     );
 }

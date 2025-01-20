@@ -11,7 +11,7 @@
         "dev:client": "bun run --filter @planningpoker/vote-client dev",
         "build:client": "bun run --filter @planningpoker/vote-client build",
         "preview:client": "bun run --filter @planningpoker/vote-client preview",
-        "prepare": "husky",
+        "prepare": "node .husky/install.mjs",
         "commit": "commit"
     },
     "author": "Joelson Carvalho",
@@ -25,7 +25,6 @@
         "@commitlint/config-lerna-scopes": "^19.5.0",
         "@commitlint/prompt-cli": "^19.5.0",
         "@faker-js/faker": "^9.0.3",
-        "@types/bun": "latest",
         "husky": "^9.1.6",
         "typescript": "^5.6.2"
     }
