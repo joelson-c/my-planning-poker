@@ -40,6 +40,9 @@ jobs:
               uses: docker/metadata-action@v5
               with:
                   images: ${{ env.REGISTRY }}/${{ matrix.image }}
+                  tags: |
+                      type=raw,value=latest,enable={{is_default_branch}}
+                      type=sha,enable=false
 
             - name: Build and push Docker image
               id: push
@@ -51,7 +54,7 @@ jobs:
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
                   cache-from: type=gha
-                  cache-to: type=gha
+                  cache-to: type=gha,mode=max
                   secrets: |
                       "session-secret=${{ secrets.SESSION_SECRET }}"
 
