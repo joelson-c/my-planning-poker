@@ -2,13 +2,9 @@ name: my-planning-poker
 
 services:
     frontend:
+        image: ghcr.io/joelson-c/planning-poker-frontend:main
         pull_policy: always
         restart: always
-        build:
-            context: .
-            dockerfile: .docker/Dockerfile.frontend
-            secrets:
-                - session-secret
         ports:
             - 80:80
             - 443:443
@@ -17,11 +13,9 @@ services:
             - caddy_config:/config
 
     realtime:
+        image: ghcr.io/joelson-c/planning-poker-frontend:main
         pull_policy: always
         restart: always
-        build:
-            context: ./packages/vote-realtime
-            dockerfile: ../../.docker/Dockerfile.realtime
         volumes:
             - pb_data:/var/www/app/pb_data
 
@@ -29,7 +23,3 @@ volumes:
     caddy_data:
     caddy_config:
     pb_data:
-
-secrets:
-    session-secret:
-        environment: SESSION_SECRET

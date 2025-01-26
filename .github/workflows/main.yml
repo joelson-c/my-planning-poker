@@ -50,6 +50,8 @@ jobs:
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
+                  secrets: |
+                      "session-secret=${{ secrets.SESSION_SECRET }}"
 
             - name: Generate artifact attestation
               uses: actions/attest-build-provenance@v2
