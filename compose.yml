@@ -2,7 +2,7 @@ name: my-planning-poker
 
 services:
     frontend:
-        image: ghcr.io/joelson-c/planning-poker-frontend:main
+        image: ghcr.io/joelson-c/planning-poker-frontend
         pull_policy: always
         restart: always
         ports:
@@ -13,7 +13,7 @@ services:
             - caddy_config:/config
 
     realtime:
-        image: ghcr.io/joelson-c/planning-poker-frontend:main
+        image: ghcr.io/joelson-c/planning-poker-realtime
         pull_policy: always
         restart: always
         volumes:
