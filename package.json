@@ -7,10 +7,10 @@
         "doc": "docs"
     },
     "scripts": {
-        "lint:client": "bun run --filter @planningpoker/vote-client lint",
-        "dev:client": "bun run --filter @planningpoker/vote-client dev",
-        "build:client": "bun run --filter @planningpoker/vote-client build",
-        "preview:client": "bun run --filter @planningpoker/vote-client preview",
+        "lint:client": "npm run -w @planningpoker/vote-client lint",
+        "dev:client": "npm run -w @planningpoker/vote-client dev",
+        "build:client": "npm run -w @planningpoker/vote-client build",
+        "preview:client": "npm run -w @planningpoker/vote-client preview",
         "prepare": "node .husky/install.mjs",
         "commit": "commit"
     },

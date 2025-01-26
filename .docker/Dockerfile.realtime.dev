@@ -10,15 +10,16 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 
 COPY . .
 
+ENV GOCACHE=/root/.cache/go-build
 RUN --mount=type=cache,target="/root/.cache/go-build" \
     --mount=type=cache,target=/go/pkg/mod/ \
-    CGO_ENABLED=0 GOOS=linux GOCACHE=/root/.cache/go-build \
-    go build -o /usr/local/bin/pocketbase
+    CGO_ENABLED=0 GOOS=linux go build -o /usr/local/bin/pocketbase
 
-FROM gcr.io/distroless/base-debian12 AS release
+FROM debian:12 AS release
+WORKDIR /usr/src/app
 COPY --from=build /usr/local/bin/pocketbase /usr/local/bin/pocketbase
-WORKDIR /var/www/app
+RUN pocketbase superuser upsert realtime@example.com realtime
 
-VOLUME /var/www/app/pb_data
+VOLUME /usr/src/app/pb_data
 EXPOSE 8090
-ENTRYPOINT ["pocketbase", "serve", "--http=0.0.0.0:8090"]
+ENTRYPOINT ["pocketbase", "serve", "--http=0.0.0.0:8090", "--dev"]

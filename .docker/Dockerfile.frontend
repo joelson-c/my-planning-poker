@@ -7,23 +7,19 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=packages/vote-client/package.json,target=packages/vote-client/package.json \
     --mount=type=bind,source=.husky/install.mjs,target=.husky/install.mjs \
     --mount=type=cache,target=/root/.npm \
-    npm ci
+    npm ci --include=dev
 
-FROM node:lts-alpine AS release
-WORKDIR /usr/src/app
-COPY --from=install --chown=node /usr/src/app/node_modules node_modules
-COPY --chown=node packages/vote-client ./packages/vote-client
-COPY --chown=node package.json package-lock.json tsconfig.json ./
-
-WORKDIR /usr/src/app/packages/vote-client
-RUN if [ "$NODE_ENV" = "production" ]; then \
-    npm run build && npm prune --omit-dev; \
-    fi
-
-USER node
-ENV HOST=0.0.0.0
-ENV PORT=5173
+FROM install AS build
 ENV NODE_ENV=production
-EXPOSE 5173
+ARG VITE_BACKEND_ENDPOINT=https://realtime.myplanningpoker.dev
+ENV VITE_BACKEND_ENDPOINT=$VITE_BACKEND_ENDPOINT
 
-ENTRYPOINT [ "npm", "start" ]
+COPY packages/vote-client ./packages/vote-client
+COPY package.json package-lock.json tsconfig.json ./
+RUN --mount=type=secret,id=session-secret,env=VITE_SESSION_SECRET \
+    --mount=type=cache,target=packages/vote-client/node_modules/.vite \
+    npm run build:client
+
+FROM caddy:2.9-alpine AS release
+COPY .docker/caddy/conf/Caddyfile /etc/caddy/Caddyfile
+COPY --from=build /usr/src/app/packages/vote-client/build/client /srv

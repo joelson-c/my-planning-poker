@@ -1,0 +1,42 @@
+name: my-planning-poker-dev
+
+services:
+    frontend:
+        image: node:lts
+        user: node
+        working_dir: /usr/src/app/packages/vote-client
+        volumes:
+            - ./:/usr/src/app
+        entrypoint: ['npm', 'run', 'dev', '--', '--host']
+        environment:
+            - VITE_BACKEND_ENDPOINT=https://localhost/realtime
+
+    realtime:
+        build:
+            context: ./packages/vote-realtime
+            dockerfile: ../../.docker/Dockerfile.realtime.dev
+        volumes:
+            - pb_data:/usr/src/app/pb_data
+            - ./packages/vote-realtime/migrations:/usr/src/app/migrations
+        develop:
+            watch:
+                - action: rebuild
+                  path: ./packages/vote-realtime
+                  target: /usr/src/app
+                  ignore:
+                      - migrations
+
+    proxy:
+        image: caddy:2.9
+        volumes:
+            - caddy_data:/data
+            - caddy_config:/config
+            - ./.docker/caddy/conf-dev:/etc/caddy
+        ports:
+            - 80:80
+            - 443:443
+
+volumes:
+    caddy_data:
+    caddy_config:
+    pb_data:

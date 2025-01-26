@@ -1,45 +1,35 @@
+name: my-planning-poker
+
 services:
     frontend:
-        image: node:lts
-        working_dir: /usr/src/app/packages/vote-client
-        volumes:
-            - ./:/usr/src/app
-        entrypoint: ['npm', 'run', 'dev', '--', '--host']
-        environment:
-            - VITE_BACKEND_ENDPOINT=https://localhost/realtime
-
-    realtime:
+        pull_policy: always
+        restart: always
         build:
-            context: ./packages/vote-realtime
-            dockerfile: ../../.docker/Dockerfile.realtime
-        working_dir: /usr/src/app
-        entrypoint: ['/bin/sh', '-c']
-        volumes:
-            - pb_data:/usr/src/app/pb_data
-            - ./packages/vote-realtime/migrations:/usr/src/app/migrations
-        command:
-            - |
-                pocketbase superuser upsert realtime@realtime.com realtime
-                pocketbase serve --http 0.0.0.0:8090 --dev
-        develop:
-            watch:
-                - action: rebuild
-                  path: ./packages/vote-realtime
-                  target: /usr/src/app
-                  ignore:
-                      - migrations
-    proxy:
-        image: caddy:2.8
-        volumes:
-            - caddy_data:/data
-            - caddy_config:/config
-            - ./.docker/caddy/conf-dev:/etc/caddy
+            context: .
+            dockerfile: .docker/Dockerfile.frontend
+            secrets:
+                - session-secret
         ports:
             - 80:80
             - 443:443
-            - 443:443/udp
+        volumes:
+            - caddy_data:/data
+            - caddy_config:/config
+
+    realtime:
+        pull_policy: always
+        restart: always
+        build:
+            context: ./packages/vote-realtime
+            dockerfile: ../../.docker/Dockerfile.realtime
+        volumes:
+            - pb_data:/var/www/app/pb_data
 
 volumes:
     caddy_data:
     caddy_config:
     pb_data:
+
+secrets:
+    session-secret:
+        environment: SESSION_SECRET

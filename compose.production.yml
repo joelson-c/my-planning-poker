@@ -1,7 +1,0 @@
-services:
-    frontend:
-        environment:
-            - NODE_ENV=production
-            - VITE_BACKEND_ENDPOINT=http://realtime:8090
-        develop:
-            watch: !reset []
