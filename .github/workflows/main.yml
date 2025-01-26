@@ -16,8 +16,10 @@ jobs:
                 include:
                     - dockerfile: ./docker/Dockerfile.frontend
                       image: ${{ github.actor }}/planning-poker-frontend
+                      context: .
                     - dockerfile: ./docker/Dockerfile.realtime
                       image: ${{ github.actor }}/planning-poker-realtime
+                      context: ./packages/vote-realtime
         permissions:
             contents: read
             packages: write
@@ -43,8 +45,8 @@ jobs:
               id: push
               uses: docker/build-push-action@v6
               with:
-                  context: .
-                  file: ./Dockerfile
+                  context: ${{ matrix.context }}
+                  file: ${{ matrix.image }}
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
