@@ -1,0 +1,15 @@
+myplanningpoker.dev {
+	root * /srv
+	encode gzip
+	try_files {path} /index.html
+	header /index.html Cache-Control "public, max-age=0, must-revalidate"
+	file_server
+}
+
+realtime.myplanningpoker.dev {
+	reverse_proxy realtime:8090 {
+		transport http {
+			read_timeout 360s
+		}
+	}
+}

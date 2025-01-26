@@ -1,0 +1,25 @@
+# syntax=docker/dockerfile:1
+
+FROM golang:1.23 AS build
+
+WORKDIR /usr/src/app
+COPY go.mod go.sum ./
+
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    go mod download && go mod verify
+
+COPY . .
+
+ENV GOCACHE=/root/.cache/go-build
+RUN --mount=type=cache,target="/root/.cache/go-build" \
+    --mount=type=cache,target=/go/pkg/mod/ \
+    CGO_ENABLED=0 GOOS=linux go build -o /usr/local/bin/pocketbase
+
+FROM debian:12 AS release
+WORKDIR /usr/src/app
+COPY --from=build /usr/local/bin/pocketbase /usr/local/bin/pocketbase
+RUN pocketbase superuser upsert realtime@example.com realtime
+
+VOLUME /usr/src/app/pb_data
+EXPOSE 8090
+ENTRYPOINT ["pocketbase", "serve", "--http=0.0.0.0:8090", "--dev"]

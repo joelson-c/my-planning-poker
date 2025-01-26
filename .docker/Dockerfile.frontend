@@ -1,0 +1,25 @@
+# syntax=docker/dockerfile:1
+
+FROM node:lts AS install
+WORKDIR /usr/src/app
+RUN --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=package-lock.json,target=package-lock.json \
+    --mount=type=bind,source=packages/vote-client/package.json,target=packages/vote-client/package.json \
+    --mount=type=bind,source=.husky/install.mjs,target=.husky/install.mjs \
+    --mount=type=cache,target=/root/.npm \
+    npm ci --include=dev
+
+FROM install AS build
+ENV NODE_ENV=production
+ARG VITE_BACKEND_ENDPOINT=https://realtime.myplanningpoker.dev
+ENV VITE_BACKEND_ENDPOINT=$VITE_BACKEND_ENDPOINT
+
+COPY packages/vote-client ./packages/vote-client
+COPY package.json package-lock.json tsconfig.json ./
+RUN --mount=type=secret,id=session-secret,env=VITE_SESSION_SECRET \
+    --mount=type=cache,target=packages/vote-client/node_modules/.vite \
+    npm run build:client
+
+FROM caddy:2.9-alpine AS release
+COPY .docker/caddy/conf/Caddyfile /etc/caddy/Caddyfile
+COPY --from=build /usr/src/app/packages/vote-client/build/client /srv

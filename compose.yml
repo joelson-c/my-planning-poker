@@ -1,0 +1,35 @@
+name: my-planning-poker
+
+services:
+    frontend:
+        pull_policy: always
+        restart: always
+        build:
+            context: .
+            dockerfile: .docker/Dockerfile.frontend
+            secrets:
+                - session-secret
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - caddy_data:/data
+            - caddy_config:/config
+
+    realtime:
+        pull_policy: always
+        restart: always
+        build:
+            context: ./packages/vote-realtime
+            dockerfile: ../../.docker/Dockerfile.realtime
+        volumes:
+            - pb_data:/var/www/app/pb_data
+
+volumes:
+    caddy_data:
+    caddy_config:
+    pb_data:
+
+secrets:
+    session-secret:
+        environment: SESSION_SECRET
