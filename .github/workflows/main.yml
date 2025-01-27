@@ -3,6 +3,7 @@ name: Create and publish Docker images
 on:
     push:
         branches: ['main']
+        tags: ['v*']
 
 env:
     REGISTRY: ghcr.io
@@ -41,8 +42,8 @@ jobs:
               with:
                   images: ${{ env.REGISTRY }}/${{ matrix.image }}
                   tags: |
-                      type=raw,value=latest,enable={{is_default_branch}}
-                      type=sha,enable=false
+                      type=raw,value=latest,enable={{is_default_branch}},priority=200
+                      type=semver,pattern={{major}}.{{minor}},priority=100
 
             - name: Build and push Docker image
               id: push
@@ -61,4 +62,3 @@ jobs:
               with:
                   subject-name: ${{ env.REGISTRY }}/${{ matrix.image }}
                   subject-digest: ${{ steps.push.outputs.digest }}
-                  push-to-registry: true
