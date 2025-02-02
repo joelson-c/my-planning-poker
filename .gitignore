@@ -24,4 +24,4 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-certbot/conf/live/socket.myplanningpoker.dev/*
+certbot

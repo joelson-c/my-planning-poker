@@ -1,4 +1,4 @@
-myplanningpoker.dev {
+{$DOMAIN} {
 	root * /srv
 	encode gzip
 	try_files {path} /index.html
@@ -6,7 +6,27 @@ myplanningpoker.dev {
 	file_server
 }
 
-realtime.myplanningpoker.dev {
+realtime.{$DOMAIN} {
+	@adminPanel path /_/ /_
+
+	handle @adminPanel {
+		@denied not remote_ip private_ranges
+		abort @denied
+	}
+
+	handle {
+		reverse_proxy realtime:8090 {
+			transport http {
+				read_timeout 360s
+			}
+		}
+	}
+}
+
+{$REALTIME_ADMIN_ADDRESS} {
+	@adminResources not path /api/*
+	rewrite @adminResources /_{uri}
+
 	reverse_proxy realtime:8090 {
 		transport http {
 			read_timeout 360s

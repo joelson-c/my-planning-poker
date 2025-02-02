@@ -21,5 +21,7 @@ RUN --mount=type=secret,id=session-secret,env=VITE_SESSION_SECRET \
     npm run build:client
 
 FROM caddy:2.9-alpine AS release
+ENV DOMAIN=localhost
+ENV REALTIME_ADMIN_ADDRESS=localhost:8081
 COPY .docker/caddy/conf/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /usr/src/app/packages/vote-client/build/client /srv
