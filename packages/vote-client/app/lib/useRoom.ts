@@ -1,44 +1,49 @@
 import type { Room } from '~/types/room';
-import { useCallback, useSyncExternalStore } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { backendClient } from './backend/client';
-import { ClientResponseError } from 'pocketbase';
-
-let roomData: Room | undefined = undefined;
-
-function subscribeToRoom(roomId: string, onStoreChange: VoidFunction) {
-    backendClient
-        .collection('voteRooms')
-        .getOne(roomId)
-        .then((room) => {
-            roomData = room;
-            onStoreChange();
-        })
-        .catch((error) => {
-            if (error instanceof ClientResponseError && !error.isAbort) {
-                throw error;
-            }
-        });
-
-    backendClient.collection('voteRooms').subscribe(roomId, (event) => {
-        roomData = event.record;
-        onStoreChange();
-    });
-
-    return () => {
-        backendClient
-            .collection('voteRooms')
-            .unsubscribe(roomId)
-            .catch(() => {
-                // DO NOTHING
-            });
-    };
-}
+import { useRevalidator } from 'react-router';
 
 export function useRoom(roomId: string) {
-    const subscribe = useCallback(
-        (onStoreChange: VoidFunction) => subscribeToRoom(roomId, onStoreChange),
-        [roomId],
-    );
+    const [roomData, setRoomData] = useState<Room | undefined>(undefined);
+    const [, startTransition] = useTransition();
+    useEffect(() => {
+        startTransition(async () => {
+            const room = await backendClient
+                .collection('voteRooms')
+                .getOne(roomId);
 
-    return useSyncExternalStore(subscribe, () => roomData);
+            startTransition(() => {
+                setRoomData(room);
+            });
+        });
+    }, [roomId]);
+
+    useEffect(() => {
+        backendClient.collection('voteRooms').subscribe(roomId, (event) => {
+            startTransition(() => {
+                setRoomData(event.record);
+            });
+        });
+
+        return () => {
+            backendClient
+                .collection('voteRooms')
+                .unsubscribe(roomId)
+                .catch(() => {
+                    // DO NOTHING
+                });
+        };
+    }, [roomId]);
+
+    const revalidator = useRevalidator();
+    useEffect(() => {
+        if (!roomData?.state) {
+            return;
+        }
+
+        revalidator.revalidate();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [roomData?.state]);
+
+    return roomData;
 }

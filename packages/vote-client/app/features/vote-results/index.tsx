@@ -5,10 +5,9 @@ import { ResultIndividualVotes } from './ResultIndividualVotes';
 import { ResultSummary } from './ResultSummary';
 import { ResultVoteDistribution } from './ResultVoteDistribution';
 import { useRoom } from '~/lib/useRoom';
-import { redirect, useRevalidator } from 'react-router';
+import { redirect } from 'react-router';
 import { getCurrentUserOrThrow } from '~/lib/backend/auth';
 import { backendClient } from '~/lib/backend/client';
-import { useEffect } from 'react';
 
 export function meta() {
     return [{ title: 'Planning Poker Results' }];
@@ -70,19 +69,9 @@ export async function clientLoader({
 
 export default function VoteResults({
     loaderData: { voteResult, room },
-    params: { roomId },
 }: Route.ComponentProps) {
-    const realtimeRoom = useRoom(roomId);
-    const revalidator = useRevalidator();
-    useEffect(() => {
-        if (
-            realtimeRoom &&
-            realtimeRoom.state === 'VOTING' &&
-            revalidator.state !== 'idle'
-        ) {
-            revalidator.revalidate();
-        }
-    }, [realtimeRoom, revalidator]);
+    // Necessary to watch against room update events and revalidate the page
+    useRoom(room.id);
 
     return (
         <>
