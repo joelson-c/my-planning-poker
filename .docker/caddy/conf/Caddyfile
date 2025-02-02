@@ -23,7 +23,7 @@ realtime.{$DOMAIN} {
 	}
 }
 
-{$REALTIME_ADMIN_ADDRESS} {
+http://{$REALTIME_ADMIN_ADDRESS} {
 	@adminResources not path /api/*
 	rewrite @adminResources /_{uri}
 
