@@ -8,6 +8,7 @@ import { useRoom } from '~/lib/useRoom';
 import { redirect } from 'react-router';
 import { getCurrentUserOrThrow } from '~/lib/backend/auth';
 import { backendClient } from '~/lib/backend/client';
+import { useHeartbeat } from '~/lib/useHeartbeat';
 
 export function meta() {
     return [{ title: 'Planning Poker Results' }];
@@ -72,6 +73,7 @@ export default function VoteResults({
 }: Route.ComponentProps) {
     // Necessary to watch against room update events and revalidate the page
     useRoom(room.id);
+    useHeartbeat();
 
     return (
         <>

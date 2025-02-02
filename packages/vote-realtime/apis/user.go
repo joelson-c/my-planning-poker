@@ -28,8 +28,9 @@ func onRecordEnrich(e *core.RecordEnrichEvent) error {
 		return e.Next()
 	}
 
-	userRoom := authRecord.ExpandedOne("room")
-	if userRoom == nil {
+	userRoom, err := e.App.FindRecordById(models.CollectionNameVoteRooms, e.Record.GetString("room"))
+	if err != nil {
+		e.App.Logger().Warn("Failed to find room for user", "error", err)
 		return e.Next()
 	}
 
