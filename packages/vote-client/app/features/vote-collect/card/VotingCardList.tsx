@@ -1,7 +1,7 @@
 import type { Room } from '~/types/room';
 import { useVotingCards } from '~/lib/useVotingCards';
 import { VotingCardItem } from './VotingCardItem';
-import { Fragment, useOptimistic, useState } from 'react';
+import { Fragment, useOptimistic, useState, useTransition } from 'react';
 import { getCurrentUserOrThrow } from '~/lib/backend/auth';
 import { backendClient } from '~/lib/backend/client';
 
@@ -17,17 +17,25 @@ export function VotingCardList({ room, disabled }: VotingActionsProps) {
         typeof selectedCard,
         string
     >(selectedCard, (_, newCard) => newCard);
+    const [, startTransition] = useTransition();
 
-    const onCardSelected = async (card: string) => {
-        setOptimisticCard(card);
-        const currentUser = getCurrentUserOrThrow();
-        const user = await backendClient
-            .collection('voteUsers')
-            .update(currentUser.id, {
-                vote: card,
+    const onCardSelected = (card: string) => {
+        startTransition(async () => {
+            startTransition(() => {
+                setOptimisticCard(card);
             });
 
-        setSelectedCard(user?.vote);
+            const currentUser = getCurrentUserOrThrow();
+            const user = await backendClient
+                .collection('voteUsers')
+                .update(currentUser.id, {
+                    vote: card,
+                });
+
+            startTransition(() => {
+                setSelectedCard(user?.vote);
+            });
+        });
     };
 
     return (

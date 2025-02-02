@@ -10,9 +10,11 @@ import {
 } from 'react-router';
 import { Toaster } from './components/ui/toaster';
 import styles from './tailwind.css?url';
-import { UnauthorizedError as UnauthorizedErrorComponent } from './components/errors/UnauthorizedError';
 import { GenericError } from './components/errors/GenericError';
 import { Header } from './components/Header';
+import { UserDisconnectError } from './lib/errors/UserDisconnectError';
+import { RouteError } from './components/errors/RouteError';
+import { DisconnectionError } from './components/errors/DisconnectionError';
 
 export function links() {
     return [
@@ -31,11 +33,12 @@ export function links() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-    console.error(error);
+    if (isRouteErrorResponse(error)) {
+        return <RouteError error={error} />;
+    }
 
-    const isAuthError = isRouteErrorResponse(error) && error.status === 401;
-    if (isAuthError) {
-        return <UnauthorizedErrorComponent />;
+    if (error instanceof UserDisconnectError) {
+        return <DisconnectionError />;
     }
 
     return <GenericError />;

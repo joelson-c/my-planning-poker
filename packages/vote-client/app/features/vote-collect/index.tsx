@@ -14,6 +14,7 @@ import { VotingCard } from './card/VotingCard';
 import { backendClient } from '~/lib/backend/client';
 import { useRoom } from '~/lib/useRoom';
 import { useRoomUsers } from '~/lib/useRoomUsers';
+import { getCurrentUserRoom } from '~/lib/backend/user';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];
@@ -22,29 +23,24 @@ export function meta() {
 export async function clientLoader({
     params: { roomId },
 }: Route.ClientLoaderArgs) {
-    const currentUser = backendClient.authStore.record;
-    if (!currentUser) {
-        return redirect(`/join/${roomId}`);
+    const room = await getCurrentUserRoom(roomId, { fields: 'state, id' });
+    if (room.state === 'REVEAL') {
+        return redirect(`/room/${room.id}/result`);
     }
 
-    const roomWithStateOnly = await backendClient
-        .collection('voteRooms')
-        .getOne(currentUser.room, { fields: 'state, id' });
-
-    if (roomWithStateOnly.state === 'REVEAL') {
-        return redirect(`/room/${roomWithStateOnly.id}/result`);
-    }
-
+    const currentUser = backendClient.authStore.record!;
     return {
         currentUserId: currentUser.id,
         isObserver: currentUser.observer,
+        room,
     };
 }
 
 export default function VoteCollect({
-    loaderData: { currentUserId, isObserver },
+    loaderData: { currentUserId, isObserver, room: abc },
     params: { roomId },
 }: Route.ComponentProps) {
+    console.log(abc);
     const room = useRoom(roomId);
     const users = useRoomUsers(roomId, currentUserId);
     useHeartbeat();

@@ -1,82 +1,91 @@
+import type { RecordSubscription } from 'pocketbase';
 import type { User } from '~/types/user';
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import { backendClient } from './backend/client';
 import { UserDisconnectError } from './errors/UserDisconnectError';
-import { ClientResponseError } from 'pocketbase';
-
-let roomUsers: User[] = [];
-
-function subscribeToRoomUsers(
-    roomId: string,
-    currentUserId: string,
-    onStoreChange: VoidFunction,
-) {
-    backendClient
-        .collection('voteUsers')
-        .getFullList({
-            skipTotal: true,
-            filter: backendClient.filter('room={:roomId}', {
-                roomId,
-            }),
-        })
-        .then((room) => {
-            roomUsers = room;
-            onStoreChange();
-        })
-        .catch((error) => {
-            if (error instanceof ClientResponseError && !error.isAbort) {
-                throw error;
-            }
-        });
-
-    backendClient.collection('voteUsers').subscribe('*', (event) => {
-        switch (event.action) {
-            case 'delete':
-                if (event.record.id === currentUserId) {
-                    throw new UserDisconnectError();
-                }
-
-                roomUsers = roomUsers.filter(
-                    (user) => user.id !== event.record.id,
-                );
-
-                break;
-            case 'create':
-                roomUsers = [...roomUsers, event.record];
-                break;
-            case 'update':
-                roomUsers = roomUsers.map((user) => {
-                    if (user.id === event.record.id) {
-                        return event.record;
-                    }
-
-                    return user;
-                });
-
-                break;
-            default:
-                return;
-        }
-
-        onStoreChange();
-    });
-
-    return () => {
-        backendClient
-            .collection('voteUsers')
-            .unsubscribe('*')
-            .catch(() => {
-                // DO NOTHING
-            });
-    };
-}
 
 export function useRoomUsers(roomId: string, currentUserId: string) {
-    const subscribe = useCallback(
-        (onStoreChange: VoidFunction) =>
-            subscribeToRoomUsers(roomId, currentUserId, onStoreChange),
-        [currentUserId, roomId],
+    const [roomUsers, setRoomUsers] = useState<User[]>([]);
+    const [error, setError] = useState<Error | undefined>();
+    const [, startTransition] = useTransition();
+
+    useEffect(() => {
+        startTransition(async () => {
+            const users = await backendClient
+                .collection('voteUsers')
+                .getFullList({
+                    skipTotal: true,
+                    filter: backendClient.filter('room={:roomId}', {
+                        roomId,
+                    }),
+                });
+
+            startTransition(() => {
+                setRoomUsers(users);
+            });
+        });
+    }, [currentUserId, roomId]);
+
+    const onUserUpdate = useCallback(
+        (event: RecordSubscription<User>) => {
+            let newUsers: User[] = [...roomUsers];
+            switch (event.action) {
+                case 'delete':
+                    if (event.record.id === currentUserId) {
+                        startTransition(() => {
+                            setError(new UserDisconnectError());
+                        });
+
+                        return;
+                    }
+
+                    newUsers = newUsers.filter(
+                        (user) => user.id !== event.record.id,
+                    );
+
+                    break;
+                case 'create':
+                    newUsers = [...newUsers, event.record];
+                    break;
+                case 'update':
+                    newUsers = newUsers.map((user) => {
+                        if (user.id === event.record.id) {
+                            return event.record;
+                        }
+
+                        return user;
+                    });
+
+                    break;
+                default:
+                    return;
+            }
+
+            startTransition(() => {
+                setRoomUsers(newUsers);
+            });
+        },
+        [currentUserId, roomUsers],
     );
 
-    return useSyncExternalStore(subscribe, () => roomUsers);
+    useEffect(() => {
+        backendClient.collection('voteUsers').subscribe('*', (event) => {
+            onUserUpdate(event);
+        });
+
+        return () => {
+            backendClient
+                .collection('voteUsers')
+                .unsubscribe('*')
+                .catch(() => {
+                    // DO NOTHING
+                });
+        };
+    }, [currentUserId, onUserUpdate, roomId]);
+
+    if (error) {
+        throw error;
+    }
+
+    return roomUsers;
 }

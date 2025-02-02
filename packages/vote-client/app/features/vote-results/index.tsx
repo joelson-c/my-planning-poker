@@ -6,9 +6,9 @@ import { ResultSummary } from './ResultSummary';
 import { ResultVoteDistribution } from './ResultVoteDistribution';
 import { useRoom } from '~/lib/useRoom';
 import { redirect } from 'react-router';
-import { getCurrentUserOrThrow } from '~/lib/backend/auth';
 import { backendClient } from '~/lib/backend/client';
 import { useHeartbeat } from '~/lib/useHeartbeat';
+import { getCurrentUserRoom } from '~/lib/backend/user';
 
 export function meta() {
     return [{ title: 'Planning Poker Results' }];
@@ -17,11 +17,7 @@ export function meta() {
 export async function clientLoader({
     params: { roomId },
 }: Route.ClientLoaderArgs) {
-    const currentUser = getCurrentUserOrThrow();
-    const room = await backendClient
-        .collection('voteRooms')
-        .getOne(currentUser.room);
-
+    const room = await getCurrentUserRoom(roomId);
     if (room.state === 'VOTING') {
         return redirect(`/room/${room.id}`);
     }
