@@ -8,5 +8,6 @@ import (
 func bindAppHooks(app core.RealtimeApp) {
 	apis.BindWebsocketHooks(app)
 	apis.BindRoomRealtimeHooks(app)
+	apis.BindUserRealtimeHooks(app)
 	apis.BindRoomHooks(app)
 }

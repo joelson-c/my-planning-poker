@@ -1,9 +1,11 @@
 package core
 
-import "github.com/pocketbase/pocketbase/tools/subscriptions"
+import (
+	"github.com/joelson-c/vote-realtime/websocket"
+)
 
 type realtimeEventData struct {
-	Message *subscriptions.Message
+	Message *websocket.Message
 }
 
 func (r *realtimeEventData) Tags() []string {

@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"encoding/json"
 	"log"
 	"log/slog"
 	"runtime/debug"
@@ -12,7 +13,6 @@ import (
 	realtimeSocket "github.com/joelson-c/vote-realtime/websocket"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/subscriptions"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -32,6 +32,8 @@ const (
 
 // RealtimeClientAuthKey is the name of the realtime client store key that holds its auth state.
 const WebsocketClientAuthKey = "auth"
+
+const WebsocketChunkSize = 16
 
 var (
 	newline = []byte{'\n'}
@@ -96,18 +98,12 @@ func roomWebsocketHandler(e *core.RequestEvent) error {
 	connectEvent.App = realtimeApp
 	connectEvent.Client = client
 	return realtimeApp.OnWebsocketConnected().Trigger(connectEvent, func(we *realtimeCore.WebsocketEvent) error {
-		we.Client.Send(&subscriptions.Message{
+		we.Client.Send(&realtimeSocket.Message{
 			Name: "WS_CONNECTED",
-			Data: []byte(`{"clientId":"` + we.Client.Id() + `"}`),
+			Data: json.RawMessage(`{"clientId":"` + we.Client.Id() + `"}`),
 		})
 
-		if err := group.Wait(); err != nil {
-			e.App.Logger().Debug(
-				"Websocket connection finished with error",
-				slog.String("clientId", client.Id()),
-				slog.String("error", err.Error()),
-			)
-		}
+		group.Wait()
 
 		disconnectEvent := new(realtimeCore.WebsocketEvent)
 		disconnectEvent.App = we.App
@@ -120,7 +116,7 @@ func roomWebsocketHandler(e *core.RequestEvent) error {
 func readPump(c realtimeSocket.Client, app realtimeCore.RealtimeApp) error {
 	defer func() {
 		app.WebsocketBroker().Unregister(c.Id())
-		c.Discard()
+		c.Discard(nil)
 	}()
 
 	c.Connection().SetReadLimit(maxMessageSize)
@@ -133,11 +129,20 @@ func readPump(c realtimeSocket.Client, app realtimeCore.RealtimeApp) error {
 	for {
 		app.Logger().Debug("Received message from websocket", slog.String("clientId", c.Id()))
 
-		message := new(subscriptions.Message)
+		message := new(realtimeSocket.Message)
 		err := c.Connection().ReadJSON(message)
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				app.Logger().Error("Unexpected websocket close error", slog.String("error", err.Error()))
+			if _, ok := err.(*websocket.CloseError); !ok {
+				app.Logger().Error("Error while reading websocket message", slog.String("error", err.Error()))
+			}
+
+			if websocket.IsUnexpectedCloseError(
+				err,
+				websocket.CloseGoingAway,
+				websocket.CloseAbnormalClosure,
+				CloseUserKickedFromRoom,
+			) {
+				app.Logger().Warn("Unexpected websocket close error", slog.String("error", err.Error()))
 			}
 
 			return err
@@ -158,17 +163,17 @@ func writePump(c realtimeSocket.Client, app realtimeCore.RealtimeApp) error {
 	defer func() {
 		ticker.Stop()
 		app.WebsocketBroker().Unregister(c.Id())
-		c.Discard()
+		c.Discard(nil)
 	}()
 
 	for {
 		select {
-		case message, ok := <-c.Channel():
+		case message, ok := <-c.WriteChannel():
 			c.Connection().SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// Channel is closed
 				app.Logger().Debug("Websocket closed", slog.String("clientId", c.Id()))
-				c.Connection().WriteMessage(websocket.CloseMessage, []byte{})
+				c.Connection().WriteMessage(websocket.CloseMessage, c.CloseMessage())
 				return nil
 			}
 
@@ -186,7 +191,6 @@ func writePump(c realtimeSocket.Client, app realtimeCore.RealtimeApp) error {
 
 				return nil
 			})
-
 		case <-ticker.C:
 			c.Connection().SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.Connection().WriteMessage(websocket.PingMessage, nil); err != nil {

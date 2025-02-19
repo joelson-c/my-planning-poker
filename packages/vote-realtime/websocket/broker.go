@@ -6,7 +6,6 @@ import (
 
 	"github.com/pocketbase/pocketbase/tools/list"
 	"github.com/pocketbase/pocketbase/tools/store"
-	"github.com/pocketbase/pocketbase/tools/subscriptions"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -68,7 +67,7 @@ func (b *Broker) Unregister(clientId string) {
 		return
 	}
 
-	client.Discard()
+	client.Discard(nil)
 	b.clientStore.Remove(clientId)
 
 	subscriptionClients := b.subscriptionStore.Get(client.Subscription())
@@ -97,7 +96,7 @@ func (b *Broker) GetChunkedClientsBySubscription(sub string, chunkSize int) [][]
 //
 // The clients are chunked and sent in parallel.
 // If skipClients is provided, the clients with those ids will be skipped.
-func (b *Broker) BroadcastMessage(m *subscriptions.Message, sub string, chunkSize int, skipClients ...string) error {
+func (b *Broker) BroadcastMessage(m *Message, sub string, chunkSize int, skipClients ...string) error {
 	group := new(errgroup.Group)
 	chunks := b.GetChunkedClientsBySubscription(sub, chunkSize)
 

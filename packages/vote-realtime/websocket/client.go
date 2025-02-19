@@ -1,21 +1,27 @@
 package websocket
 
 import (
+	"encoding/json"
 	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/pocketbase/pocketbase/tools/security"
-	"github.com/pocketbase/pocketbase/tools/subscriptions"
 )
+
+// Message defines a client's channel data.
+type Message struct {
+	Name string          `json:"name"`
+	Data json.RawMessage `json:"data"`
+}
 
 type Client interface {
 	// Id Returns the unique id of the client.
 	Id() string
 
-	// Channel returns the client's communication channel.
+	// WriteChannel returns the client's communication channel for sending messages.
 	//
 	// NB! The channel shouldn't be used after calling Discard().
-	Channel() chan *subscriptions.Message
+	WriteChannel() chan *Message
 
 	//  Returns the client's subscription.
 	Subscription() string
@@ -46,17 +52,20 @@ type Client interface {
 	// meaning that it shouldn't be used anymore for sending new messages.
 	//
 	// It is safe to call Discard() multiple times.
-	Discard()
+	// Use [websocket.FormatCloseMessage] to format a close message payload.
+	Discard(closeMessage []byte)
 
 	// IsDiscarded indicates whether the client has been "discarded"
 	// and should no longer be used.
 	IsDiscarded() bool
 
 	// Send sends the specified message to the client's channel (if not discarded).
-	Send(m *subscriptions.Message)
+	Send(m *Message)
 
 	// Gets the client's websocket connection.
 	Connection() *websocket.Conn
+
+	CloseMessage() []byte
 }
 
 var _ Client = (*DefaultClient)(nil)
@@ -64,7 +73,8 @@ var _ Client = (*DefaultClient)(nil)
 type DefaultClient struct {
 	store        map[string]any
 	subscription string
-	channel      chan *subscriptions.Message
+	writeChannel chan *Message
+	closeMessage []byte
 	id           string
 	mux          sync.RWMutex
 	isDiscarded  bool
@@ -75,8 +85,9 @@ func NewClientForConnection(conn *websocket.Conn) *DefaultClient {
 	return &DefaultClient{
 		id:           security.RandomString(40),
 		store:        map[string]any{},
-		channel:      make(chan *subscriptions.Message),
+		writeChannel: make(chan *Message),
 		subscription: "",
+		closeMessage: []byte{},
 		conn:         conn,
 	}
 }
@@ -89,12 +100,12 @@ func (c *DefaultClient) Id() string {
 	return c.id
 }
 
-// Channel implements the [Client.Channel] interface method.
-func (c *DefaultClient) Channel() chan *subscriptions.Message {
+// WriteChannel implements the [Client.WriteChannel] interface method.
+func (c *DefaultClient) WriteChannel() chan *Message {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 
-	return c.channel
+	return c.writeChannel
 }
 
 // Subscription implements the [Client.Subscription] interface method.
@@ -158,7 +169,7 @@ func (c *DefaultClient) Unset(key string) {
 }
 
 // Discard implements the [Client.Discard] interface method.
-func (c *DefaultClient) Discard() {
+func (c *DefaultClient) Discard(closeMessage []byte) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
@@ -166,8 +177,11 @@ func (c *DefaultClient) Discard() {
 		return
 	}
 
-	close(c.channel)
-	c.conn.Close()
+	if closeMessage != nil {
+		c.closeMessage = closeMessage
+	}
+
+	close(c.writeChannel)
 
 	c.isDiscarded = true
 }
@@ -181,12 +195,20 @@ func (c *DefaultClient) IsDiscarded() bool {
 }
 
 // Send sends the specified message to the client's channel (if not discarded).
-func (c *DefaultClient) Send(m *subscriptions.Message) {
+func (c *DefaultClient) Send(m *Message) {
 	if c.IsDiscarded() {
 		return
 	}
 
-	c.Channel() <- m
+	c.WriteChannel() <- m
+}
+
+// Gets the client's websocket connection close message.
+func (c *DefaultClient) CloseMessage() []byte {
+	c.mux.RLock()
+	defer c.mux.RUnlock()
+
+	return c.closeMessage
 }
 
 // Connection implements the [Client.Connection] interface method.

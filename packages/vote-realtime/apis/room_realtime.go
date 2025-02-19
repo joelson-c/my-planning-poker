@@ -2,17 +2,14 @@ package apis
 
 import (
 	"encoding/json"
-	"fmt"
 	"log/slog"
 
 	realtimeCore "github.com/joelson-c/vote-realtime/core"
 	"github.com/joelson-c/vote-realtime/models"
+	"github.com/joelson-c/vote-realtime/websocket"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/subscriptions"
 )
-
-const socketChunkSize = 16
 
 type KickUserPayload struct {
 	TargetUser string `json:"targetUser"`
@@ -21,15 +18,15 @@ type KickUserPayload struct {
 func BindRoomRealtimeHooks(app realtimeCore.RealtimeApp) {
 	app.OnWebsocketConnected().BindFunc(func(e *realtimeCore.WebsocketEvent) error {
 		user := getSocketUser(e)
-		connectionMessage := &subscriptions.Message{
+		connectionMessage := &websocket.Message{
 			Name: "WS_USER_CONNECTED",
-			Data: []byte(user.Id),
+			Data: json.RawMessage(`{"userId": "` + user.Id + `"}`),
 		}
 
 		e.App.WebsocketBroker().BroadcastMessage(
 			connectionMessage,
 			e.Client.Subscription(),
-			socketChunkSize,
+			WebsocketChunkSize,
 		)
 
 		return e.Next()
@@ -37,15 +34,15 @@ func BindRoomRealtimeHooks(app realtimeCore.RealtimeApp) {
 
 	app.OnWebsocketClosed().BindFunc(func(e *realtimeCore.WebsocketEvent) error {
 		user := getSocketUser(e)
-		connectionMessage := &subscriptions.Message{
+		connectionMessage := &websocket.Message{
 			Name: "WS_USER_DISCONNECTED",
-			Data: []byte(user.Id),
+			Data: json.RawMessage(`{"userId": "` + user.Id + `"}`),
 		}
 
 		e.App.WebsocketBroker().BroadcastMessage(
 			connectionMessage,
 			e.Client.Subscription(),
-			socketChunkSize,
+			WebsocketChunkSize,
 			e.Client.Id(),
 		)
 
@@ -78,9 +75,9 @@ func BindRoomRealtimeHooks(app realtimeCore.RealtimeApp) {
 
 		room.Set("state", targetState)
 		if err := e.App.Save(room); err != nil {
-			e.Client.Send(&subscriptions.Message{
+			e.Client.Send(&websocket.Message{
 				Name: e.Message.Name + "_ERROR",
-				Data: []byte("Failed to save the new room state"),
+				Data: json.RawMessage(`{"error": "` + err.Error() + `"}`),
 			})
 
 			return err
@@ -95,81 +92,24 @@ func BindRoomRealtimeHooks(app realtimeCore.RealtimeApp) {
 
 		if targetState == models.VoteStateVoting {
 			if err := resetRoomVotes(e, room); err != nil {
-				e.Client.Send(&subscriptions.Message{
+				e.Client.Send(&websocket.Message{
 					Name: e.Message.Name + "_ERROR",
-					Data: []byte("Failed to clear room votes"),
+					Data: json.RawMessage(`{"error": "` + err.Error() + `"}`),
 				})
 
 				return err
 			}
 		}
 
-		roomStateMessage := &subscriptions.Message{
+		roomStateMessage := &websocket.Message{
 			Name: "WS_ROOM_STATE_CHANGED",
-			Data: []byte(room.GetString("state")),
+			Data: json.RawMessage(room.GetString("state")),
 		}
 
 		e.App.WebsocketBroker().BroadcastMessage(
 			roomStateMessage,
 			e.Client.Subscription(),
-			socketChunkSize,
-		)
-
-		return e.Next()
-	})
-
-	app.OnWebsocketMessage("WS_KICK_USR").BindFunc(func(e *realtimeCore.WebsocketMessageEvent) error {
-		payload := &KickUserPayload{}
-		err := json.Unmarshal(e.Message.Data, payload)
-		if err != nil {
-			return err
-		}
-
-		if payload.TargetUser == "" {
-			return fmt.Errorf("Missing target user in payload")
-		}
-
-		user := e.Client.Get(WebsocketClientAuthKey).(*core.Record)
-		if payload.TargetUser == user.Id {
-			return fmt.Errorf("Cannot kick yourself")
-		}
-
-		targetUser, err := e.App.FindRecordById(models.CollectionNameVoteUsers, payload.TargetUser)
-		if err != nil {
-			e.Client.Send(&subscriptions.Message{
-				Name: e.Message.Name + "_ERROR",
-				Data: []byte("The target user was not found"),
-			})
-
-			return err
-		}
-
-		if targetUser.GetString("room") != user.GetString("room") {
-			e.Client.Send(&subscriptions.Message{
-				Name: e.Message.Name + "_ERROR",
-				Data: []byte("The target user is not in the same room"),
-			})
-		}
-
-		clientChunks := e.App.WebsocketBroker().GetChunkedClientsBySubscription(e.Client.Subscription(), socketChunkSize)
-		for _, chunk := range clientChunks {
-			for _, client := range chunk {
-				clientAuth := client.Get(WebsocketClientAuthKey).(*core.Record)
-				if clientAuth.Id == targetUser.Id {
-					client.Send(&subscriptions.Message{
-						Name: "WS_FORCE_DISCONNECT",
-					})
-
-					client.Discard()
-				}
-			}
-		}
-
-		e.App.Logger().Info(
-			"Removed user from room",
-			slog.String("room", user.GetString("room")),
-			slog.String("requester", user.Id),
-			slog.String("targetUser", targetUser.Id),
+			WebsocketChunkSize,
 		)
 
 		return e.Next()
