@@ -9,6 +9,7 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/router"
+	"github.com/pocketbase/pocketbase/tools/subscriptions"
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
@@ -16,8 +17,16 @@ type RoomAuthMeta struct {
 	RoomId string `json:"roomId"`
 }
 
-func BindRoomApis(rg *router.RouterGroup[*core.RequestEvent]) {
-	subGroup := rg.Group(fmt.Sprintf("/collections/%s/", models.CollectionNameVoteRooms)).Bind(apis.RequireAuth("voteUsers"))
+func BindRoomHooks(app core.App) {
+	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
+		BindRoomApis(se)
+		return se.Next()
+	})
+}
+
+func BindRoomApis(se *core.ServeEvent) {
+	subGroup := se.Router.Group(fmt.Sprintf("/api/collections/%s/", models.CollectionNameVoteRooms)).
+		Bind(apis.RequireAuth("voteUsers"))
 
 	subGroup.POST("room-auth", func(e *core.RequestEvent) error {
 		data := struct {
@@ -147,6 +156,17 @@ func BindRoomApis(rg *router.RouterGroup[*core.RequestEvent]) {
 			)
 		}
 
+		realtimeClientId := targetRecord.GetString("realtimeClientId")
+		realtimeClient, err := e.App.SubscriptionsBroker().ClientById(realtimeClientId)
+		if err != nil {
+			return err
+		}
+
+		message := subscriptions.Message{
+			Name: "ROOM_REMOVAL",
+		}
+
+		realtimeClient.Send(message)
 		if err := e.App.Delete(targetRecord); err != nil {
 			return err
 		}

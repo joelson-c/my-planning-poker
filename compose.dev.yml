@@ -25,6 +25,8 @@ services:
                   target: /usr/src/app
                   ignore:
                       - migrations
+        ports:
+            - 4000:4000
 
     proxy:
         image: caddy:2.9
