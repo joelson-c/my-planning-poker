@@ -47,8 +47,8 @@ func (app *BaseRealtimeApp) OnWebsocketClosed() *hook.Hook[*WebsocketEvent] {
 	return app.onWebsocketClosed
 }
 
-func (app *BaseRealtimeApp) OnWebsocketMessage() *hook.Hook[*WebsocketMessageEvent] {
-	return app.onWebsocketMessage
+func (app *BaseRealtimeApp) OnWebsocketMessage(tags ...string) *hook.TaggedHook[*WebsocketMessageEvent] {
+	return hook.NewTaggedHook(app.onWebsocketMessage, tags...)
 }
 
 func (app *BaseRealtimeApp) Start() error {

@@ -1,12 +1,9 @@
 package apis
 
 import (
-	"bytes"
-	"errors"
-	"fmt"
+	"log"
 	"log/slog"
-	"net/http"
-	"runtime"
+	"runtime/debug"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -15,6 +12,7 @@ import (
 	realtimeSocket "github.com/joelson-c/vote-realtime/websocket"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/subscriptions"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -32,6 +30,9 @@ const (
 	maxMessageSize = 512
 )
 
+// RealtimeClientAuthKey is the name of the realtime client store key that holds its auth state.
+const WebsocketClientAuthKey = "auth"
+
 var (
 	newline = []byte{'\n'}
 	space   = []byte{' '}
@@ -45,7 +46,6 @@ var upgrader = websocket.Upgrader{
 func BindWebsocketHooks(app realtimeCore.RealtimeApp) {
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		sub := se.Router.Group("/api/ws/room").
-			Bind(apis.RequireAuth("voteUsers")).
 			Bind(apis.SkipSuccessActivityLog()).
 			Unbind(apis.DefaultPanicRecoverMiddlewareId)
 
@@ -57,29 +57,15 @@ func BindWebsocketHooks(app realtimeCore.RealtimeApp) {
 
 func roomWebsocketHandler(e *core.RequestEvent) error {
 	defer func() {
-		recoverResult := recover()
-		if recoverResult == nil {
-			return
+		if err := recover(); err != nil {
+			log.Printf("RECOVERED FROM PANIC (safe to ignore): %v", err)
+			log.Println(string(debug.Stack()))
 		}
-
-		recoverErr, ok := recoverResult.(error)
-		if !ok {
-			recoverErr = fmt.Errorf("%v", recoverResult)
-		} else if errors.Is(recoverErr, http.ErrAbortHandler) {
-			// don't recover ErrAbortHandler so the response to the client can be aborted
-			panic(recoverResult)
-		}
-
-		stack := make([]byte, 2<<10) // 2 KB
-		length := runtime.Stack(stack, true)
-		err := fmt.Errorf("[PANIC] %w %s", recoverErr, stack[:length])
-		fmt.Println(err.Error())
 	}()
 
-	roomId := e.Request.PathValue("roomId")
-	_, err := e.App.FindRecordById(models.CollectionNameVoteRooms, roomId)
+	room, user, err := validateUserCredentials(e)
 	if err != nil {
-		return e.NotFoundError("The requested room wasn't found.", err)
+		return err
 	}
 
 	conn, err := upgrader.Upgrade(e.Response, e.Request, nil)
@@ -91,20 +77,28 @@ func roomWebsocketHandler(e *core.RequestEvent) error {
 
 	realtimeApp := e.App.(realtimeCore.RealtimeApp)
 	client := realtimeSocket.NewClientForConnection(conn)
-	client.Subscribe(roomId)
+	client.Subscribe(room.Id)
+	client.Set(WebsocketClientAuthKey, user)
 	realtimeApp.WebsocketBroker().Register(client)
 
+	group := new(errgroup.Group)
+	group.Go(func() error {
+		return readPump(client, realtimeApp)
+	})
+
+	group.Go(func() error {
+		return writePump(client, realtimeApp)
+	})
+
 	e.App.Logger().Debug("Websocket connection established.", slog.String("clientId", client.Id()))
+
 	connectEvent := new(realtimeCore.WebsocketEvent)
+	connectEvent.App = realtimeApp
 	connectEvent.Client = client
 	return realtimeApp.OnWebsocketConnected().Trigger(connectEvent, func(we *realtimeCore.WebsocketEvent) error {
-		group := new(errgroup.Group)
-		group.Go(func() error {
-			return readPump(client, realtimeApp)
-		})
-
-		group.Go(func() error {
-			return writePump(client, realtimeApp)
+		we.Client.Send(&subscriptions.Message{
+			Name: "WS_CONNECTED",
+			Data: []byte(`{"clientId":"` + we.Client.Id() + `"}`),
 		})
 
 		if err := group.Wait(); err != nil {
@@ -116,6 +110,7 @@ func roomWebsocketHandler(e *core.RequestEvent) error {
 		}
 
 		disconnectEvent := new(realtimeCore.WebsocketEvent)
+		disconnectEvent.App = we.App
 		disconnectEvent.Client = we.Client
 		err = realtimeApp.OnWebsocketClosed().Trigger(disconnectEvent)
 		return nil
@@ -136,7 +131,10 @@ func readPump(c realtimeSocket.Client, app realtimeCore.RealtimeApp) error {
 	})
 
 	for {
-		_, message, err := c.Connection().ReadMessage()
+		app.Logger().Debug("Received message from websocket", slog.String("clientId", c.Id()))
+
+		message := new(subscriptions.Message)
+		err := c.Connection().ReadJSON(message)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				app.Logger().Error("Unexpected websocket close error", slog.String("error", err.Error()))
@@ -145,9 +143,8 @@ func readPump(c realtimeSocket.Client, app realtimeCore.RealtimeApp) error {
 			return err
 		}
 
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		app.Logger().Debug("Received message from websocket", slog.String("clientId", c.Id()))
 		messageEvent := new(realtimeCore.WebsocketMessageEvent)
+		messageEvent.App = app
 		messageEvent.Client = c
 		messageEvent.Message = message
 		messageEvent.Direction = realtimeCore.MessageDirectionInbound
@@ -175,17 +172,21 @@ func writePump(c realtimeSocket.Client, app realtimeCore.RealtimeApp) error {
 				return nil
 			}
 
-			w, err := c.Connection().NextWriter(websocket.TextMessage)
-			if err != nil {
-				return err
-			}
+			messageEvent := new(realtimeCore.WebsocketMessageEvent)
+			messageEvent.App = app
+			messageEvent.Client = c
+			messageEvent.Message = message
+			messageEvent.Direction = realtimeCore.MessageDirectionOutbound
+			app.OnWebsocketMessage().Trigger(messageEvent, func(wme *realtimeCore.WebsocketMessageEvent) error {
+				wme.App.Logger().Debug("Writing message to websocket", slog.String("clientId", wme.Client.Id()))
+				err := wme.Client.Connection().WriteJSON(message)
+				if err != nil {
+					return err
+				}
 
-			app.Logger().Debug("Writing message to websocket", slog.String("clientId", c.Id()))
-			w.Write(message)
+				return nil
+			})
 
-			if err := w.Close(); err != nil {
-				return err
-			}
 		case <-ticker.C:
 			c.Connection().SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.Connection().WriteMessage(websocket.PingMessage, nil); err != nil {
@@ -193,4 +194,33 @@ func writePump(c realtimeSocket.Client, app realtimeCore.RealtimeApp) error {
 			}
 		}
 	}
+}
+
+func validateUserCredentials(e *core.RequestEvent) (*core.Record, *core.Record, error) {
+	roomId := e.Request.PathValue("roomId")
+	room, err := e.App.FindRecordById(models.CollectionNameVoteRooms, roomId)
+	if err != nil {
+		return nil, nil, e.NotFoundError("The requested room wasn't found.", err)
+	}
+
+	authToken := e.Request.URL.Query().Get("token")
+	if authToken == "" {
+		return nil, nil, e.BadRequestError("Missing auth token.", nil)
+	}
+
+	user, err := e.App.FindAuthRecordByToken(authToken, core.TokenTypeAuth)
+	if err != nil {
+		return nil, nil, e.UnauthorizedError("Invalid auth token.", err)
+	}
+
+	if user.Collection().Name != models.CollectionNameVoteUsers {
+		return nil, nil, e.UnauthorizedError("Invalid auth token.", nil)
+	}
+
+	if user.GetString("room") != room.Id {
+		return nil, nil, e.UnauthorizedError("Invalid auth token.", nil)
+	}
+
+	e.Auth = user
+	return room, user, nil
 }

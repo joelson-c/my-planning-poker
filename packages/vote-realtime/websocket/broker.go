@@ -6,6 +6,8 @@ import (
 
 	"github.com/pocketbase/pocketbase/tools/list"
 	"github.com/pocketbase/pocketbase/tools/store"
+	"github.com/pocketbase/pocketbase/tools/subscriptions"
+	"golang.org/x/sync/errgroup"
 )
 
 // Broker defines a struct for managing subscriptions clients.
@@ -77,7 +79,7 @@ func (b *Broker) Unregister(clientId string) {
 }
 
 // Get all clients that are subscribed to the provided subscription topic.
-func (b *Broker) GetClientsBySubscription(sub string, chunkSize int) [][]Client {
+func (b *Broker) GetChunkedClientsBySubscription(sub string, chunkSize int) [][]Client {
 	subClients := b.subscriptionStore.Get(sub)
 	if subClients == nil {
 		return nil
@@ -89,4 +91,30 @@ func (b *Broker) GetClientsBySubscription(sub string, chunkSize int) [][]Client 
 	}
 
 	return list.ToChunks(clients, chunkSize)
+}
+
+// Send a message to all clients that are subscribed to the provided subscription topic.
+//
+// The clients are chunked and sent in parallel.
+// If skipClients is provided, the clients with those ids will be skipped.
+func (b *Broker) BroadcastMessage(m *subscriptions.Message, sub string, chunkSize int, skipClients ...string) error {
+	group := new(errgroup.Group)
+	chunks := b.GetChunkedClientsBySubscription(sub, chunkSize)
+
+	for _, chunk := range chunks {
+		group.Go(func() error {
+			for _, client := range chunk {
+				if slices.Contains(skipClients, client.Id()) {
+					continue
+				}
+
+				client.Send(m)
+			}
+
+			return nil
+		})
+	}
+
+	return group.Wait()
+
 }

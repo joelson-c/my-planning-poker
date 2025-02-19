@@ -5,6 +5,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/pocketbase/pocketbase/tools/security"
+	"github.com/pocketbase/pocketbase/tools/subscriptions"
 )
 
 type Client interface {
@@ -14,7 +15,7 @@ type Client interface {
 	// Channel returns the client's communication channel.
 	//
 	// NB! The channel shouldn't be used after calling Discard().
-	Channel() chan []byte
+	Channel() chan *subscriptions.Message
 
 	//  Returns the client's subscription.
 	Subscription() string
@@ -52,7 +53,7 @@ type Client interface {
 	IsDiscarded() bool
 
 	// Send sends the specified message to the client's channel (if not discarded).
-	Send(m []byte)
+	Send(m *subscriptions.Message)
 
 	// Gets the client's websocket connection.
 	Connection() *websocket.Conn
@@ -63,7 +64,7 @@ var _ Client = (*DefaultClient)(nil)
 type DefaultClient struct {
 	store        map[string]any
 	subscription string
-	channel      chan []byte
+	channel      chan *subscriptions.Message
 	id           string
 	mux          sync.RWMutex
 	isDiscarded  bool
@@ -74,7 +75,7 @@ func NewClientForConnection(conn *websocket.Conn) *DefaultClient {
 	return &DefaultClient{
 		id:           security.RandomString(40),
 		store:        map[string]any{},
-		channel:      make(chan []byte),
+		channel:      make(chan *subscriptions.Message),
 		subscription: "",
 		conn:         conn,
 	}
@@ -89,7 +90,7 @@ func (c *DefaultClient) Id() string {
 }
 
 // Channel implements the [Client.Channel] interface method.
-func (c *DefaultClient) Channel() chan []byte {
+func (c *DefaultClient) Channel() chan *subscriptions.Message {
 	c.mux.RLock()
 	defer c.mux.RUnlock()
 
@@ -180,7 +181,7 @@ func (c *DefaultClient) IsDiscarded() bool {
 }
 
 // Send sends the specified message to the client's channel (if not discarded).
-func (c *DefaultClient) Send(m []byte) {
+func (c *DefaultClient) Send(m *subscriptions.Message) {
 	if c.IsDiscarded() {
 		return
 	}

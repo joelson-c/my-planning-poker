@@ -2,14 +2,12 @@ package apis
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/joelson-c/vote-realtime/models"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/router"
-	"github.com/pocketbase/pocketbase/tools/subscriptions"
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
@@ -77,102 +75,6 @@ func BindRoomApis(se *core.ServeEvent) {
 			RoomId: data.Room,
 		})
 	}).Unbind(apis.DefaultRequireAuthMiddlewareId)
-
-	subGroup.POST("reset/{id}", func(e *core.RequestEvent) error {
-		record, err := e.App.FindRecordById(models.CollectionNameVoteRooms, e.Request.PathValue("id"))
-		if err != nil {
-			return e.NotFoundError("", err)
-		}
-
-		requestInfo, err := e.RequestInfo()
-		if err != nil {
-			return e.BadRequestError("Failed to retrieve request info", err)
-		}
-
-		rule := types.Pointer("@request.auth.room = id && state = 'REVEAL'")
-		canAccess, err := e.App.CanAccessRecord(record, requestInfo, rule)
-		if !canAccess {
-			return e.ForbiddenError("", err)
-		}
-
-		e.App.Logger().Info(
-			"Resetting votes for room",
-			"room", record.Id,
-		)
-
-		roomUsers, err := e.App.FindAllRecords(
-			"voteUsers",
-			dbx.NewExp("room={:room}", dbx.Params{"room": record.Id}),
-			dbx.NewExp("vote != ''"),
-		)
-
-		if err != nil {
-			return err
-		}
-
-		e.App.RunInTransaction(func(txApp core.App) error {
-			for _, user := range roomUsers {
-				user.Set("vote", nil)
-
-				if err := txApp.Save(user); err != nil {
-					return err
-				}
-			}
-
-			record.Set("state", "VOTING")
-			if err := txApp.Save(record); err != nil {
-				return err
-			}
-
-			return nil
-		})
-
-		return e.JSON(http.StatusOK, record)
-	})
-
-	subGroup.POST("remove-user", func(e *core.RequestEvent) error {
-		targetRecord, targetErr := getTargetFromRequest(e)
-		if targetErr != nil {
-			return targetErr
-		}
-
-		requestInfo, err := e.RequestInfo()
-		if err != nil {
-			return e.BadRequestError("Failed to retrieve request info", err)
-		}
-
-		rule := types.Pointer("@request.auth.room = room && @request.auth.id != id")
-		canAccess, err := e.App.CanAccessRecord(targetRecord, requestInfo, rule)
-		if !canAccess {
-			return e.ForbiddenError("", err)
-		}
-
-		settings := e.App.Settings()
-		if settings.Logs.LogAuthId {
-			e.App.Logger().Info(
-				"Removing user from room",
-				"room", e.Auth.GetString("room"),
-				"user", targetRecord.Id,
-			)
-		}
-
-		realtimeClientId := targetRecord.GetString("realtimeClientId")
-		realtimeClient, err := e.App.SubscriptionsBroker().ClientById(realtimeClientId)
-		if err != nil {
-			return err
-		}
-
-		message := subscriptions.Message{
-			Name: "ROOM_REMOVAL",
-		}
-
-		realtimeClient.Send(message)
-		if err := e.App.Delete(targetRecord); err != nil {
-			return err
-		}
-
-		return e.JSON(http.StatusNoContent, nil)
-	})
 }
 
 func getTargetFromRequest(e *core.RequestEvent) (*core.Record, *router.ApiError) {

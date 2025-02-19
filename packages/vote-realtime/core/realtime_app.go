@@ -15,13 +15,14 @@ const (
 
 type WebsocketEvent struct {
 	hook.Event
+	App    RealtimeApp
 	Client realtimeSocket.Client
 }
 
 type WebsocketMessageEvent struct {
+	WebsocketEvent
 	hook.Event
-	Client    realtimeSocket.Client
-	Message   []byte
+	realtimeEventData
 	Direction MessageDirection
 }
 
@@ -41,5 +42,5 @@ type RealtimeApp interface {
 	// OnWebsocketMessage is triggered when a new websocket message is received.
 	//
 	// Note that this hook is triggered for both client and server messages.
-	OnWebsocketMessage() *hook.Hook[*WebsocketMessageEvent]
+	OnWebsocketMessage(tags ...string) *hook.TaggedHook[*WebsocketMessageEvent]
 }
