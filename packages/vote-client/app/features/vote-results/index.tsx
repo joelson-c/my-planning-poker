@@ -1,14 +1,16 @@
 import type { Route } from './+types';
+import type { VoteResult } from '~/types/voteResult';
 import { RepositoryBanner } from '~/components/repository/RepositoryBanner';
 import { ResultHeader } from './ResultHeader';
 import { ResultIndividualVotes } from './ResultIndividualVotes';
 import { ResultSummary } from './ResultSummary';
 import { ResultVoteDistribution } from './ResultVoteDistribution';
-import { useRoom } from '~/lib/useRoom';
 import { redirect } from 'react-router';
 import { backendClient } from '~/lib/backend/client';
-import { useHeartbeat } from '~/lib/useHeartbeat';
 import { getCurrentUserRoom } from '~/lib/backend/user';
+import { VoteContextProvider } from '~/lib/context/vote';
+import { getCurrentUser } from '~/lib/backend/auth';
+import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
 
 export function meta() {
     return [{ title: 'Planning Poker Results' }];
@@ -17,7 +19,18 @@ export function meta() {
 export async function clientLoader({
     params: { roomId },
 }: Route.ClientLoaderArgs) {
-    const room = await getCurrentUserRoom(roomId);
+    let currentUser;
+    try {
+        currentUser = await getCurrentUser();
+    } catch (error) {
+        if (error instanceof UnauthorizedError) {
+            throw redirect(`/join/${roomId}`);
+        }
+
+        throw error;
+    }
+
+    const room = await getCurrentUserRoom(currentUser);
     if (room.state === 'VOTING') {
         return redirect(`/room/${room.id}`);
     }
@@ -39,9 +52,13 @@ export async function clientLoader({
     }, new Map<string, number>());
 
     const votesByUser = roomUsers.reduce((acc, user) => {
-        acc.push([user.nickname, user.vote || '-']);
+        acc.push({
+            id: user.id,
+            nickname: user.nickname,
+            vote: user.vote!,
+        });
         return acc;
-    }, [] as [string, string][]);
+    }, [] as VoteResult['votesByUser']);
 
     const allVotesValues = Array.from(distribution.keys())
         .filter((vote) => !isNaN(parseInt(vote, 10)))
@@ -54,6 +71,7 @@ export async function clientLoader({
 
     return {
         room,
+        currentUser,
         voteResult: {
             distribution,
             total,
@@ -65,21 +83,17 @@ export async function clientLoader({
 }
 
 export default function VoteResults({
-    loaderData: { voteResult, room },
+    loaderData: { voteResult, room, currentUser },
 }: Route.ComponentProps) {
-    // Necessary to watch against room update events and revalidate the page
-    useRoom(room.id);
-    useHeartbeat();
-
     return (
-        <>
-            <ResultHeader room={room} />
+        <VoteContextProvider room={room} currentUser={currentUser}>
+            <ResultHeader />
             <RepositoryBanner />
             <div className="grid gap-6 lg:gap-8 md:grid-cols-2">
                 <ResultVoteDistribution voteResult={voteResult} />
                 <ResultSummary voteResult={voteResult} />
                 <ResultIndividualVotes voteResult={voteResult} />
             </div>
-        </>
+        </VoteContextProvider>
     );
 }

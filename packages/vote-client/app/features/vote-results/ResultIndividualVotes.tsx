@@ -16,11 +16,8 @@ export function ResultIndividualVotes({
             </CardHeader>
             <CardContent>
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                    {votesByUser.map(([nickname, vote]) => (
-                        <div
-                            key={nickname}
-                            className="flex items-center space-x-4"
-                        >
+                    {votesByUser.map(({ nickname, vote, id }) => (
+                        <div key={id} className="flex items-center space-x-4">
                             <Avatar>
                                 <AvatarFallback>
                                     {nickname.slice(0, 1).toUpperCase()}

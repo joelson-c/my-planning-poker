@@ -6,7 +6,7 @@ import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
 
 export async function authWithRoomAndUserId(joinData: RoomJoinShema) {
     const authResponse = await backendClient.send<RecordAuthResponse<User>>(
-        '/api/vote/collections/voteRooms/room-auth',
+        '/api/collections/voteRooms/room-auth',
         {
             method: 'POST',
             body: {
@@ -21,7 +21,18 @@ export async function authWithRoomAndUserId(joinData: RoomJoinShema) {
     return authResponse;
 }
 
-export function getCurrentUserOrThrow() {
+export async function getCurrentUser() {
+    if (!backendClient.authStore.isValid) {
+        throw new UnauthorizedError();
+    }
+
+    try {
+        await backendClient.collection('voteUsers').authRefresh();
+    } catch {
+        backendClient.authStore.clear();
+        throw new UnauthorizedError();
+    }
+
     const currentUser = backendClient.authStore.record;
     if (!currentUser) {
         throw new UnauthorizedError();

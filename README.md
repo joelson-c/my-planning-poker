@@ -1,80 +1,91 @@
-# Planning Poker Estimation System
+# My Planning Poker
 
-## Overview
+## 📌 Introduction
 
-This repository contains a Planning Poker Estimation System, a collaborative tool designed for agile development teams to streamline the estimation process. The system utilizes Docker Compose to manage both development and production environments. Two Docker Compose files are included:
+My Planning Poker is a real-time agile estimation tool designed to help teams collaboratively estimate the effort required for tasks using Planning Poker methodology.
 
--   **docker-compose.yml:** Configures development containers.
--   **docker-compose.production.yml:** Configures production containers using Dockerfiles to maintain isolation.
+## 🚀 Features
 
-## Development Workflow
+-   🔄 **Real-time collaboration** via WebSockets
+-   🃏 **Multiple deck options** (Fibonacci, T-Shirt sizes, etc.)
+-   👥 **Support for up to 20 users per room**
+-   🛠️ **Cost-effective, serverless architecture**
+-   📊 **Automatic result aggregation**
 
-### Prerequisites
+## 🖥️ Screenshots
 
--   Docker (v23+) and Docker Compose (v2.16+) installed on your machine.
+_(Add relevant images or GIFs showcasing the UI and functionalities)_
 
-### Starting the Development Environment
+## 📂 Project Structure
 
-1. Clone the repository:
+```
+/my-planning-poker
+│── /client      # Frontend application
+│── /server      # Backend services
+│── /docs        # Documentation files
+│── .env.example # Environment variable example file
+│── docker-compose.yml # Docker setup
+│── README.md    # This file
+```
 
-    ```bash
-    git clone https://github.com/joelson-c/my-planning-poker.git
-    ```
-
-2. Navigate to the project directory:
-
-    ```bash
-    cd my-planning-poker
-    ```
-
-3. Create a `.env` file in repository root (use the `.env.example` file as model)
-
-4. Start the development environment:
-
-    ```bash
-    docker compose watch
-    ```
-
-5. Access the application at https://localhost.
-
-## Production Workflow
+## ⚡ Getting Started
 
 ### Prerequisites
 
--   Docker (v23+) and Docker Compose (v2.16+) installed on your machine.
+Ensure you have the following installed:
 
-### Starting the Production Environment
+-   [Node.js](https://nodejs.org/)
+-   [Docker](https://www.docker.com/)
 
-1. Clone the repository:
+### Installation
 
-    ```bash
-    git clone https://github.com/joelson-c/my-planning-poker.git
-    ```
+```bash
+git clone https://github.com/joelson-c/my-planning-poker.git
+cd my-planning-poker
+cp .env.example .env  # Configure environment variables
+```
 
-2. Navigate to the project directory:
+### Running Locally
 
-    ```bash
-    cd my-planning-poker
-    ```
+Using Docker:
 
-3. Start the production environment:
+```bash
+docker compose -f compose.dev.yml watch
+```
 
-    ```bash
-    docker compose -f docker-compose.production.yml up -d
-    ```
+Access the application at `https://localhost`.
 
-4. Access the application at https://localhost. Note that an SSL certificate is required.
+## 🚀 Deployment
 
-## Contributing
+To deploy in production:
 
-We welcome contributions from the community. If you have ideas for improvements, feature requests, or find any issues, feel free to open an [issue](https://github.com/joelson-c/my-planning-poker/issues) or submit a [pull request](https://github.com/joelson-c/my-planning-poker/pulls).
+```bash
+docker compose -f compose.yml up --build -d
+```
 
-## License
+Ensure your `.env` file is correctly configured for the production environment.
 
-This project is licensed under the [MIT License](LICENSE).
+## 🎮 Usage
 
-## Acknowledgments
+1. **Create a session**
+2. **Invite participants** by sharing the session link
+3. **Vote on tasks**
+4. **View results** and reach consensus
 
-Special thanks to the open-source community for their contributions and inspiration.
+## 🤝 Contributing
 
-Happy Planning Poker Estimations! 🚀
+We welcome contributions! To contribute:
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature-branch`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature-branch`)
+5. Open a Pull Request
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📧 Contact
+
+For any inquiries, feel free to reach out via [GitHub Issues](https://github.com/joelson-c/my-planning-poker/issues).

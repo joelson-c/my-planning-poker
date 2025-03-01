@@ -1,7 +1,6 @@
 import type { Room } from '~/types/room';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '~/components/ui/button';
-import { useRevalidator } from 'react-router';
 import {
     Card,
     CardDescription,
@@ -10,23 +9,26 @@ import {
 } from '~/components/ui/card';
 import { TypographyH2 } from '~/components/ui/typography';
 import { backendClient } from '~/lib/backend/client';
+import { useNavigate } from 'react-router';
+import { useTransition } from 'react';
+import { useVoteContext } from '~/lib/context/vote';
 
-interface ResultHeaderProps {
-    room: Room;
-}
-
-export function ResultHeader({ room }: ResultHeaderProps) {
-    const revalidate = useRevalidator();
+export function ResultHeader() {
+    const { room } = useVoteContext();
+    const navigate = useNavigate();
+    const [, startTransition] = useTransition();
 
     async function resetRoom() {
-        await backendClient.send<Room>(
-            `/api/vote/collections/voteRooms/reset/${room.id}`,
-            {
-                method: 'POST',
-            },
-        );
+        startTransition(async () => {
+            await backendClient.send<Room>(
+                `/api/vote/collections/voteRooms/reset/${room.id}`,
+                {
+                    method: 'POST',
+                },
+            );
 
-        revalidate.revalidate();
+            navigate(`/room/${room.id}`);
+        });
     }
 
     return (

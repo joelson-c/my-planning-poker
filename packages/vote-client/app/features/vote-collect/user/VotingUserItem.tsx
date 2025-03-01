@@ -2,13 +2,16 @@ import type { User } from '~/types/user';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { cn } from '~/lib/utils';
 import { VotingUserActions } from './VotingUserActions';
+import { useVoteContext } from '~/lib/context/vote';
 
 interface VotingUserItemProps {
     user: User;
-    isMyself?: boolean;
 }
 
-export function VotingUserItem({ user, isMyself }: VotingUserItemProps) {
+export function VotingUserItem({ user }: VotingUserItemProps) {
+    const { currentUser } = useVoteContext();
+    const isMyself = user.id === currentUser.id;
+
     return (
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-grow">

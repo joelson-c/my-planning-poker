@@ -17,7 +17,7 @@ const CloseUserKickedFromRoom = 4000
 
 func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 	app.OnRecordAfterUpdateSuccess(models.CollectionNameVoteUsers).BindFunc(func(e *core.RecordEvent) error {
-		realtimeApp := e.App.(realtimeCore.RealtimeApp)
+		realtimeApp := app
 		err := updateSocketAuthState(realtimeApp, e.Record)
 		if err != nil {
 			app.Logger().Warn(
@@ -41,7 +41,7 @@ func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 	})
 
 	app.OnRecordAfterDeleteSuccess(models.CollectionNameVoteUsers).BindFunc(func(e *core.RecordEvent) error {
-		realtimeApp := e.App.(realtimeCore.RealtimeApp)
+		realtimeApp := app
 		err := unsetSocketAuthState(realtimeApp, e.Record)
 		if err != nil {
 			app.Logger().Warn(

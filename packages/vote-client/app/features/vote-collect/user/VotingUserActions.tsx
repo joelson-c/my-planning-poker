@@ -14,16 +14,13 @@ interface VotingUserActionsProps {
 }
 
 export function VotingUserActions({ user }: VotingUserActionsProps) {
-    async function onUserRemoveClick() {
-        await backendClient.send(
-            `/api/vote/collections/voteRooms/remove-user`,
-            {
-                method: 'POST',
-                body: {
-                    target: user.id,
-                },
+    function onUserRemoveClick() {
+        backendClient.send(`/api/vote/collections/voteRooms/remove-user`, {
+            method: 'POST',
+            body: {
+                target: user.id,
             },
-        );
+        });
     }
 
     return (

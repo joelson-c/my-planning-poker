@@ -1,5 +1,7 @@
+import type { User } from './user';
+
 type Distribution = Map<string, number>;
-type VoteByUser = [string, string][];
+type VoteByUser = Pick<User, 'id' | 'vote' | 'nickname'>[];
 
 export interface VoteResult {
     distribution: Distribution;

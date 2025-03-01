@@ -1,7 +1,6 @@
-export class UnauthorizedError extends Response {
+export class UnauthorizedError extends Error {
     constructor() {
-        super('You are not authorized to perform this action.', {
-            status: 401,
-        });
+        super('You are not authorized to perform this action.');
+        this.name = 'UnauthorizedError';
     }
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/router"
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
@@ -23,8 +22,7 @@ func BindRoomHooks(app core.App) {
 }
 
 func BindRoomApis(se *core.ServeEvent) {
-	subGroup := se.Router.Group(fmt.Sprintf("/api/collections/%s/", models.CollectionNameVoteRooms)).
-		Bind(apis.RequireAuth("voteUsers"))
+	subGroup := se.Router.Group(fmt.Sprintf("/api/collections/%s/", models.CollectionNameVoteRooms))
 
 	subGroup.POST("room-auth", func(e *core.RequestEvent) error {
 		data := struct {
@@ -74,22 +72,5 @@ func BindRoomApis(se *core.ServeEvent) {
 		return apis.RecordAuthResponse(e, userRecord, "room", &RoomAuthMeta{
 			RoomId: data.Room,
 		})
-	}).Unbind(apis.DefaultRequireAuthMiddlewareId)
-}
-
-func getTargetFromRequest(e *core.RequestEvent) (*core.Record, *router.ApiError) {
-	data := struct {
-		Target string `json:"target" form:"target"`
-	}{}
-
-	if err := e.BindBody(&data); err != nil {
-		return nil, e.BadRequestError("Failed to read request data", err)
-	}
-
-	targetRecord, err := e.App.FindRecordById(models.CollectionNameVoteUsers, data.Target)
-	if err != nil {
-		return nil, e.NotFoundError("", err)
-	}
-
-	return targetRecord, nil
+	})
 }

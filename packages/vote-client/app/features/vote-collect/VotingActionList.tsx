@@ -3,11 +3,8 @@ import { Button } from '~/components/ui/button';
 import { toast } from '~/lib/useToast';
 import { Share2 } from 'lucide-react';
 import { backendClient } from '~/lib/backend/client';
-import { useRevalidator } from 'react-router';
-
-interface VotingActionsProps {
-    room: Room;
-}
+import { useVoteContext } from '~/lib/context/vote';
+import { useTransition } from 'react';
 
 async function copyRoomToClipboard(room: Room) {
     const roomLink = `${window.location.origin}/join/${room.id}`;
@@ -29,15 +26,16 @@ async function copyRoomToClipboard(room: Room) {
     });
 }
 
-export function VotingActionList({ room }: VotingActionsProps) {
-    const revalidate = useRevalidator();
+export function VotingActionList() {
+    const { room } = useVoteContext();
+    const [, startTransition] = useTransition();
 
     async function revealCards() {
-        await backendClient.collection('voteRooms').update(room.id, {
-            state: 'REVEAL',
+        startTransition(async () => {
+            await backendClient.collection('voteRooms').update(room.id, {
+                state: 'REVEAL',
+            });
         });
-
-        revalidate.revalidate();
     }
 
     return (
