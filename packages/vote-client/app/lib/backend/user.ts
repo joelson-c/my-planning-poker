@@ -2,10 +2,10 @@ import type { RecordOptions } from 'pocketbase';
 import { redirect } from 'react-router';
 import { isClientResponseError, normalizeBackendError } from '../utils';
 import { backendClient } from './client';
-import type { User } from '~/types/user';
+import type { UserRecord } from '~/types/user';
 
 export async function getCurrentUserRoom(
-    currentUser: User,
+    currentUser: UserRecord,
     options?: RecordOptions,
 ) {
     let room;

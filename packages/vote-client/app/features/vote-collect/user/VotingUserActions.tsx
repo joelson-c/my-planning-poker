@@ -1,4 +1,4 @@
-import type { User } from '~/types/user';
+import type { RealtimeUser } from '~/types/user';
 import { CircleEllipsis } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import {
@@ -7,20 +7,22 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
-import { backendClient } from '~/lib/backend/client';
+import { useVoteContext } from '~/lib/context/vote';
 
 interface VotingUserActionsProps {
-    user: User;
+    user: RealtimeUser;
 }
 
 export function VotingUserActions({ user }: VotingUserActionsProps) {
+    const { currentUser, kickUser } = useVoteContext();
+    const isMyself = user.id === currentUser.id;
+
     function onUserRemoveClick() {
-        backendClient.send(`/api/vote/collections/voteRooms/remove-user`, {
-            method: 'POST',
-            body: {
-                target: user.id,
-            },
-        });
+        kickUser(user.id);
+    }
+
+    if (isMyself) {
+        return null;
     }
 
     return (

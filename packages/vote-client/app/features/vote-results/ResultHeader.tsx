@@ -1,4 +1,3 @@
-import type { Room } from '~/types/room';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import {
@@ -8,28 +7,10 @@ import {
     CardTitle,
 } from '~/components/ui/card';
 import { TypographyH2 } from '~/components/ui/typography';
-import { backendClient } from '~/lib/backend/client';
-import { useNavigate } from 'react-router';
-import { useTransition } from 'react';
 import { useVoteContext } from '~/lib/context/vote';
 
 export function ResultHeader() {
-    const { room } = useVoteContext();
-    const navigate = useNavigate();
-    const [, startTransition] = useTransition();
-
-    async function resetRoom() {
-        startTransition(async () => {
-            await backendClient.send<Room>(
-                `/api/vote/collections/voteRooms/reset/${room.id}`,
-                {
-                    method: 'POST',
-                },
-            );
-
-            navigate(`/room/${room.id}`);
-        });
-    }
+    const { resetRoom, roomId } = useVoteContext();
 
     return (
         <Card className="mb-6">
@@ -41,7 +22,7 @@ export function ResultHeader() {
                         Start New Vote
                     </Button>
                 </CardTitle>
-                <CardDescription>Room ID: {room.id}</CardDescription>
+                <CardDescription>Room ID: {roomId}</CardDescription>
             </CardHeader>
         </Card>
     );

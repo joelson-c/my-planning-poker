@@ -1,14 +1,10 @@
-import type { VoteResult } from '~/types/voteResult';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
+import { useVoteResultContext } from './context';
 
-interface ResultIndividualVotesProps {
-    voteResult: VoteResult;
-}
+export function ResultIndividualVotes() {
+    const { votesByUser } = useVoteResultContext();
 
-export function ResultIndividualVotes({
-    voteResult: { votesByUser },
-}: ResultIndividualVotesProps) {
     return (
         <Card className="md:col-span-2">
             <CardHeader>

@@ -1,7 +1,6 @@
 package apis
 
 import (
-	"encoding/json"
 	"log"
 	"log/slog"
 	"runtime/debug"
@@ -98,11 +97,6 @@ func roomWebsocketHandler(e *core.RequestEvent) error {
 	connectEvent.App = realtimeApp
 	connectEvent.Client = client
 	return realtimeApp.OnWebsocketConnected().Trigger(connectEvent, func(we *realtimeCore.WebsocketEvent) error {
-		we.Client.Send(&realtimeSocket.Message{
-			Name: "WS_CONNECTED",
-			Data: json.RawMessage(`{"clientId":"` + we.Client.Id() + `"}`),
-		})
-
 		group.Wait()
 
 		disconnectEvent := new(realtimeCore.WebsocketEvent)

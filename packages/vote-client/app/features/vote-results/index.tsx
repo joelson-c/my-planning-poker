@@ -11,6 +11,7 @@ import { getCurrentUserRoom } from '~/lib/backend/user';
 import { VoteContextProvider } from '~/lib/context/vote';
 import { getCurrentUser } from '~/lib/backend/auth';
 import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
+import { Result } from './Result';
 
 export function meta() {
     return [{ title: 'Planning Poker Results' }];
@@ -70,7 +71,6 @@ export async function clientLoader({
     const mediam = total > 0 ? allVotesValues.sort()[Math.floor(total / 2)] : 0;
 
     return {
-        room,
         currentUser,
         voteResult: {
             distribution,
@@ -83,17 +83,18 @@ export async function clientLoader({
 }
 
 export default function VoteResults({
-    loaderData: { voteResult, room, currentUser },
+    loaderData: { voteResult, currentUser },
+    params: { roomId },
 }: Route.ComponentProps) {
     return (
-        <VoteContextProvider room={room} currentUser={currentUser}>
+        <VoteContextProvider roomId={roomId} currentUser={currentUser}>
             <ResultHeader />
             <RepositoryBanner />
-            <div className="grid gap-6 lg:gap-8 md:grid-cols-2">
-                <ResultVoteDistribution voteResult={voteResult} />
-                <ResultSummary voteResult={voteResult} />
-                <ResultIndividualVotes voteResult={voteResult} />
-            </div>
+            <Result result={voteResult}>
+                <ResultVoteDistribution />
+                <ResultSummary />
+                <ResultIndividualVotes />
+            </Result>
         </VoteContextProvider>
     );
 }

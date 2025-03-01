@@ -1,13 +1,10 @@
-import type { Room } from '~/types/room';
 import { Button } from '~/components/ui/button';
 import { toast } from '~/lib/useToast';
 import { Share2 } from 'lucide-react';
-import { backendClient } from '~/lib/backend/client';
 import { useVoteContext } from '~/lib/context/vote';
-import { useTransition } from 'react';
 
-async function copyRoomToClipboard(room: Room) {
-    const roomLink = `${window.location.origin}/join/${room.id}`;
+async function copyRoomToClipboard(roomId: string) {
+    const roomLink = `${window.location.origin}/join/${roomId}`;
     try {
         await navigator.clipboard.writeText(roomLink);
     } catch (error) {
@@ -27,22 +24,17 @@ async function copyRoomToClipboard(room: Room) {
 }
 
 export function VotingActionList() {
-    const { room } = useVoteContext();
-    const [, startTransition] = useTransition();
+    const { revealRoom, roomId } = useVoteContext();
 
     async function revealCards() {
-        startTransition(async () => {
-            await backendClient.collection('voteRooms').update(room.id, {
-                state: 'REVEAL',
-            });
-        });
+        revealRoom();
     }
 
     return (
         <div className="flex justify-center space-x-6">
             <Button onClick={revealCards}>Reveal Cards</Button>
             <Button
-                onClick={() => copyRoomToClipboard(room)}
+                onClick={() => copyRoomToClipboard(roomId)}
                 variant="secondary"
             >
                 <Share2 className="mr-2 h-4 w-4" />

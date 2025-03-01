@@ -16,6 +16,8 @@ import { Separator } from '~/components/ui/separator';
 import { VotingActionList } from './VotingActionList';
 import { getCurrentUser } from '~/lib/backend/auth';
 import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
+import { getRoomUsers } from '~/lib/backend/room';
+import type { RealtimeUser } from '~/types/user';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];
@@ -40,17 +42,32 @@ export async function clientLoader({
         return redirect(`/room/${room.id}/result`);
     }
 
+    const roomUsers = await getRoomUsers(roomId);
+    const initialUsers = roomUsers.map((user) => {
+        return {
+            id: user.id,
+            hasVoted: user.hasVoted,
+            nickname: user.nickname,
+            observer: user.observer,
+        } satisfies RealtimeUser;
+    });
+
     return {
         currentUser,
+        initialUsers,
     };
 }
 
 export default function VoteCollect({
-    loaderData: { currentUser },
+    loaderData: { currentUser, initialUsers },
     params: { roomId },
 }: Route.ComponentProps) {
     return (
-        <VoteContextProvider roomId={roomId} currentUser={currentUser}>
+        <VoteContextProvider
+            initialUsers={initialUsers}
+            roomId={roomId}
+            currentUser={currentUser}
+        >
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
                 <Card className="flex flex-col w-full">
                     <CardHeader>

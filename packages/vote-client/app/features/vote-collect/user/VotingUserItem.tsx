@@ -1,14 +1,15 @@
-import type { User } from '~/types/user';
+import type { RealtimeUser } from '~/types/user';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { cn } from '~/lib/utils';
-import { VotingUserActions } from './VotingUserActions';
 import { useVoteContext } from '~/lib/context/vote';
+import type { ReactNode } from 'react';
 
 interface VotingUserItemProps {
-    user: User;
+    user: RealtimeUser;
+    children?: ReactNode;
 }
 
-export function VotingUserItem({ user }: VotingUserItemProps) {
+export function VotingUserItem({ user, children }: VotingUserItemProps) {
     const { currentUser } = useVoteContext();
     const isMyself = user.id === currentUser.id;
 
@@ -23,7 +24,7 @@ export function VotingUserItem({ user }: VotingUserItemProps) {
                 </span>
             </div>
             <div className="flex items-center gap-2">
-                {!isMyself && <VotingUserActions user={user} />}
+                {children}
                 <span
                     className={cn(
                         'ml-2 h-3 w-3 rounded-full',

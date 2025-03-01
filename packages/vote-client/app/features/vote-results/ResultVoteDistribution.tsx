@@ -1,14 +1,10 @@
-import type { VoteResult } from '~/types/voteResult';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Progress } from '~/components/ui/progress';
+import { useVoteResultContext } from './context';
 
-interface ResultVoteDistributionProps {
-    voteResult: VoteResult;
-}
+export function ResultVoteDistribution() {
+    const { distribution, total } = useVoteResultContext();
 
-export function ResultVoteDistribution({
-    voteResult: { distribution, total },
-}: ResultVoteDistributionProps) {
     return (
         <Card>
             <CardHeader>

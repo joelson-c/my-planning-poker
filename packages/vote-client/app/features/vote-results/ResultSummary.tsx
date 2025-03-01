@@ -1,14 +1,10 @@
-import type { VoteResult } from '~/types/voteResult';
 import { Badge } from '~/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
+import { useVoteResultContext } from './context';
 
-interface ResultSummaryProps {
-    voteResult: VoteResult;
-}
+export function ResultSummary() {
+    const { total, average, mediam } = useVoteResultContext();
 
-export function ResultSummary({
-    voteResult: { total, average, mediam },
-}: ResultSummaryProps) {
     return (
         <Card>
             <CardHeader>

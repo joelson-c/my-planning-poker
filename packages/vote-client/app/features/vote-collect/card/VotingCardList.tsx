@@ -3,13 +3,13 @@ import { VotingCardItem } from './VotingCardItem';
 import { useActionState, useOptimistic, useTransition } from 'react';
 import { backendClient } from '~/lib/backend/client';
 import { useVoteContext } from '~/lib/context/vote';
-import type { User } from '~/types/user';
+import type { UserRecord } from '~/types/user';
 
 type VoteState = string | null;
 
 interface UserVotePayload {
     vote: VoteState;
-    currentUser: User;
+    currentUser: UserRecord;
 }
 
 async function updateUserVote(
@@ -33,7 +33,7 @@ export function VotingCardList() {
     const [currentVote, dispatchVote] = useActionState<
         VoteState,
         UserVotePayload
-    >(updateUserVote, null);
+    >(updateUserVote, currentUser.vote || null);
 
     const [optimisticVote, setOptimisticVote] = useOptimistic<
         VoteState,

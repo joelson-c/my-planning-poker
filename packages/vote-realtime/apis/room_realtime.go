@@ -11,44 +11,7 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-type KickUserPayload struct {
-	TargetUser string `json:"targetUser"`
-}
-
 func BindRoomRealtimeHooks(app realtimeCore.RealtimeApp) {
-	app.OnWebsocketConnected().BindFunc(func(e *realtimeCore.WebsocketEvent) error {
-		user := getSocketUser(e)
-		connectionMessage := &websocket.Message{
-			Name: "WS_USER_CONNECTED",
-			Data: json.RawMessage(`{"userId": "` + user.Id + `"}`),
-		}
-
-		e.App.WebsocketBroker().BroadcastMessage(
-			connectionMessage,
-			e.Client.Subscription(),
-			WebsocketChunkSize,
-		)
-
-		return e.Next()
-	})
-
-	app.OnWebsocketClosed().BindFunc(func(e *realtimeCore.WebsocketEvent) error {
-		user := getSocketUser(e)
-		connectionMessage := &websocket.Message{
-			Name: "WS_USER_DISCONNECTED",
-			Data: json.RawMessage(`{"userId": "` + user.Id + `"}`),
-		}
-
-		e.App.WebsocketBroker().BroadcastMessage(
-			connectionMessage,
-			e.Client.Subscription(),
-			WebsocketChunkSize,
-			e.Client.Id(),
-		)
-
-		return e.Next()
-	})
-
 	app.OnWebsocketMessage("WS_REVEAL", "WS_RESET").BindFunc(func(e *realtimeCore.WebsocketMessageEvent) error {
 		room, err := e.App.FindRecordById(models.CollectionNameVoteRooms, e.Client.Subscription())
 		if err != nil {
@@ -103,7 +66,7 @@ func BindRoomRealtimeHooks(app realtimeCore.RealtimeApp) {
 
 		roomStateMessage := &websocket.Message{
 			Name: "WS_ROOM_STATE_CHANGED",
-			Data: json.RawMessage(room.GetString("state")),
+			Data: json.RawMessage(`{"state": "` + room.GetString("state") + `"}`),
 		}
 
 		e.App.WebsocketBroker().BroadcastMessage(

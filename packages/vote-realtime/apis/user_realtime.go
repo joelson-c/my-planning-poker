@@ -15,7 +15,67 @@ import (
 
 const CloseUserKickedFromRoom = 4000
 
+type KickUserPayload struct {
+	TargetUser string `json:"targetUser"`
+}
+
+type RealtimeUserPayload struct {
+	Id       string `json:"id"`
+	Nickname string `json:"nickname"`
+	HasVoted bool   `json:"hasVoted"`
+	Observer bool   `json:"observer"`
+}
+
+type RemovedUserPayload struct {
+	Id       string `json:"id"`
+	Nickname string `json:"nickname"`
+}
+
 func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
+	app.OnWebsocketConnected().BindFunc(func(e *realtimeCore.WebsocketEvent) error {
+		user := getSocketUser(e)
+		payload, err := json.Marshal(RealtimeUserPayload{
+			Id:       user.Id,
+			Nickname: user.GetString("nickname"),
+			HasVoted: user.GetString("vote") != "",
+			Observer: user.GetBool("observer"),
+		})
+
+		if err != nil {
+			return err
+		}
+
+		connectionMessage := &realtimeSocket.Message{
+			Name: "WS_USER_CONNECTED",
+			Data: json.RawMessage(payload),
+		}
+
+		e.App.WebsocketBroker().BroadcastMessage(
+			connectionMessage,
+			e.Client.Subscription(),
+			WebsocketChunkSize,
+		)
+
+		return e.Next()
+	})
+
+	app.OnWebsocketClosed().BindFunc(func(e *realtimeCore.WebsocketEvent) error {
+		user := getSocketUser(e)
+		connectionMessage := &realtimeSocket.Message{
+			Name: "WS_USER_DISCONNECTED",
+			Data: json.RawMessage(`{"userId": "` + user.Id + `"}`),
+		}
+
+		e.App.WebsocketBroker().BroadcastMessage(
+			connectionMessage,
+			e.Client.Subscription(),
+			WebsocketChunkSize,
+			e.Client.Id(),
+		)
+
+		return e.Next()
+	})
+
 	app.OnRecordAfterUpdateSuccess(models.CollectionNameVoteUsers).BindFunc(func(e *core.RecordEvent) error {
 		realtimeApp := app
 		err := updateSocketAuthState(realtimeApp, e.Record)
@@ -28,10 +88,21 @@ func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 			)
 		}
 
+		payload, err := json.Marshal(RealtimeUserPayload{
+			Id:       e.Record.Id,
+			Nickname: e.Record.GetString("nickname"),
+			HasVoted: e.Record.GetString("vote") != "",
+			Observer: e.Record.GetBool("observer"),
+		})
+
+		if err != nil {
+			return err
+		}
+
 		realtimeApp.WebsocketBroker().BroadcastMessage(
 			&realtimeSocket.Message{
 				Name: "WS_USER_UPDATED",
-				Data: json.RawMessage(`{"userId": "` + e.Record.Id + `"}`),
+				Data: json.RawMessage(payload),
 			},
 			e.Record.GetString("room"),
 			WebsocketChunkSize,
@@ -51,15 +122,6 @@ func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 				slog.String("error", err.Error()),
 			)
 		}
-
-		realtimeApp.WebsocketBroker().BroadcastMessage(
-			&realtimeSocket.Message{
-				Name: "WS_USER_UPDATED",
-				Data: json.RawMessage(`{"userId": "` + e.Record.Id + `"}`),
-			},
-			e.Record.GetString("room"),
-			WebsocketChunkSize,
-		)
 
 		return e.Next()
 	})
@@ -107,6 +169,24 @@ func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 			}
 		}
 
+		msgPayload, err := json.Marshal(RemovedUserPayload{
+			Id:       targetUser.Id,
+			Nickname: targetUser.GetString("nickname"),
+		})
+
+		if err != nil {
+			return err
+		}
+
+		e.App.WebsocketBroker().BroadcastMessage(
+			&realtimeSocket.Message{
+				Name: "WS_USER_REMOVED",
+				Data: json.RawMessage(msgPayload),
+			},
+			targetUser.GetString("room"),
+			WebsocketChunkSize,
+		)
+
 		e.App.Logger().Info(
 			"Removed user from room",
 			slog.String("room", user.GetString("room")),
@@ -119,37 +199,38 @@ func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 }
 
 func updateSocketAuthState(app realtimeCore.RealtimeApp, newRecord *core.Record) error {
-	clientChunks := app.WebsocketBroker().GetChunkedClientsBySubscription(newRecord.GetString("room"), WebsocketChunkSize)
-	group := new(errgroup.Group)
-	for _, chunk := range clientChunks {
-		group.Go(func() error {
-			for _, client := range chunk {
-				clientAuth, _ := client.Get(WebsocketClientAuthKey).(*core.Record)
-				if clientAuth != nil &&
-					clientAuth.Id == newRecord.Id &&
-					clientAuth.Collection().Name == newRecord.Collection().Name {
-					client.Set(WebsocketClientAuthKey, newRecord)
-				}
-			}
-
-			return nil
-		})
+	client, err := getSocketUserByRecord(app, newRecord)
+	if err != nil {
+		return err
 	}
 
-	return group.Wait()
+	client.Set(WebsocketClientAuthKey, newRecord)
+	return nil
 }
 
 func unsetSocketAuthState(app realtimeCore.RealtimeApp, newRecord *core.Record) error {
-	clientChunks := app.WebsocketBroker().GetChunkedClientsBySubscription(newRecord.GetString("room"), WebsocketChunkSize)
+	client, err := getSocketUserByRecord(app, newRecord)
+	if err != nil {
+		return err
+	}
+
+	client.Unset(WebsocketClientAuthKey)
+	return nil
+}
+
+func getSocketUserByRecord(app realtimeCore.RealtimeApp, record *core.Record) (realtimeSocket.Client, error) {
+	clientChunks := app.WebsocketBroker().GetChunkedClientsBySubscription(record.GetString("room"), WebsocketChunkSize)
 	group := new(errgroup.Group)
+	clientChan := make(chan realtimeSocket.Client)
+
 	for _, chunk := range clientChunks {
 		group.Go(func() error {
 			for _, client := range chunk {
 				clientAuth, _ := client.Get(WebsocketClientAuthKey).(*core.Record)
 				if clientAuth != nil &&
-					clientAuth.Id == newRecord.Id &&
-					clientAuth.Collection().Name == newRecord.Collection().Name {
-					client.Unset(WebsocketClientAuthKey)
+					clientAuth.Id == record.Id &&
+					clientAuth.Collection().Name == record.Collection().Name {
+					clientChan <- client
 				}
 			}
 
@@ -157,5 +238,5 @@ func unsetSocketAuthState(app realtimeCore.RealtimeApp, newRecord *core.Record) 
 		})
 	}
 
-	return group.Wait()
+	return <-clientChan, nil
 }
