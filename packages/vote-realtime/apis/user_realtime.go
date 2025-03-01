@@ -33,7 +33,12 @@ type RemovedUserPayload struct {
 
 func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 	app.OnWebsocketConnected().BindFunc(func(e *realtimeCore.WebsocketEvent) error {
-		user := getSocketUser(e)
+		user := getSocketUserByEvent(e)
+		user.Set("active", true)
+		if err := e.App.Save(user); err != nil {
+			return err
+		}
+
 		payload, err := json.Marshal(RealtimeUserPayload{
 			Id:       user.Id,
 			Nickname: user.GetString("nickname"),
@@ -60,7 +65,7 @@ func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 	})
 
 	app.OnWebsocketClosed().BindFunc(func(e *realtimeCore.WebsocketEvent) error {
-		user := getSocketUser(e)
+		user := getSocketUserByEvent(e)
 		connectionMessage := &realtimeSocket.Message{
 			Name: "WS_USER_DISCONNECTED",
 			Data: json.RawMessage(`{"userId": "` + user.Id + `"}`),
@@ -72,6 +77,11 @@ func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 			WebsocketChunkSize,
 			e.Client.Id(),
 		)
+
+		user.Set("active", false)
+		if err := e.App.Save(user); err != nil {
+			return err
+		}
 
 		return e.Next()
 	})
@@ -214,7 +224,7 @@ func unsetSocketAuthState(app realtimeCore.RealtimeApp, newRecord *core.Record) 
 		return err
 	}
 
-	client.Unset(WebsocketClientAuthKey)
+	client.Discard(nil)
 	return nil
 }
 
@@ -234,9 +244,13 @@ func getSocketUserByRecord(app realtimeCore.RealtimeApp, record *core.Record) (r
 				}
 			}
 
-			return nil
+			return fmt.Errorf("Client not found")
 		})
 	}
 
 	return <-clientChan, nil
+}
+
+func getSocketUserByEvent(e *realtimeCore.WebsocketEvent) *core.Record {
+	return e.Client.Get(WebsocketClientAuthKey).(*core.Record)
 }

@@ -11,4 +11,5 @@ func bindAppHooks(app core.RealtimeApp) {
 	apis.BindUserRealtimeHooks(app)
 	apis.BindRoomHooks(app)
 	apis.BindUserEvents(app)
+	apis.BindPruneHooks(app)
 }

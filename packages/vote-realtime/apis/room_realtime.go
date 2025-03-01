@@ -79,10 +79,6 @@ func BindRoomRealtimeHooks(app realtimeCore.RealtimeApp) {
 	})
 }
 
-func getSocketUser(e *realtimeCore.WebsocketEvent) *core.Record {
-	return e.Client.Get(WebsocketClientAuthKey).(*core.Record)
-}
-
 func resetRoomVotes(e *realtimeCore.WebsocketMessageEvent, room *core.Record) error {
 	e.App.Logger().Info(
 		"Resetting votes for room",

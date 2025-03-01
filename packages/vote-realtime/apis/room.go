@@ -7,7 +7,6 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 type RoomAuthMeta struct {
@@ -63,7 +62,7 @@ func BindRoomApis(se *core.ServeEvent) {
 		userRecord.Set("room", data.Room)
 		userRecord.Set("observer", data.IsObserver)
 		userRecord.Set("owner", totalUsers == 0)
-		userRecord.Set("lastActive", types.NowDateTime())
+		userRecord.Set("active", true)
 		userRecord.SetRandomPassword()
 		if err := e.App.Save(userRecord); err != nil {
 			return err
