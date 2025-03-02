@@ -8,7 +8,8 @@
         "dev": "react-router dev",
         "lint": "eslint",
         "start": "react-router-serve build/server/index.js",
-        "typecheck": "react-router typegen && tsc"
+        "typecheck": "react-router typegen && tsc",
+        "e2e": "playwright test"
     },
     "dependencies": {
         "@hookform/resolvers": "^3.10.0",
@@ -38,6 +39,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.17.0",
+        "@playwright/test": "^1.50.1",
         "@react-router/dev": "^7.1.1",
         "@types/react": "^19.0.10",
         "@types/react-dom": "^19.0.4",

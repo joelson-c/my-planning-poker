@@ -11,6 +11,7 @@
         "dev:client": "npm run -w @planningpoker/vote-client dev",
         "build:client": "npm run -w @planningpoker/vote-client build",
         "preview:client": "npm run -w @planningpoker/vote-client preview",
+        "e2e:client": "npm run -w @planningpoker/vote-client e2e",
         "prepare": "node .husky/install.mjs",
         "commit": "commit"
     },
