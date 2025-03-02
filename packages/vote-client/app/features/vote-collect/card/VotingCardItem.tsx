@@ -22,6 +22,8 @@ export function VotingCardItem({
             variant={selected ? 'default' : 'outline'}
             className={cn('h-16 lg:h-20 text-2xl', className)}
             disabled={currentUser.observer}
+            role="switch"
+            aria-checked={selected}
         >
             {value}
         </Button>

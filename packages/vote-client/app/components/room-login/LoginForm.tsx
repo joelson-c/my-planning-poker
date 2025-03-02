@@ -12,6 +12,7 @@ import { Label } from '~/components/ui/label';
 import { Input } from '~/components/ui/input';
 import { Switch } from '~/components/ui/switch';
 import { Button } from '~/components/ui/button';
+import { InputError } from '../InputError';
 
 interface LoginFormProps {
     roomId?: string;
@@ -54,13 +55,10 @@ export function LoginForm({ roomId, prevNickname, schema }: LoginFormProps) {
                         id="nickname"
                         placeholder="Enter your nickname"
                         aria-invalid={errors.nickname ? 'true' : 'false'}
+                        aria-errormessage="nickname-error"
                         {...register('nickname')}
                     />
-                    {errors.nickname && (
-                        <p className="text-sm text-red-500" role="alert">
-                            {errors.nickname.message}
-                        </p>
-                    )}
+                    <InputError error={errors.nickname} id="nickname-error" />
                 </div>
                 {isJoining && (
                     <>
@@ -70,14 +68,11 @@ export function LoginForm({ roomId, prevNickname, schema }: LoginFormProps) {
                                 id="roomId"
                                 readOnly={!!roomId}
                                 aria-invalid={errors.roomId ? 'true' : 'false'}
+                                aria-errormessage="roomId-error"
                                 {...register('roomId')}
                             />
                         </div>
-                        {errors.roomId && (
-                            <p className="text-sm text-red-500" role="alert">
-                                {errors.roomId.message}
-                            </p>
-                        )}
+                        <InputError error={errors.roomId} id="roomId-error" />
                     </>
                 )}
                 <div className="flex items-center space-x-2">

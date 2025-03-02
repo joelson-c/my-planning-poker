@@ -28,8 +28,8 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     const joinData = roomCreateSchema.parse(inputData);
 
     const room = await backendClient.collection('voteRooms').create({
-        cardType: ['FIBONACCI'],
-        state: ['VOTING'],
+        cardType: 'FIBONACCI',
+        state: 'VOTING',
     });
 
     localStorage.setItem('lastNickname', joinData.nickname);
@@ -46,15 +46,10 @@ export default function RoomCreate({
 }: Route.ComponentProps) {
     return (
         <LoginCard title="Create a Room">
-            <div className="flex flex-col gap-4">
-                <LoginForm
-                    prevNickname={prevNickname}
-                    schema={roomCreateSchema}
-                />
-                <Button variant="link" asChild>
-                    <Link to="/join">Join a Room</Link>
-                </Button>
-            </div>
+            <LoginForm prevNickname={prevNickname} schema={roomCreateSchema} />
+            <Button variant="link" asChild>
+                <Link to="/join">Join a Room</Link>
+            </Button>
         </LoginCard>
     );
 }

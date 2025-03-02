@@ -25,17 +25,15 @@ export async function getCurrentUser() {
         throw new UnauthorizedError();
     }
 
+    let currentUserAuth;
     try {
-        await backendClient.collection('voteUsers').authRefresh();
+        currentUserAuth = await backendClient
+            .collection('voteUsers')
+            .authRefresh();
     } catch {
         backendClient.authStore.clear();
         throw new UnauthorizedError();
     }
 
-    const currentUser = backendClient.authStore.record;
-    if (!currentUser) {
-        throw new UnauthorizedError();
-    }
-
-    return currentUser;
+    return currentUserAuth.record;
 }

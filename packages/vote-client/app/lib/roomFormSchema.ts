@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const roomJoinSchema = z.object({
     nickname: z.string().min(2).max(32),
-    isObserver: z.boolean().default(false),
+    isObserver: z.coerce.boolean().default(false),
     roomId: z.string().min(1),
 });
 

@@ -39,16 +39,14 @@ export default function RoomJoin({
 
     return (
         <LoginCard title="Join a Room">
-            <div className="flex flex-col gap-4">
-                <LoginForm
-                    roomId={roomId}
-                    prevNickname={prevNickname}
-                    schema={roomJoinSchema}
-                />
-                <Button variant="link" asChild>
-                    <Link to="/">Create a new room</Link>
-                </Button>
-            </div>
+            <LoginForm
+                roomId={roomId}
+                prevNickname={prevNickname}
+                schema={roomJoinSchema}
+            />
+            <Button variant="link" asChild>
+                <Link to="/">Create a new room</Link>
+            </Button>
         </LoginCard>
     );
 }

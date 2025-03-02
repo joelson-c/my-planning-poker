@@ -13,6 +13,12 @@ export function VotingUserItem({ user, children }: VotingUserItemProps) {
     const { currentUser } = useVoteContext();
     const isMyself = user.id === currentUser.id;
 
+    const statusLabel = user.observer
+        ? 'Observer'
+        : user.hasVoted
+        ? 'Voted'
+        : 'Not voted';
+
     return (
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 grow">
@@ -34,6 +40,8 @@ export function VotingUserItem({ user, children }: VotingUserItemProps) {
                             !user.hasVoted && 'bg-red-500',
                         ],
                     )}
+                    role="status"
+                    title={statusLabel}
                 />
             </div>
         </div>

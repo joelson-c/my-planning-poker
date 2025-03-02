@@ -16,14 +16,16 @@ interface LoginCardProps {
 
 export function LoginCard({ title, children }: LoginCardProps) {
     return (
-        <div className="flex justify-center items-center h-[calc(100vh-96px)]">
+        <section className="flex justify-center items-center h-[calc(100vh-96px)]">
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold text-center">
-                        {title}
+                        <h2>{title}</h2>
                     </CardTitle>
                 </CardHeader>
-                <CardContent>{children}</CardContent>
+                <CardContent className="flex flex-col gap-4">
+                    {children}
+                </CardContent>
                 <CardFooter className="flex flex-col items-center space-y-4">
                     <Separator />
                     <div className="text-sm text-center text-muted-foreground">
@@ -33,6 +35,6 @@ export function LoginCard({ title, children }: LoginCardProps) {
                     <RepositoryLink />
                 </CardFooter>
             </Card>
-        </div>
+        </section>
     );
 }

@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import type { FixtureOptions } from 'tests/fixtures';
 
 /**
  * Read environment variables from file.
@@ -8,16 +9,13 @@ import { defineConfig, devices } from '@playwright/test';
 // import path from 'path';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
-// Use process.env.PORT by default and fallback to port 3000
-const PORT = process.env.PORT || 5173;
-
-// Set webServer.url and use.baseURL with the location of the WebServer respecting the correct set port
+const PORT = process.env.PORT || 80;
 const baseURL = `http://localhost:${PORT}`;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-export default defineConfig({
+export default defineConfig<FixtureOptions>({
     testDir: './tests',
     /* Run tests in files in parallel */
     fullyParallel: true,
@@ -33,6 +31,7 @@ export default defineConfig({
     use: {
         /* Base URL to use in actions like `await page.goto('/')`. */
         baseURL,
+        ignoreHTTPSErrors: true,
 
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: 'on-first-retry',
@@ -41,8 +40,13 @@ export default defineConfig({
     /* Configure projects for major browsers */
     projects: [
         {
+            name: 'setup',
+            testMatch: /.*\.setup\.ts/,
+        },
+        {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
+            dependencies: ['setup'],
         },
 
         // {
@@ -59,10 +63,12 @@ export default defineConfig({
         {
             name: 'Mobile Chrome',
             use: { ...devices['Pixel 5'] },
+            dependencies: ['setup'],
         },
         {
             name: 'Mobile Safari',
             use: { ...devices['iPhone 12'] },
+            dependencies: ['setup'],
         },
 
         /* Test against branded browsers. */
@@ -75,11 +81,4 @@ export default defineConfig({
         //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
         // },
     ],
-
-    /* Run your local dev server before starting the tests */
-    webServer: {
-        command: 'npm run dev',
-        url: baseURL,
-        reuseExistingServer: !process.env.CI,
-    },
 });
