@@ -20,12 +20,12 @@
         "packages/*"
     ],
     "devDependencies": {
-        "@commitlint/cli": "^19.5.0",
-        "@commitlint/config-conventional": "^19.5.0",
-        "@commitlint/config-lerna-scopes": "^19.5.0",
-        "@commitlint/prompt-cli": "^19.5.0",
-        "@faker-js/faker": "^9.0.3",
-        "husky": "^9.1.6",
-        "typescript": "^5.6.2"
+        "@commitlint/cli": "^19.7.1",
+        "@commitlint/config-conventional": "^19.7.1",
+        "@commitlint/config-lerna-scopes": "^19.7.0",
+        "@commitlint/prompt-cli": "^19.7.1",
+        "@faker-js/faker": "^9.5.1",
+        "husky": "^9.1.7",
+        "typescript": "^5.7.3"
     }
 }
