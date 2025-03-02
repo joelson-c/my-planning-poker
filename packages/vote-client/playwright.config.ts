@@ -1,5 +1,4 @@
 import { defineConfig, devices } from '@playwright/test';
-import type { FixtureOptions } from 'tests/fixtures';
 
 /**
  * Read environment variables from file.
@@ -15,7 +14,7 @@ const baseURL = `http://localhost:${PORT}`;
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-export default defineConfig<FixtureOptions>({
+export default defineConfig({
     testDir: './tests',
     /* Run tests in files in parallel */
     fullyParallel: true,
@@ -34,14 +33,19 @@ export default defineConfig<FixtureOptions>({
         ignoreHTTPSErrors: true,
 
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-        trace: 'on-first-retry',
+        trace: 'retain-on-failure',
     },
 
     /* Configure projects for major browsers */
     projects: [
         {
+            name: 'room setup',
+            testMatch: /room\.setup\.ts/,
+        },
+        {
             name: 'setup',
-            testMatch: /.*\.setup\.ts/,
+            testMatch: /(?<!room)\.setup\.ts/,
+            dependencies: ['room setup'],
         },
         {
             name: 'chromium',
