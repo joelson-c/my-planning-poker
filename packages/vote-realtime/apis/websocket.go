@@ -208,14 +208,23 @@ func validateUserCredentials(e *core.RequestEvent) (*core.Record, *core.Record, 
 
 	user, err := e.App.FindAuthRecordByToken(authToken, core.TokenTypeAuth)
 	if err != nil {
+		e.App.Logger().Debug("Errow while finding auth token record", slog.String("error", err.Error()))
 		return nil, nil, e.UnauthorizedError("Invalid auth token.", err)
 	}
 
 	if user.Collection().Name != models.CollectionNameVoteUsers {
+		e.App.Logger().Debug("Auth token collection is unexpected",
+			slog.String("collection", user.Collection().Name),
+			slog.String("expected", models.CollectionNameVoteUsers),
+		)
 		return nil, nil, e.UnauthorizedError("Invalid auth token.", nil)
 	}
 
 	if user.GetString("room") != room.Id {
+		e.App.Logger().Debug("User is not a member of the room specified in the auth token",
+			slog.String("tokenRoom", user.GetString("room")),
+			slog.String("targetRoom", room.Id),
+		)
 		return nil, nil, e.UnauthorizedError("Invalid auth token.", nil)
 	}
 
