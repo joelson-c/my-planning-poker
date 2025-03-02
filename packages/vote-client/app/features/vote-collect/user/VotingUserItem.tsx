@@ -15,7 +15,7 @@ export function VotingUserItem({ user, children }: VotingUserItemProps) {
 
     return (
         <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 flex-grow">
+            <div className="flex items-center gap-2 grow">
                 <Avatar>
                     <AvatarFallback>{user.nickname.charAt(0)}</AvatarFallback>
                 </Avatar>
