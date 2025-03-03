@@ -39,15 +39,6 @@ export default defineConfig({
     /* Configure projects for major browsers */
     projects: [
         {
-            name: 'room setup',
-            testMatch: /room\.setup\.ts/,
-        },
-        {
-            name: 'setup',
-            testMatch: /(?<!room)\.setup\.ts/,
-            dependencies: ['room setup'],
-        },
-        {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
         },
