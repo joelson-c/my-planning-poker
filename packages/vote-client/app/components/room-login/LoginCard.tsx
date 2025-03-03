@@ -28,10 +28,10 @@ export function LoginCard({ title, children }: LoginCardProps) {
                 </CardContent>
                 <CardFooter className="flex flex-col items-center space-y-4">
                     <Separator />
-                    <div className="text-sm text-center text-muted-foreground">
+                    <aside className="text-sm text-center text-muted-foreground">
                         This is an open-source project. Contribute or star us on
                         GitHub!
-                    </div>
+                    </aside>
                     <RepositoryLink />
                 </CardFooter>
             </Card>

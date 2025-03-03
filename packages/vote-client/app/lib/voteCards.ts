@@ -1,6 +1,6 @@
 import type { CardType } from '~/types/room';
 
-export function useVotingCards(variant: CardType): string[] {
+export function getCardsForVariant(variant: CardType): string[] {
     switch (variant) {
         case 'FIBONACCI':
             return ['0', '1', '2', '3', '5', '8', '13', '21', '34', '55', '89'];

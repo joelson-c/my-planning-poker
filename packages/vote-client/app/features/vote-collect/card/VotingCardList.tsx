@@ -1,4 +1,4 @@
-import { useVotingCards } from '~/lib/useVotingCards';
+import { getCardsForVariant } from '~/lib/voteCards';
 import { VotingCardItem } from './VotingCardItem';
 import { useActionState, useOptimistic, useTransition } from 'react';
 import { backendClient } from '~/lib/backend/client';
@@ -28,7 +28,7 @@ async function updateUserVote(
 export function VotingCardList() {
     const { currentUser } = useVoteContext();
     // TODO: add realtime support for card types
-    const cards = useVotingCards('FIBONACCI');
+    const cards = getCardsForVariant('FIBONACCI');
 
     const [currentVote, dispatchVote] = useActionState<
         VoteState,

@@ -1,4 +1,5 @@
 import type { Route } from './+types';
+import type { RealtimeUser } from '~/types/user';
 import { redirect } from 'react-router';
 import { VotingUserList } from './user/VotingUserList';
 import {
@@ -17,7 +18,7 @@ import { VotingActionList } from './VotingActionList';
 import { getCurrentUser } from '~/lib/backend/auth';
 import { UnauthorizedError } from '~/lib/errors/UnauthorizedError';
 import { getRoomUsers } from '~/lib/backend/room';
-import type { RealtimeUser } from '~/types/user';
+import { clearResultCache } from '../vote-results/voteResultCache.client';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];
@@ -26,6 +27,8 @@ export function meta() {
 export async function clientLoader({
     params: { roomId },
 }: Route.ClientLoaderArgs) {
+    clearResultCache();
+
     let currentUser;
     try {
         currentUser = await getCurrentUser();
@@ -84,10 +87,12 @@ export default function VoteCollect({
                 </Card>
                 <Card className="w-full lg:w-1/3">
                     <CardHeader>
-                        <CardTitle>Users in Room</CardTitle>
+                        <CardTitle id="users-in-room-title">
+                            Users in Room
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <VotingUserList />
+                        <VotingUserList aria-labelledby="users-in-room-title" />
                     </CardContent>
                 </Card>
             </div>

@@ -6,26 +6,34 @@ export function ResultSummary() {
     const { total, average, mediam } = useVoteResultContext();
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-2">
-                    <div className="flex justify-between">
-                        <span>Total Votes:</span>
-                        <Badge variant="secondary">{total}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span>Average:</span>
-                        <Badge variant="secondary">{average || 'N/A'}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                        <span>Median:</span>
-                        <Badge variant="secondary">{mediam || 'N/A'}</Badge>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+        <section aria-labelledby="summary-title">
+            <Card>
+                <CardHeader>
+                    <CardTitle id="summary-title">Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <dl className="space-y-2">
+                        <div className="flex justify-between">
+                            <dt>Total Votes:</dt>
+                            <Badge variant="secondary">
+                                <dd>{total}</dd>
+                            </Badge>
+                        </div>
+                        <div className="flex justify-between">
+                            <dt>Average:</dt>
+                            <Badge variant="secondary">
+                                <dd>{average || 'N/A'}</dd>
+                            </Badge>
+                        </div>
+                        <div className="flex justify-between">
+                            <dt>Median:</dt>
+                            <Badge variant="secondary">
+                                <dd>{mediam || 'N/A'}</dd>
+                            </Badge>
+                        </div>
+                    </dl>
+                </CardContent>
+            </Card>
+        </section>
     );
 }

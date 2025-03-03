@@ -4,6 +4,7 @@ export class VoteCollect {
     readonly pageHeader: Locator;
     readonly revalCardsButton: Locator;
     readonly shareRoomButton: Locator;
+    readonly userList: Locator;
 
     constructor(readonly page: Page, readonly roomId: string) {
         this.pageHeader = page.getByRole('heading', { name: 'Cast Your Vote' });
@@ -11,7 +12,10 @@ export class VoteCollect {
             name: 'Reveal Cards',
         });
         this.shareRoomButton = page.getByRole('button', { name: 'Share Room' });
-        this.shareRoomButton = page.getByRole('button', { name: 'Share Room' });
+        this.userList = page.getByRole('list', {
+            name: 'Users in Room',
+            exact: true,
+        });
     }
 
     async goto() {
@@ -47,15 +51,20 @@ export class VoteCollect {
     }
 
     getVoteButton(vote: string) {
-        return this.page.getByRole('switch', { name: vote });
+        return this.page.getByRole('switch', { name: vote, exact: true });
     }
 
     getStatusIndicator(status: string) {
-        return this.page.getByRole('status', { name: status, exact: true });
+        return this.getUserListItem().getByRole('status', {
+            name: status,
+            exact: true,
+        });
     }
 
-    async getUserListItem() {
-        return this.page.getByText(await this.getNickname());
+    getUserListItem() {
+        return this.userList
+            .getByRole('listitem')
+            .and(this.userList.locator('[data-ref="self"]'));
     }
 
     getNickname() {

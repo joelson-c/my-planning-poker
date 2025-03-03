@@ -28,7 +28,7 @@ interface VoteContextProviderProps {
     children: ReactNode;
     roomId: Room['id'];
     currentUser: UserRecord;
-    initialUsers: RealtimeUser[];
+    initialUsers?: RealtimeUser[];
 }
 
 export function VoteContextProvider({

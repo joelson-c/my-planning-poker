@@ -1,6 +1,6 @@
 import type { UserRecord } from './user';
 
-type Distribution = Map<string, number>;
+type Distribution = Record<string, number>;
 type VoteByUser = Pick<UserRecord, 'id' | 'vote' | 'nickname'>[];
 
 export interface VoteResult {

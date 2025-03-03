@@ -2,7 +2,7 @@ import type { RealtimeUser } from '~/types/user';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { cn } from '~/lib/utils';
 import { useVoteContext } from '~/lib/context/vote';
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
 interface VotingUserItemProps {
     user: RealtimeUser;
@@ -19,13 +19,26 @@ export function VotingUserItem({ user, children }: VotingUserItemProps) {
         ? 'Voted'
         : 'Not voted';
 
+    const userNameId = useId();
+
     return (
-        <div className="flex items-center justify-between">
+        <li
+            className="flex items-center justify-between"
+            data-ref={isMyself ? 'self' : undefined}
+            aria-labelledby={userNameId}
+        >
             <div className="flex items-center gap-2 grow">
-                <Avatar>
-                    <AvatarFallback>{user.nickname.charAt(0)}</AvatarFallback>
+                <Avatar role="presentation">
+                    <AvatarFallback>
+                        <span aria-hidden="true">
+                            {user.nickname.charAt(0)}
+                        </span>
+                    </AvatarFallback>
                 </Avatar>
-                <span className={cn(isMyself && 'font-semibold')}>
+                <span
+                    className={cn(isMyself && 'font-semibold')}
+                    id={userNameId}
+                >
                     {user.nickname} {user.observer && <>(Observer)</>}
                 </span>
             </div>
@@ -44,6 +57,6 @@ export function VotingUserItem({ user, children }: VotingUserItemProps) {
                     title={statusLabel}
                 />
             </div>
-        </div>
+        </li>
     );
 }
