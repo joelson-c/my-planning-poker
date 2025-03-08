@@ -38,7 +38,7 @@ export async function clientLoader({
 
     let voteResult = getCachedResult();
     if (!voteResult) {
-        voteResult = saveResultToCache(await getVoteResults(room.id));
+        voteResult = saveResultToCache(await getVoteResults());
     }
 
     return {

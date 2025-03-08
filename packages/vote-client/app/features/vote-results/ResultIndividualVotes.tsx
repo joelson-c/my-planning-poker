@@ -22,20 +22,27 @@ export function ResultIndividualVotes() {
                             <li
                                 key={id}
                                 className="flex items-center space-x-4"
+                                aria-label={`${nickname} voted: `}
                             >
-                                <Avatar role="presentation">
+                                <Avatar aria-hidden="true">
                                     <AvatarFallback>
                                         {nickname.slice(0, 1).toUpperCase()}
                                     </AvatarFallback>
                                 </Avatar>
-                                <dl aria-label="Votes by user">
-                                    <dt className="text-sm font-medium">
+                                <span className="inline-flex flex-col gap-1">
+                                    <span
+                                        className="text-sm font-medium"
+                                        aria-hidden="true"
+                                    >
                                         {nickname}
-                                    </dt>
-                                    <dd className="text-sm text-muted-foreground">
-                                        Voted: {vote}
-                                    </dd>
-                                </dl>
+                                    </span>
+                                    <span className="text-sm text-muted-foreground">
+                                        <span aria-hidden="true">Voted: </span>
+                                        <span data-testid="individual-vote">
+                                            {vote}
+                                        </span>
+                                    </span>
+                                </span>
                             </li>
                         ))}
                     </ul>

@@ -16,19 +16,21 @@ export function ResultSummary() {
                         <div className="flex justify-between">
                             <dt>Total Votes:</dt>
                             <Badge variant="secondary">
-                                <dd>{total}</dd>
+                                <dd data-testid="total-votes">{total}</dd>
                             </Badge>
                         </div>
                         <div className="flex justify-between">
                             <dt>Average:</dt>
                             <Badge variant="secondary">
-                                <dd>{average || 'N/A'}</dd>
+                                <dd data-testid="average">
+                                    {average || 'N/A'}
+                                </dd>
                             </Badge>
                         </div>
                         <div className="flex justify-between">
                             <dt>Median:</dt>
                             <Badge variant="secondary">
-                                <dd>{mediam || 'N/A'}</dd>
+                                <dd data-testid="median">{mediam || 'N/A'}</dd>
                             </Badge>
                         </div>
                     </dl>

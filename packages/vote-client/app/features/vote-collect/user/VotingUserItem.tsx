@@ -28,12 +28,8 @@ export function VotingUserItem({ user, children }: VotingUserItemProps) {
             aria-labelledby={userNameId}
         >
             <div className="flex items-center gap-2 grow">
-                <Avatar role="presentation">
-                    <AvatarFallback>
-                        <span aria-hidden="true">
-                            {user.nickname.charAt(0)}
-                        </span>
-                    </AvatarFallback>
+                <Avatar aria-hidden="true">
+                    <AvatarFallback>{user.nickname.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <span
                     className={cn(isMyself && 'font-semibold')}

@@ -181,9 +181,8 @@ func (c *DefaultClient) Discard(closeMessage []byte) {
 		c.closeMessage = closeMessage
 	}
 
-	close(c.writeChannel)
-
 	c.isDiscarded = true
+	close(c.writeChannel)
 }
 
 // IsDiscarded implements the [Client.IsDiscarded] interface method.

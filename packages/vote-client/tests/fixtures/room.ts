@@ -1,6 +1,6 @@
 import { test as base } from './faker';
 import { CreateRoom } from 'tests/pages/CreateRoom';
-import { writeFile, readFile, access, mkdir } from 'node:fs/promises';
+import { writeFile, readFile, access, mkdir, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import config from '../../playwright.config';
 
@@ -48,6 +48,8 @@ export const test = base.extend<object, WorkerFixtures>({
             await writeFile(roomDataPath, roomId);
 
             await use(roomId);
+
+            await unlink(roomDataPath);
         },
         { scope: 'worker' },
     ],

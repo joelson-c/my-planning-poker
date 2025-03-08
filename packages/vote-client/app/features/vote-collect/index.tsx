@@ -46,14 +46,16 @@ export async function clientLoader({
     }
 
     const roomUsers = await getRoomUsers(roomId);
-    const initialUsers = roomUsers.map((user) => {
-        return {
-            id: user.id,
-            hasVoted: user.hasVoted,
-            nickname: user.nickname,
-            observer: user.observer,
-        } satisfies RealtimeUser;
-    });
+    const initialUsers = roomUsers
+        .filter((user) => user.active)
+        .map((user) => {
+            return {
+                id: user.id,
+                hasVoted: user.hasVoted,
+                nickname: user.nickname,
+                observer: user.observer,
+            } satisfies RealtimeUser;
+        });
 
     return {
         currentUser,

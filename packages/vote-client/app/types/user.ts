@@ -7,6 +7,7 @@ export interface UserRecord extends RecordModel {
     room: string;
     vote?: string;
     owner: boolean;
+    active: boolean;
 }
 
 export interface RealtimeUser {
