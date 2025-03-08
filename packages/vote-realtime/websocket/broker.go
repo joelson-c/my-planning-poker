@@ -61,13 +61,13 @@ func (b *Broker) Register(client Client) {
 // Unregister removes a single client by its id and marks it as discarded.
 //
 // If client with clientId doesn't exist, this method does nothing.
-func (b *Broker) Unregister(clientId string) {
+func (b *Broker) Unregister(clientId string, closeMessage []byte) {
 	client := b.clientStore.Get(clientId)
 	if client == nil {
 		return
 	}
 
-	client.Discard(nil)
+	client.Discard(closeMessage)
 	b.clientStore.Remove(clientId)
 
 	subscriptionClients := b.subscriptionStore.Get(client.Subscription())

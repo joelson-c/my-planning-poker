@@ -5,6 +5,7 @@ export class VoteCollect {
     readonly revalCardsButton: Locator;
     readonly shareRoomButton: Locator;
     readonly userList: Locator;
+    private nickname: string | null = null;
 
     constructor(readonly page: Page, readonly roomId: string) {
         this.pageHeader = page.getByRole('heading', { name: 'Cast Your Vote' });
@@ -67,9 +68,13 @@ export class VoteCollect {
             .and(this.userList.locator('[data-ref="self"]'));
     }
 
-    getNickname() {
-        return this.page.evaluate(() => {
-            return localStorage.getItem('lastNickname') || '';
-        });
+    async getNickname() {
+        if (!this.nickname) {
+            this.nickname = await this.page.evaluate(() => {
+                return localStorage.getItem('lastNickname') || '';
+            });
+        }
+
+        return this.nickname;
     }
 }

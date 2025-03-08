@@ -2,18 +2,27 @@ import { expect } from '@playwright/test';
 import { test } from './fixtures';
 import { VoteResult } from './pages/VoteResult';
 
-test('renders with a title', async ({ firstUser, secondUser }) => {
+test('renders with a title after a voting', async ({ firstUser }) => {
     await firstUser.goto();
     await firstUser.vote('13');
-    await secondUser.goto();
-    await secondUser.vote('13');
     await firstUser.reveal();
 
     const firstUserResult = new VoteResult(firstUser.page, firstUser.roomId);
-    const secondUserResult = new VoteResult(secondUser.page, secondUser.roomId);
 
     await expect(firstUserResult.pageHeader).toBeVisible();
-    await expect(secondUserResult.pageHeader).toBeVisible();
+});
+
+test('goes to voting page, when the reset room button is clicked', async ({
+    firstUser,
+}) => {
+    await firstUser.goto();
+    await firstUser.reveal();
+
+    const firstUserResult = new VoteResult(firstUser.page, firstUser.roomId);
+
+    await firstUserResult.reset();
+
+    await expect(firstUser.pageHeader).toBeVisible();
 });
 
 test('shows the individual user votes', async ({ firstUser, secondUser }) => {
@@ -46,4 +55,44 @@ test('shows the correct summary data', async ({ firstUser, secondUser }) => {
     await expect(firstUserResult.totalVotes).toHaveText('2');
     await expect(firstUserResult.average).toHaveText('10.5');
     await expect(firstUserResult.median).toHaveText('10.5');
+});
+
+test('shows the correct vote distribution', async ({
+    firstUser,
+    secondUser,
+}) => {
+    await firstUser.goto();
+    await firstUser.vote('8');
+    await secondUser.goto();
+    await secondUser.vote('13');
+    await secondUser.reveal();
+
+    const firstUserResult = new VoteResult(firstUser.page, firstUser.roomId);
+
+    await expect(
+        firstUserResult.getDistributionBarForVote('8'),
+    ).toHaveAttribute('aria-valuenow', '50');
+    await expect(
+        firstUserResult.getDistributionBarForVote('13'),
+    ).toHaveAttribute('aria-valuenow', '50');
+});
+
+test('does not mutate the result, when a user enters the room', async ({
+    firstUser,
+    secondUser,
+}) => {
+    await firstUser.goto();
+    await firstUser.vote('8');
+    await firstUser.reveal();
+
+    await secondUser.goto();
+
+    const secondUserResult = new VoteResult(secondUser.page, secondUser.roomId);
+
+    await expect(
+        secondUserResult.getDistributionBarForVote('8'),
+    ).toHaveAttribute('aria-valuenow', '100');
+    await expect(
+        secondUserResult.getUserVote(await firstUser.getNickname()),
+    ).toHaveText('8');
 });

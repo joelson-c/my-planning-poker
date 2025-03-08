@@ -23,4 +23,15 @@ export class VoteResult {
             .getByRole('listitem', { name: `${nickname} voted: ` })
             .getByTestId('individual-vote');
     }
+
+    getDistributionBarForVote(vote: string) {
+        return this.page
+            .getByRole('meter')
+            .and(this.page.locator(`[data-vote="${vote}"]`));
+    }
+
+    async reset() {
+        this.resetRoomButton.click();
+        await this.page.waitForURL('**/room/*');
+    }
 }

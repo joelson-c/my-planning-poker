@@ -109,8 +109,7 @@ func roomWebsocketHandler(e *core.RequestEvent) error {
 
 func readPump(c realtimeSocket.Client, app realtimeCore.RealtimeApp) error {
 	defer func() {
-		app.WebsocketBroker().Unregister(c.Id())
-		c.Discard(nil)
+		app.WebsocketBroker().Unregister(c.Id(), nil)
 	}()
 
 	c.Connection().SetReadLimit(maxMessageSize)
@@ -156,8 +155,7 @@ func writePump(c realtimeSocket.Client, app realtimeCore.RealtimeApp) error {
 
 	defer func() {
 		ticker.Stop()
-		app.WebsocketBroker().Unregister(c.Id())
-		c.Discard(nil)
+		app.WebsocketBroker().Unregister(c.Id(), nil)
 	}()
 
 	for {

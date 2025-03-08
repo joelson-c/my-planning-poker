@@ -41,11 +41,10 @@ function reducer(state: RealtimeState, action: InboundMessage) {
             };
 
         case 'WS_USER_DISCONNECTED':
+        case 'WS_USER_REMOVED':
             return {
                 ...state,
-                users: state.users.filter(
-                    (user) => user.id !== action.data.userId,
-                ),
+                users: state.users.filter((user) => user.id !== action.data.id),
             };
 
         case 'WS_ROOM_STATE_CHANGED':

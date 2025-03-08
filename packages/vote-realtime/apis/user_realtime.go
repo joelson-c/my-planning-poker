@@ -10,7 +10,6 @@ import (
 	"github.com/joelson-c/vote-realtime/models"
 	realtimeSocket "github.com/joelson-c/vote-realtime/websocket"
 	"github.com/pocketbase/pocketbase/core"
-	"golang.org/x/sync/errgroup"
 )
 
 const CloseUserKickedFromRoom = 4000
@@ -66,9 +65,19 @@ func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 
 	app.OnWebsocketClosed().BindFunc(func(e *realtimeCore.WebsocketEvent) error {
 		user := getSocketUserByEvent(e)
+
+		payload, err := json.Marshal(RealtimeUserPayload{
+			Id:       user.Id,
+			Nickname: user.GetString("nickname"),
+		})
+
+		if err != nil {
+			return err
+		}
+
 		connectionMessage := &realtimeSocket.Message{
 			Name: "WS_USER_DISCONNECTED",
-			Data: json.RawMessage(`{"userId": "` + user.Id + `"}`),
+			Data: json.RawMessage(payload),
 		}
 
 		e.App.WebsocketBroker().BroadcastMessage(
@@ -167,15 +176,32 @@ func BindUserRealtimeHooks(app realtimeCore.RealtimeApp) {
 				Name: e.Message.Name + "_ERROR",
 				Data: json.RawMessage(`{"error": "Target user is not in the room you're in."}`),
 			})
+
+			return fmt.Errorf("Trying to kick a user from a different room")
 		}
 
-		clientChunks := e.App.WebsocketBroker().GetChunkedClientsBySubscription(e.Client.Subscription(), WebsocketChunkSize)
-		for _, chunk := range clientChunks {
-			for _, client := range chunk {
-				clientAuth := client.Get(WebsocketClientAuthKey).(*core.Record)
-				if clientAuth.Id == targetUser.Id {
-					client.Discard(websocket.FormatCloseMessage(CloseUserKickedFromRoom, "User was kicked from the room"))
-				}
+		if !targetUser.GetBool("active") {
+			e.Client.Send(&realtimeSocket.Message{
+				Name: e.Message.Name + "_ERROR",
+				Data: json.RawMessage(`{"error": "Target user is not active"}`),
+			})
+
+			return fmt.Errorf("Target user is not active")
+		}
+
+		client, _ := getSocketUserByRecord(app, targetUser)
+		if client != nil {
+			app.WebsocketBroker().Unregister(
+				client.Id(),
+				websocket.FormatCloseMessage(CloseUserKickedFromRoom, "User was kicked from the room"),
+			)
+		}
+
+		if client == nil {
+			// The user is not connected to the websocket, but still appears in the room user list
+			targetUser.Set("active", false)
+			if err := e.App.Save(targetUser); err != nil {
+				return err
 			}
 		}
 
@@ -230,25 +256,19 @@ func unsetSocketAuthState(app realtimeCore.RealtimeApp, newRecord *core.Record) 
 
 func getSocketUserByRecord(app realtimeCore.RealtimeApp, record *core.Record) (realtimeSocket.Client, error) {
 	clientChunks := app.WebsocketBroker().GetChunkedClientsBySubscription(record.GetString("room"), WebsocketChunkSize)
-	group := new(errgroup.Group)
-	clientChan := make(chan realtimeSocket.Client)
 
 	for _, chunk := range clientChunks {
-		group.Go(func() error {
-			for _, client := range chunk {
-				clientAuth, _ := client.Get(WebsocketClientAuthKey).(*core.Record)
-				if clientAuth != nil &&
-					clientAuth.Id == record.Id &&
-					clientAuth.Collection().Name == record.Collection().Name {
-					clientChan <- client
-				}
+		for _, client := range chunk {
+			clientAuth, _ := client.Get(WebsocketClientAuthKey).(*core.Record)
+			if clientAuth != nil &&
+				clientAuth.Id == record.Id &&
+				clientAuth.Collection().Name == record.Collection().Name {
+				return client, nil
 			}
-
-			return fmt.Errorf("Client not found")
-		})
+		}
 	}
 
-	return <-clientChan, nil
+	return nil, fmt.Errorf("Client not found")
 }
 
 func getSocketUserByEvent(e *realtimeCore.WebsocketEvent) *core.Record {

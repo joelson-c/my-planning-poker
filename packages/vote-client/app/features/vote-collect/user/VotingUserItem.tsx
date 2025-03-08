@@ -35,7 +35,7 @@ export function VotingUserItem({ user, children }: VotingUserItemProps) {
                     className={cn(isMyself && 'font-semibold')}
                     id={userNameId}
                 >
-                    {user.nickname} {user.observer && <>(Observer)</>}
+                    {user.nickname}
                 </span>
             </div>
             <div className="flex items-center gap-2">

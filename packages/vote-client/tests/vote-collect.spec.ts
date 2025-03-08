@@ -75,7 +75,7 @@ test.describe('observer voting', () => {
         await expect(disabledButtons).toHaveCount(allBtnsCount);
     });
 
-    test('displays the correct indicator', async ({ observerUser }) => {
+    test('displays the correct status indicator', async ({ observerUser }) => {
         await observerUser.goto();
 
         await expect(observerUser.getUserListItem()).toBeVisible();
@@ -160,5 +160,27 @@ test.describe('multiple user voting', () => {
         );
 
         await expect(observerUser.getStatusIndicator('Observer')).toBeVisible();
+    });
+
+    test('allows to kick an user', async ({ firstUser, observerUser }) => {
+        await firstUser.goto();
+        await observerUser.goto();
+
+        const actionMenu = firstUser.userList
+            .getByRole('listitem', {
+                name: await observerUser.getNickname(),
+            })
+            .getByRole('button', { name: 'Open Menu' });
+
+        await actionMenu.click();
+
+        const removeAction = firstUser.page.getByRole('menuitem', {
+            name: 'Remove',
+        });
+
+        await removeAction.click();
+
+        await expect(observerUser.getUserListItem()).not.toBeVisible();
+        await expect(firstUser.getUserListItem()).toBeVisible();
     });
 });

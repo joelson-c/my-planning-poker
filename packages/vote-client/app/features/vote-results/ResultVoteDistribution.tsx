@@ -19,7 +19,7 @@ export function ResultVoteDistribution() {
                             <li key={vote} className="mb-4">
                                 <div
                                     className="flex justify-between mb-1"
-                                    role="presentation"
+                                    aria-hidden="true"
                                 >
                                     <span className="text-sm font-medium">
                                         {vote}
@@ -34,6 +34,7 @@ export function ResultVoteDistribution() {
                                     className="h-2"
                                     role="meter"
                                     aria-valuetext={`${count} vote(s) as '${vote}' out of ${total} in total`}
+                                    data-vote={vote}
                                 />
                             </li>
                         ))}

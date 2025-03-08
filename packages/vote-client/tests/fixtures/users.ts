@@ -1,10 +1,10 @@
+import type { Browser } from '@playwright/test';
+import type { Faker } from '@faker-js/faker';
 import { test as base } from './room';
 import { VoteCollect } from 'tests/pages/VoteCollect';
 import { getCardsForVariant } from '~/lib/voteCards';
 import { LoginRoom } from 'tests/pages/LoginRoom';
-import type { Browser } from '@playwright/test';
-import { access } from 'node:fs/promises';
-import type { Faker } from '@faker-js/faker';
+import { access, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import config from '../../playwright.config';
 
@@ -76,6 +76,8 @@ export const test = base.extend<object, WorkerFixtures>({
             const user = new VoteCollect(await context.newPage(), roomId);
             await use(user);
             await context.close();
+
+            await unlink(storageState);
         },
         { scope: 'worker' },
     ],
@@ -95,6 +97,7 @@ export const test = base.extend<object, WorkerFixtures>({
             const user = new VoteCollect(await context.newPage(), roomId);
             await use(user);
             await context.close();
+            await unlink(storageState);
         },
         { scope: 'worker' },
     ],
@@ -115,6 +118,7 @@ export const test = base.extend<object, WorkerFixtures>({
             const user = new VoteCollect(await context.newPage(), roomId);
             await use(user);
             await context.close();
+            await unlink(storageState);
         },
         { scope: 'worker' },
     ],

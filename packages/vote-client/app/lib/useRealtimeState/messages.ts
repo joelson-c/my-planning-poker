@@ -9,7 +9,7 @@ type UserConnectedMessage = {
 type UserDisconnectedMessage = {
     name: 'WS_USER_DISCONNECTED';
     data: {
-        userId: string;
+        id: string;
     };
 };
 
@@ -28,7 +28,7 @@ type KickUserMessage = {
 type UserRemovedMessage = {
     name: 'WS_USER_REMOVED';
     data: {
-        userId: string;
+        id: string;
         nickname: string;
     };
 };
