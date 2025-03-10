@@ -2,14 +2,12 @@ import type { RealtimeUser } from '~/types/user';
 
 type UserConnectedMessage = {
     name: 'WS_USER_CONNECTED';
-    data: RealtimeUser;
+    data: Pick<RealtimeUser, 'id' | 'nickname' | 'observer'>;
 };
 
 type UserDisconnectedMessage = {
     name: 'WS_USER_DISCONNECTED';
-    data: {
-        id: string;
-    };
+    data: Pick<RealtimeUser, 'id' | 'nickname' | 'observer'>;
 };
 
 type UserUpdatedMessage = {
@@ -32,6 +30,10 @@ type ResetMessage = {
     name: 'WS_RESET';
 };
 
+type GenericErrorMessage = {
+    name: 'WS_ERROR';
+};
+
 export type BidirecionalMessage =
     | RevealMessage
     | ResetMessage
@@ -41,7 +43,8 @@ export type InboundMessage =
     | UserConnectedMessage
     | UserDisconnectedMessage
     | UserUpdatedMessage
-    | BidirecionalMessage;
+    | BidirecionalMessage
+    | GenericErrorMessage;
 
 export type OutboundMessage = BidirecionalMessage;
 

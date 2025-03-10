@@ -82,7 +82,9 @@ type GenericError struct {
 }
 
 type UserConnected struct {
-	Id string `json:"id"`
+	Id       string `json:"id"`
+	Nickname string `json:"nickname"`
+	Observer string `json:"observer"`
 }
 
 type UserUpdated struct {

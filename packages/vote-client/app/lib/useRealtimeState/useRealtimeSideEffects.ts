@@ -14,20 +14,20 @@ export function useRealtimeSideEffects(
             return;
         }
 
-        if (lastJsonMessage.name === 'WS_USER_REMOVED') {
+        if (lastJsonMessage.name === 'WS_USER_DISCONNECTED') {
             toast({
                 title: 'User removed',
-                description: `${lastJsonMessage.data.nickname} was removed from the room.`,
+                description: `${lastJsonMessage.data.nickname} was disconnected from the room.`,
                 variant: 'destructive',
             });
         }
 
-        if (lastJsonMessage.name === 'WS_ROOM_STATE_CHANGED') {
-            if (lastJsonMessage.data.state === 'REVEAL') {
-                navigate(`/room/${roomId}/result`);
-            } else if (lastJsonMessage.data.state === 'VOTING') {
-                navigate(`/room/${roomId}`);
-            }
+        if (lastJsonMessage.name === 'WS_RESET') {
+            navigate(`/room/${roomId}`);
+        }
+
+        if (lastJsonMessage.name === 'WS_REVEAL') {
+            navigate(`/room/${roomId}/result`);
         }
     }, [lastJsonMessage, navigate, roomId]);
 }

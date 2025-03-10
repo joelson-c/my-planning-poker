@@ -18,7 +18,8 @@ func BindRoomRealtimeHooks(app core.App) {
 			se.App.Logger().Debug("Connection estabilished with client", slog.String("client", ce.Client.Id))
 			ce.Client.Room.Broadcast() <- room.NewMessageWithData(room.UserConnectedMessage,
 				&room.UserConnected{
-					Id: ce.Client.Id,
+					Id:       ce.Client.Id,
+					Nickname: ce.Client.Record.GetString("nickname"),
 				},
 			)
 			return nil
@@ -29,7 +30,8 @@ func BindRoomRealtimeHooks(app core.App) {
 			ce.Client.Room.Broadcast() <- room.NewMessageWithData(
 				room.UserDisconnectedMessage,
 				&room.UserConnected{
-					Id: ce.Client.Id,
+					Id:       ce.Client.Id,
+					Nickname: ce.Client.Record.GetString("nickname"),
 				},
 			)
 
@@ -69,7 +71,7 @@ func roomWebsocketHandler(e *core.RequestEvent) error {
 		serverRoom = server.CreateRoom(roomId)
 	}
 
-	client, err := room.ServeWs(server, e.Auth.Id, e.Response, e.Request)
+	client, err := room.ServeWs(e.Auth, server, e.Response, e.Request)
 	if err != nil {
 		return err
 	}
@@ -170,7 +172,7 @@ func resetRoomVotes(room *core.Record, app core.App) error {
 		for _, user := range roomUsers {
 			user.Set("vote", nil)
 
-			if err := txApp.Save(user); err != nil {
+			if err := txApp.UnsafeWithoutHooks().Save(user); err != nil {
 				return err
 			}
 		}

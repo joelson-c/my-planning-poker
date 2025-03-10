@@ -7,7 +7,7 @@ import type { RealtimeUser } from '~/types/user';
 import { useEffect, useMemo, useReducer, useTransition } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { backendClient } from '../backend/client';
-import type { RoomState } from '~/types/room';
+import { RoomState } from '~/types/room';
 import { UserDisconnectError } from '../errors/UserDisconnectError';
 import { useRealtimeSideEffects } from './useRealtimeSideEffects';
 
@@ -25,7 +25,13 @@ function reducer(state: RealtimeState, action: InboundMessage) {
 
             return {
                 ...state,
-                users: [...state.users, action.data],
+                users: [
+                    ...state.users,
+                    {
+                        ...action.data,
+                        hasVoted: false,
+                    },
+                ],
             };
 
         case 'WS_USER_UPDATED':
@@ -41,16 +47,21 @@ function reducer(state: RealtimeState, action: InboundMessage) {
             };
 
         case 'WS_USER_DISCONNECTED':
-        case 'WS_USER_REMOVED':
             return {
                 ...state,
                 users: state.users.filter((user) => user.id !== action.data.id),
             };
 
-        case 'WS_ROOM_STATE_CHANGED':
+        case 'WS_REVEAL':
             return {
                 ...state,
-                roomState: action.data.state,
+                roomState: RoomState.REVEAL,
+            };
+
+        case 'WS_RESET':
+            return {
+                ...state,
+                roomState: RoomState.VOTING,
             };
 
         default:
@@ -61,7 +72,7 @@ function reducer(state: RealtimeState, action: InboundMessage) {
 function initializeState(initialUsers?: RealtimeUser[]) {
     return {
         users: initialUsers || [],
-        roomState: 'VOTING',
+        roomState: RoomState.VOTING,
     } satisfies RealtimeState;
 }
 
@@ -70,11 +81,11 @@ export function useRealtimeState(
     initialUsers?: RealtimeUser[],
 ) {
     const socketUrl = useMemo(() => {
-        const url = new URL(backendClient.buildURL(`/api/ws/room/${roomId}`));
+        const url = new URL(backendClient.buildURL(`/api/ws/room`));
         url.protocol = 'wss:';
         url.searchParams.set('token', backendClient.authStore.token);
         return url.toString();
-    }, [roomId]);
+    }, []);
 
     const [state, dispatch] = useReducer(
         reducer,
@@ -103,7 +114,7 @@ export function useRealtimeState(
         sendJsonMessage({
             name: 'WS_KICK_USR',
             data: {
-                id: targetUser,
+                target: targetUser,
             },
         } satisfies OutboundMessage);
     }

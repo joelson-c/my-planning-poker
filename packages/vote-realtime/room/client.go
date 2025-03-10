@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/hook"
 )
 
@@ -40,6 +41,7 @@ type Client struct {
 	Id                string
 	Server            *RoomServer
 	Room              *Room
+	Record            *core.Record
 	conn              *websocket.Conn
 	send              chan []byte
 	sendClose         chan []byte
@@ -49,11 +51,12 @@ type Client struct {
 	onOutboundMessage *hook.Hook[*MessageEvent]
 }
 
-// NewClientForConnection initializes and returns a new WebsocketClient instance.
-func NewClientForConnection(id string, server *RoomServer, conn *websocket.Conn) *Client {
+// newClient initializes and returns a new WebsocketClient instance.
+func newClient(record *core.Record, server *RoomServer, conn *websocket.Conn) *Client {
 	return &Client{
-		Id:                id,
+		Id:                record.Id,
 		Server:            server,
+		Record:            record,
 		conn:              conn,
 		send:              make(chan []byte, bufferSize),
 		sendClose:         make(chan []byte),
@@ -65,13 +68,13 @@ func NewClientForConnection(id string, server *RoomServer, conn *websocket.Conn)
 }
 
 // ServeWs handles websocket requests from clients requests.
-func ServeWs(server *RoomServer, id string, w http.ResponseWriter, r *http.Request) (*Client, error) {
+func ServeWs(record *core.Record, server *RoomServer, w http.ResponseWriter, r *http.Request) (*Client, error) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	client := NewClientForConnection(id, server, conn)
+	client := newClient(record, server, conn)
 
 	go client.writePump()
 	go client.readPump()
