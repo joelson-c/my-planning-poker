@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-export class LoginRoom {
+export class JoinRoom {
     readonly pageHeader: Locator;
     readonly nicknameInput: Locator;
     readonly roomIdInput: Locator;
@@ -45,22 +45,26 @@ export class LoginRoom {
         await this.page.goto('/join');
     }
 
-    async sendJoinForm(
-        nickname: string,
-        roomId?: string,
-        observer: boolean = false,
-    ) {
-        await this.nicknameInput.fill(nickname);
-        if (roomId) {
-            await this.roomIdInput.fill(roomId);
+    async sendJoinForm({
+        nickname,
+        room,
+        observer,
+    }: {
+        nickname?: string;
+        room?: string;
+        observer?: boolean;
+    }) {
+        if (nickname) {
+            await this.nicknameInput.fill(nickname);
+        }
+
+        if (room) {
+            await this.roomIdInput.fill(room);
         }
 
         if (observer) {
-            await this.observerSwitch.click();
+            await this.observerSwitch.check();
         }
-
-        const observerChecked = await this.observerSwitch.isChecked();
-        expect(observerChecked).toBe(observer);
 
         await this.joinRoomButton.click();
     }

@@ -103,7 +103,7 @@ export function useRealtimeState(
         sendJsonMessage({
             name: 'WS_KICK_USR',
             data: {
-                targetUser,
+                id: targetUser,
             },
         } satisfies OutboundMessage);
     }

@@ -7,7 +7,7 @@ export class VoteResult {
     readonly average: Locator;
     readonly median: Locator;
 
-    constructor(readonly page: Page, readonly roomId: string) {
+    constructor(readonly page: Page) {
         this.pageHeader = page.getByRole('heading', { name: 'Voting Results' });
         this.resetRoomButton = page.getByRole('button', {
             name: 'Start New Vote',

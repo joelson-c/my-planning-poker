@@ -1,42 +1,45 @@
 import { expect } from '@playwright/test';
 import { test } from './fixtures';
+import { faker } from '@faker-js/faker';
 
-test('renders with a title and create room button', async ({ createRoom }) => {
-    await createRoom.goto();
+test('renders with a title and create room button', async ({
+    createRoomPage,
+}) => {
+    await createRoomPage.goto();
 
-    await expect(createRoom.pageHeader).toBeVisible();
-    await expect(createRoom.createRoomButton).toBeVisible();
+    await expect(createRoomPage.pageHeader).toBeVisible();
+    await expect(createRoomPage.createRoomButton).toBeVisible();
 });
 
-test('has a join room link', async ({ createRoom }) => {
-    await createRoom.goto();
-    await createRoom.joinRoom();
+test('has a join room link', async ({ createRoomPage }) => {
+    await createRoomPage.goto();
+    await createRoomPage.joinRoom();
 });
 
 test('displays an error message when the nickname is too short', async ({
-    createRoom,
+    createRoomPage,
 }) => {
-    await createRoom.goto();
-    await createRoom.sendCreateForm('');
+    await createRoomPage.goto();
+    await createRoomPage.sendCreateForm('');
 
-    await expect(createRoom.nicknameAlert).toBeVisible();
+    await expect(createRoomPage.nicknameAlert).toBeVisible();
 });
 
-test('create a new room', async ({ createRoom, faker }) => {
-    await createRoom.goto();
-    await createRoom.sendCreateForm(faker.internet.username());
-    const roomId = await createRoom.waitForRoom();
+test('create a new room', async ({ createRoomPage }) => {
+    await createRoomPage.goto();
+    await createRoomPage.sendCreateForm(faker.internet.username());
+    const roomId = await createRoomPage.waitForRoom();
 
     expect(roomId).toBeTruthy();
 });
 
-test('remembers the last nickname used', async ({ createRoom, faker }) => {
+test('remembers the last nickname used', async ({ createRoomPage }) => {
     const nickname = faker.internet.username();
 
-    await createRoom.goto();
-    await createRoom.sendCreateForm(nickname);
-    await createRoom.waitForRoom();
-    await createRoom.goto();
+    await createRoomPage.goto();
+    await createRoomPage.sendCreateForm(nickname);
+    await createRoomPage.waitForRoom();
+    await createRoomPage.goto();
 
-    await expect(createRoom.nicknameInput).toHaveValue(nickname);
+    await expect(createRoomPage.nicknameInput).toHaveValue(nickname);
 });

@@ -8,8 +8,8 @@ export async function getVoteResults(): Promise<VoteResult> {
     const total = userWithNonEmptyVotes.length;
     const distribution = getVoteDistribution(userWithNonEmptyVotes);
     const votesByUser = getVotesGroupedByUser(roomUsers);
-    const allVotesValues = getVoteValues(distribution);
-    const average = getVoteAverage(total, allVotesValues);
+    const allVotesValues = getVoteNumericValues(userWithNonEmptyVotes);
+    const average = getVoteAverage(allVotesValues);
     const mediam = getMediam(allVotesValues);
 
     return {
@@ -51,14 +51,16 @@ function getVotesGroupedByUser(roomUsers: UserRecord[]) {
     }, [] as VoteResult['votesByUser']);
 }
 
-function getVoteAverage(total: number, allVotesValues: number[]) {
-    return total > 0 ? allVotesValues.reduce((a, b) => a + b) / total : 0;
+function getVoteAverage(allVotesValues: number[]) {
+    return allVotesValues.length > 0
+        ? allVotesValues.reduce((a, b) => a + b) / allVotesValues.length
+        : 0;
 }
 
-function getVoteValues(distribution: Record<string, number>) {
-    return Object.keys(distribution)
-        .filter((vote) => !isNaN(parseInt(vote, 10)))
-        .map((vote) => parseInt(vote, 10));
+function getVoteNumericValues(userWithNonEmptyVotes: UserRecord[]) {
+    return userWithNonEmptyVotes
+        .filter(({ vote }) => vote && !isNaN(parseInt(vote, 10)))
+        .map(({ vote }) => parseInt(vote!, 10));
 }
 
 function getMediam(allVotesValues: number[]) {

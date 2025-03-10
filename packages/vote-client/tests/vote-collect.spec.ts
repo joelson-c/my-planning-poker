@@ -1,186 +1,264 @@
-import { expect } from '@playwright/test';
+import type { TestUser } from './fixtures/user';
+import { VoteCollect } from './pages/VoteCollect';
+import { expect, type BrowserContext } from '@playwright/test';
 import { test } from './fixtures';
+import { faker } from '@faker-js/faker';
+import { JoinRoom } from './pages/JoinRoom';
 
 test.describe('single user voting', () => {
-    test('renders with a title', async ({ firstUser }) => {
-        await firstUser.goto();
+    const users: TestUser[] = [
+        { nickname: faker.internet.username(), vote: '13', observer: false },
+    ];
 
-        await expect(firstUser.pageHeader).toBeVisible();
+    test.use({ testUsers: [users, { scope: 'test' }] });
+
+    test.beforeEach(async ({ testUsers: [user], joinRoomPage, room }) => {
+        await joinRoomPage.goto(room);
+        await joinRoomPage.sendJoinForm({ nickname: user.nickname });
+        await joinRoomPage.waitForRoom();
     });
 
-    test('renders with the user in list', async ({ firstUser }) => {
-        await firstUser.goto();
-
-        await expect(firstUser.getUserListItem()).toBeVisible();
+    test('renders with a title', async ({ voteCollectPage }) => {
+        await expect(voteCollectPage.pageHeader).toBeVisible();
     });
 
-    test('allows the user to cast a vote', async ({ firstUser }) => {
-        const voteValue = '13';
-        await firstUser.goto();
-        await firstUser.vote(voteValue);
+    test('renders with the user in list', async ({
+        voteCollectPage,
+        testUsers: [user],
+    }) => {
+        await expect(
+            voteCollectPage.getUserListItem(user.nickname),
+        ).toBeVisible();
+    });
 
-        const expectedVoteBtn = firstUser.getVoteButton(voteValue);
-        const checkedBtns = firstUser.page.getByRole('switch', {
-            checked: true,
-        });
+    test('allows the user to cast a vote', async ({
+        voteCollectPage,
+        testUsers: [user],
+    }) => {
+        await voteCollectPage.vote('13');
+
+        const expectedVoteBtn = voteCollectPage.getVoteButton(user.vote!);
+        const checkedBtn = voteCollectPage.getCurrentVoteSwitch();
         await expect(expectedVoteBtn).toBeChecked();
-        await expect(checkedBtns).toHaveCount(1);
+        await expect(checkedBtn).toHaveCount(1);
     });
 
     test('changes the status indicator when the user votes', async ({
-        firstUser,
+        voteCollectPage,
+        testUsers: [user],
     }) => {
-        await firstUser.goto();
-        await firstUser.vote('13');
+        await voteCollectPage.vote('13');
 
-        await expect(firstUser.getUserListItem()).toBeVisible();
-        await expect(firstUser.getStatusIndicator('Voted')).toBeVisible();
+        await expect(
+            voteCollectPage.getUserListItem(user.nickname),
+        ).toBeVisible();
+        await expect(
+            voteCollectPage.getUserStatus(user.nickname),
+        ).toHaveAccessibleName('Voted');
     });
 
     test('copies the room share URL to the clipboard', async ({
-        firstUser,
+        voteCollectPage,
+        room,
     }) => {
-        await firstUser.goto();
-        const sharedUrl = await firstUser.share();
+        const sharedUrl = await voteCollectPage.share();
 
-        expect(sharedUrl).toContain(`/join/${firstUser.roomId}`);
+        expect(sharedUrl).toContain(`/join/${room}`);
     });
 });
 
 test.describe('observer voting', () => {
-    test('renders with a title', async ({ observerUser }) => {
-        await observerUser.goto();
+    const users: TestUser[] = [
+        { nickname: faker.internet.username(), observer: true },
+    ];
 
-        await expect(observerUser.pageHeader).toBeVisible();
+    test.use({ testUsers: [users, { scope: 'test' }] });
+
+    test.beforeEach(async ({ testUsers: [user], joinRoomPage, room }) => {
+        await joinRoomPage.goto(room);
+        await joinRoomPage.sendJoinForm({
+            nickname: user.nickname,
+            observer: user.observer,
+        });
+        await joinRoomPage.waitForRoom();
     });
 
-    test('renders with the user in list', async ({ observerUser }) => {
-        await observerUser.goto();
+    test('renders with a title', async ({ voteCollectPage }) => {
+        await expect(voteCollectPage.pageHeader).toBeVisible();
+    });
 
-        await expect(observerUser.getUserListItem()).toBeVisible();
+    test('renders with the user in list', async ({
+        voteCollectPage,
+        testUsers: [user],
+    }) => {
+        await expect(
+            voteCollectPage.getUserListItem(user.nickname),
+        ).toBeVisible();
     });
 
     test('do not allow the user to cast a vote by disabling all buttons', async ({
-        observerUser,
+        voteCollectPage,
     }) => {
-        await observerUser.goto();
-
-        const allBtnsCount = await observerUser.page
-            .getByRole('switch')
-            .count();
-        const disabledButtons = observerUser.page.getByRole('switch', {
-            disabled: true,
-        });
+        const allBtnsCount = await voteCollectPage.getAllVoteSwitches().count();
+        const disabledButtons = voteCollectPage.getAllDisabledVoteSwitches();
 
         await expect(disabledButtons).toHaveCount(allBtnsCount);
     });
 
-    test('displays the correct status indicator', async ({ observerUser }) => {
-        await observerUser.goto();
-
-        await expect(observerUser.getUserListItem()).toBeVisible();
-        await expect(observerUser.getStatusIndicator('Observer')).toBeVisible();
+    test('displays the correct status indicator', async ({
+        voteCollectPage,
+        testUsers: [user],
+    }) => {
+        await expect(
+            voteCollectPage.getUserListItem(user.nickname),
+        ).toBeVisible();
+        await expect(
+            voteCollectPage.getUserStatus(user.nickname),
+        ).toHaveAccessibleName('Observer');
     });
 
     test('copies the room share URL to the clipboard', async ({
-        observerUser,
+        voteCollectPage,
+        room,
     }) => {
-        await observerUser.goto();
-        const sharedUrl = await observerUser.share();
+        const sharedUrl = await voteCollectPage.share();
 
-        expect(sharedUrl).toContain(`/join/${observerUser.roomId}`);
+        expect(sharedUrl).toContain(`/join/${room}`);
     });
 });
 
+type UserPage = {
+    voteCollectPage: VoteCollect;
+    user: TestUser;
+    context: BrowserContext;
+};
+
 test.describe('multiple user voting', () => {
-    test('renders with a title', async ({ allUsers }) => {
+    let userPages: UserPage[] = [];
+
+    const users: TestUser[] = [
+        { nickname: faker.internet.username(), observer: true },
+        { nickname: faker.internet.username(), observer: true },
+        { nickname: faker.internet.username(), vote: '13', observer: false },
+        { nickname: faker.internet.username(), vote: '13', observer: false },
+        { nickname: faker.internet.username(), vote: '21', observer: false },
+        { nickname: faker.internet.username(), vote: '5', observer: false },
+    ];
+
+    test.use({ testUsers: [users, { scope: 'test' }] });
+
+    test.beforeEach(async ({ testUsers, room, browser }) => {
         await Promise.all(
-            allUsers.map(async (user) => {
-                await user.goto();
-                await expect(user.pageHeader).toBeVisible();
-            }),
-        );
-    });
-
-    test('renders with the user in list', async ({ allUsers }) => {
-        await Promise.all(
-            allUsers.map(async (user) => {
-                await user.goto();
-                await expect(user.getUserListItem()).toBeVisible();
-            }),
-        );
-    });
-
-    test('allows the users to cast a vote', async ({
-        votingUsers,
-        userVotes,
-    }) => {
-        await Promise.all(
-            votingUsers.map(async (user) => {
-                const voteValue = userVotes.get(user)!;
-
-                await user.goto();
-                await user.vote(voteValue);
-            }),
-        );
-
-        await Promise.all(
-            votingUsers.map(async (user) => {
-                const voteValue = userVotes.get(user)!;
-
-                const expectedVoteBtn = user.getVoteButton(voteValue);
-                const checkedBtns = user.page.getByRole('switch', {
-                    checked: true,
+            testUsers.map(async (user) => {
+                const context = await browser.newContext({
+                    storageState: undefined,
                 });
-                await expect(expectedVoteBtn).toBeChecked();
-                await expect(checkedBtns).toHaveCount(1);
+                const page = await context.newPage();
+                const joinRoomPage = new JoinRoom(page);
+
+                await joinRoomPage.goto(room);
+                await joinRoomPage.sendJoinForm({
+                    nickname: user.nickname,
+                    observer: user.observer,
+                });
+
+                await joinRoomPage.waitForRoom();
+
+                userPages.push({
+                    voteCollectPage: new VoteCollect(page),
+                    context,
+                    user,
+                });
             }),
         );
     });
 
-    test('displays the correct indicator', async ({
-        allUsers,
-        votingUsers,
-        userVotes,
-        observerUser,
-    }) => {
-        await Promise.all(
-            allUsers.map(async (user) => {
-                await user.goto();
-                await expect(user.getUserListItem()).toBeVisible();
+    test.afterEach(async ({}) => {
+        await Promise.allSettled(
+            userPages.map(async ({ context }) => {
+                await context.close();
             }),
         );
 
-        await Promise.all(
-            votingUsers.map(async (user) => {
-                const voteValue = userVotes.get(user)!;
-                await user.vote(voteValue);
-                await expect(user.getStatusIndicator('Voted')).toBeVisible();
-            }),
-        );
-
-        await expect(observerUser.getStatusIndicator('Observer')).toBeVisible();
+        userPages = [];
     });
 
-    test('allows to kick an user', async ({ firstUser, observerUser }) => {
-        await firstUser.goto();
-        await observerUser.goto();
+    test('renders with a title', async ({}) => {
+        await Promise.all(
+            userPages.map(async ({ voteCollectPage }) => {
+                await expect(voteCollectPage.pageHeader).toBeVisible();
+            }),
+        );
+    });
 
-        const actionMenu = firstUser.userList
-            .getByRole('listitem', {
-                name: await observerUser.getNickname(),
-            })
-            .getByRole('button', { name: 'Open Menu' });
+    test('renders with the user in list', async ({}) => {
+        await Promise.all(
+            userPages.map(async ({ voteCollectPage, user: { nickname } }) => {
+                await expect(
+                    voteCollectPage.getUserListItem(nickname),
+                ).toBeVisible();
+            }),
+        );
+    });
+
+    test('allows the users to cast a vote', async ({}) => {
+        await Promise.all(
+            userPages.map(async ({ voteCollectPage, user }) => {
+                if (user.observer) {
+                    return;
+                }
+
+                await voteCollectPage.vote(user.vote);
+                await expect(
+                    voteCollectPage.getCurrentVoteSwitch(),
+                ).toBeVisible();
+            }),
+        );
+    });
+
+    test('displays the correct indicator', async ({}) => {
+        await Promise.all(
+            userPages.map(async ({ voteCollectPage, user }) => {
+                const shouldVote = !user.observer && faker.datatype.boolean();
+                if (shouldVote) {
+                    await voteCollectPage.vote(user.vote);
+                }
+
+                await expect(
+                    voteCollectPage.getUserStatus(user.nickname),
+                ).toHaveAccessibleName(
+                    shouldVote
+                        ? 'Voted'
+                        : user.observer
+                        ? 'Observer'
+                        : 'Not voted',
+                );
+            }),
+        );
+    });
+
+    test('allows to kick an user', async ({}) => {
+        const [sender, receiver] = faker.helpers.arrayElements(userPages, 2);
+
+        const actionMenu = sender.voteCollectPage.getUserActionsButton(
+            receiver.user.nickname,
+        );
 
         await actionMenu.click();
+        await sender.voteCollectPage.removeActionMenuItem.click();
 
-        const removeAction = firstUser.page.getByRole('menuitem', {
-            name: 'Remove',
-        });
+        await Promise.all(
+            userPages.map(async ({ voteCollectPage, user }) => {
+                await expect(
+                    voteCollectPage.getUserListItem(receiver.user.nickname),
+                ).not.toBeVisible();
 
-        await removeAction.click();
-
-        await expect(observerUser.getUserListItem()).not.toBeVisible();
-        await expect(firstUser.getUserListItem()).toBeVisible();
+                if (user.nickname !== receiver.user.nickname) {
+                    await expect(
+                        voteCollectPage.getUserListItem(user.nickname),
+                    ).toBeVisible();
+                }
+            }),
+        );
     });
 });

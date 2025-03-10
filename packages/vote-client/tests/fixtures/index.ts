@@ -1,7 +1,6 @@
 import { mergeTests } from '@playwright/test';
 
-import { test as pageFixture } from './pages';
-import { test as baseFixture } from './base';
-import { test as usersFixture } from './users';
+import { test as roomFixture } from './room';
+import { test as userFixture } from './user';
 
-export const test = mergeTests(baseFixture, pageFixture, usersFixture);
+export const test = mergeTests(roomFixture, userFixture);

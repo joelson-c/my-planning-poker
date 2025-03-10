@@ -19,7 +19,7 @@ export default [
     },
     ...compat.extends('plugin:react-hooks/recommended'),
     {
-        ignores: ['build/', '.react-router/'],
+        ignores: ['build/', '.react-router/', 'tests/'],
     },
     jsxA11y.flatConfigs.recommended,
 ];

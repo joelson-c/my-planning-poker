@@ -1,4 +1,3 @@
-import type { RoomState } from '~/types/room';
 import type { RealtimeUser } from '~/types/user';
 
 type UserConnectedMessage = {
@@ -21,15 +20,7 @@ type UserUpdatedMessage = {
 type KickUserMessage = {
     name: 'WS_KICK_USR';
     data: {
-        targetUser: string;
-    };
-};
-
-type UserRemovedMessage = {
-    name: 'WS_USER_REMOVED';
-    data: {
-        id: string;
-        nickname: string;
+        target: string;
     };
 };
 
@@ -41,20 +32,17 @@ type ResetMessage = {
     name: 'WS_RESET';
 };
 
-type RoomStateChangedMessage = {
-    name: 'WS_ROOM_STATE_CHANGED';
-    data: {
-        state: RoomState;
-    };
-};
+export type BidirecionalMessage =
+    | RevealMessage
+    | ResetMessage
+    | KickUserMessage;
 
 export type InboundMessage =
     | UserConnectedMessage
     | UserDisconnectedMessage
-    | RoomStateChangedMessage
-    | UserRemovedMessage
-    | UserUpdatedMessage;
+    | UserUpdatedMessage
+    | BidirecionalMessage;
 
-export type OutboundMessage = KickUserMessage | RevealMessage | ResetMessage;
+export type OutboundMessage = BidirecionalMessage;
 
 export const USER_KICKED_CLOSE_CODE = 4000;
