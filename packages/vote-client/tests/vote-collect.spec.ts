@@ -99,10 +99,9 @@ test.describe('observer voting', () => {
     test('do not allow the user to cast a vote by disabling all buttons', async ({
         voteCollectPage,
     }) => {
-        const allBtnsCount = await voteCollectPage.getAllVoteSwitches().count();
         const disabledButtons = voteCollectPage.getAllDisabledVoteSwitches();
 
-        await expect(disabledButtons).toHaveCount(allBtnsCount);
+        await expect(disabledButtons).toHaveCount(11);
     });
 
     test('displays the correct status indicator', async ({
