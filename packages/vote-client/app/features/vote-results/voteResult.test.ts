@@ -102,6 +102,6 @@ describe('getVoteResults', () => {
 
     it('should return correct median vote', async ({ expect }) => {
         const result = await getVoteResults();
-        expect(result.mediam).toBe(17);
+        expect(result.median).toBe(17);
     });
 });

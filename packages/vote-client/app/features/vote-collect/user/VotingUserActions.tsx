@@ -14,11 +14,16 @@ interface VotingUserActionsProps {
 }
 
 export function VotingUserActions({ user }: VotingUserActionsProps) {
-    const { currentUser, kickUser } = useVoteContext();
+    const { currentUser, outboundDispatcher } = useVoteContext();
     const isMyself = user.id === currentUser.id;
 
     function onUserRemoveClick() {
-        kickUser(user.id);
+        outboundDispatcher({
+            name: 'WS_KICK_USR',
+            data: {
+                target: user.id,
+            },
+        });
     }
 
     if (isMyself) {

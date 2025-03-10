@@ -25,7 +25,7 @@ export async function clientLoader({
         currentUser = await getCurrentUser();
     } catch (error) {
         if (error instanceof UnauthorizedError) {
-            throw redirect(`/join/${roomId}`);
+            return redirect(`/join/${roomId}`);
         }
 
         throw error;

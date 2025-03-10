@@ -7,6 +7,6 @@ export interface VoteResult {
     distribution: Distribution;
     total: number;
     average?: number;
-    mediam?: number;
+    median?: number;
     votesByUser: VoteByUser;
 }

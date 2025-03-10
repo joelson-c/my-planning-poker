@@ -1,14 +1,17 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import type { Room } from '~/types/room';
 import type { RealtimeUser, UserRecord } from '~/types/user';
-import { useRealtimeState, type RealtimeState } from '../useRealtimeState';
+import {
+    useRealtimeState,
+    type OutboundDispatcher,
+    type RealtimeState,
+} from '../realtime/useRealtimeState';
+import { useRoomStateWatch } from '../realtime/useRoomStateWatch';
 
 interface VoteContext extends RealtimeState {
     roomId: string;
     currentUser: UserRecord;
-    kickUser: (targetUser: string) => void;
-    revealRoom: () => void;
-    resetRoom: () => void;
+    outboundDispatcher: OutboundDispatcher;
 }
 
 const VoteContext = createContext({} as VoteContext);
@@ -37,7 +40,8 @@ export function VoteContextProvider({
     currentUser,
     initialUsers,
 }: VoteContextProviderProps) {
-    const realtimeState = useRealtimeState(roomId, initialUsers);
+    const realtimeState = useRealtimeState(initialUsers);
+    useRoomStateWatch(roomId);
 
     return (
         <VoteContext.Provider value={{ ...realtimeState, roomId, currentUser }}>

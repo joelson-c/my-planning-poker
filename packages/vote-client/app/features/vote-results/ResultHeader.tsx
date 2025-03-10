@@ -10,7 +10,13 @@ import { TypographyH2 } from '~/components/ui/typography';
 import { useVoteContext } from '~/lib/context/vote';
 
 export function ResultHeader() {
-    const { resetRoom, roomId } = useVoteContext();
+    const { outboundDispatcher, roomId } = useVoteContext();
+
+    function resetRoom() {
+        outboundDispatcher({
+            name: 'WS_RESET',
+        });
+    }
 
     return (
         <Card className="mb-6">

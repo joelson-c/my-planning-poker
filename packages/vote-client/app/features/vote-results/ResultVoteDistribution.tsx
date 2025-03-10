@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Progress } from '~/components/ui/progress';
 import { useVoteResultContext } from './context';
+import { roundNumber } from '~/lib/utils';
 
 export function ResultVoteDistribution() {
     const { distribution, total } = useVoteResultContext();
@@ -29,7 +30,9 @@ export function ResultVoteDistribution() {
                                     </span>
                                 </div>
                                 <Progress
-                                    aria-valuenow={(count / total) * 100}
+                                    aria-valuenow={roundNumber(
+                                        (count / total) * 100,
+                                    )}
                                     value={(count / total) * 100}
                                     className="h-2"
                                     role="meter"

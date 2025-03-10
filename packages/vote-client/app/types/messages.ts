@@ -34,10 +34,19 @@ type GenericErrorMessage = {
     name: 'WS_ERROR';
 };
 
+type CloseMessage = {
+    name: 'WS_CLOSE';
+    data: {
+        code: number;
+        reason: string;
+    };
+};
+
 export type BidirecionalMessage =
     | RevealMessage
     | ResetMessage
-    | KickUserMessage;
+    | KickUserMessage
+    | CloseMessage;
 
 export type InboundMessage =
     | UserConnectedMessage

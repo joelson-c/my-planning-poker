@@ -10,14 +10,14 @@ export async function getVoteResults(): Promise<VoteResult> {
     const votesByUser = getVotesGroupedByUser(roomUsers);
     const allVotesValues = getVoteNumericValues(userWithNonEmptyVotes);
     const average = getVoteAverage(allVotesValues);
-    const mediam = getMediam(allVotesValues);
+    const median = getMedian(allVotesValues);
 
     return {
         distribution,
         total,
         votesByUser,
         average,
-        mediam,
+        median,
     };
 }
 
@@ -63,7 +63,7 @@ function getVoteNumericValues(userWithNonEmptyVotes: UserRecord[]) {
         .map(({ vote }) => parseInt(vote!, 10));
 }
 
-function getMediam(allVotesValues: number[]) {
+function getMedian(allVotesValues: number[]) {
     if (!allVotesValues.length) {
         return;
     }

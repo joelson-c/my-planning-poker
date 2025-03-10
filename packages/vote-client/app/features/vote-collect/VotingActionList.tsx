@@ -24,10 +24,12 @@ async function copyRoomToClipboard(roomId: string) {
 }
 
 export function VotingActionList() {
-    const { revealRoom, roomId } = useVoteContext();
+    const { outboundDispatcher, roomId } = useVoteContext();
 
     async function revealCards() {
-        revealRoom();
+        outboundDispatcher({
+            name: 'WS_REVEAL',
+        });
     }
 
     return (

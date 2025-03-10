@@ -1,9 +1,10 @@
 import { Badge } from '~/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '~/components/ui/card';
 import { useVoteResultContext } from './context';
+import { roundNumber } from '~/lib/utils';
 
 export function ResultSummary() {
-    const { total, average, mediam } = useVoteResultContext();
+    const { total, average, median } = useVoteResultContext();
 
     return (
         <section aria-labelledby="summary-title">
@@ -23,14 +24,16 @@ export function ResultSummary() {
                             <dt>Average:</dt>
                             <Badge variant="secondary">
                                 <dd data-testid="average">
-                                    {average || 'N/A'}
+                                    {average ? roundNumber(average) : 'N/A'}
                                 </dd>
                             </Badge>
                         </div>
                         <div className="flex justify-between">
                             <dt>Median:</dt>
                             <Badge variant="secondary">
-                                <dd data-testid="median">{mediam || 'N/A'}</dd>
+                                <dd data-testid="median">
+                                    {median ? roundNumber(median) : 'N/A'}
+                                </dd>
                             </Badge>
                         </div>
                     </dl>

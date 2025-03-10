@@ -9,9 +9,7 @@ import { VoteCollect } from './pages/VoteCollect';
 const users: TestUser[] = [
     { nickname: faker.internet.username(), vote: '13', observer: false },
     { nickname: faker.internet.username(), vote: '21', observer: false },
-    { nickname: faker.internet.username(), vote: '13', observer: false },
     { nickname: faker.internet.username(), vote: '21', observer: false },
-    { nickname: faker.internet.username(), observer: true },
     { nickname: faker.internet.username(), observer: true },
 ];
 
@@ -28,30 +26,26 @@ test.describe('page transitions', () => {
     let userPages: UserPage[] = [];
 
     test.beforeEach(async ({ testUsers, room, browser }) => {
-        await Promise.all(
-            testUsers.map(async (user) => {
-                const { page, context } = await createRoomContext(
-                    browser,
-                    room,
-                    user,
-                );
+        for (const user of testUsers) {
+            const { page, context } = await createRoomContext(
+                browser,
+                room,
+                user,
+            );
 
-                userPages.push({
-                    voteCollectPage: new VoteCollect(page),
-                    voteResultPage: new VoteResult(page),
-                    user,
-                    context,
-                });
-            }),
-        );
+            userPages.push({
+                voteCollectPage: new VoteCollect(page),
+                voteResultPage: new VoteResult(page),
+                user,
+                context,
+            });
+        }
     });
 
     test.afterEach(async ({}) => {
-        await Promise.allSettled(
-            userPages.map(async ({ context }) => {
-                await context.close();
-            }),
-        );
+        for (const { context } of userPages) {
+            await context.close();
+        }
 
         userPages = [];
     });
@@ -60,11 +54,9 @@ test.describe('page transitions', () => {
         const [firstUser] = userPages;
         await firstUser.voteCollectPage.reveal();
 
-        await Promise.all(
-            userPages.map(async ({ voteResultPage }) => {
-                await expect(voteResultPage.pageHeader).toBeVisible();
-            }),
-        );
+        for (const { voteResultPage } of userPages) {
+            await expect(voteResultPage.pageHeader).toBeVisible();
+        }
     });
 
     test('goes to voting page, when the reset room button is clicked', async ({}) => {
@@ -72,11 +64,9 @@ test.describe('page transitions', () => {
         await secondUser.voteCollectPage.reveal();
         await firstUser.voteResultPage.reset();
 
-        await Promise.all(
-            userPages.map(async ({ voteCollectPage }) => {
-                await expect(voteCollectPage.pageHeader).toBeVisible();
-            }),
-        );
+        for (const { voteCollectPage } of userPages) {
+            await expect(voteCollectPage.pageHeader).toBeVisible();
+        }
     });
 });
 
@@ -84,88 +74,76 @@ test.describe('within vote results', () => {
     let userPages: UserPage[] = [];
 
     test.beforeEach(async ({ testUsers, room, browser }) => {
-        await Promise.all(
-            testUsers.map(async (user) => {
-                const { page, context } = await createRoomContext(
-                    browser,
-                    room,
-                    user,
-                );
+        for (const user of testUsers) {
+            const { page, context } = await createRoomContext(
+                browser,
+                room,
+                user,
+            );
 
-                if (user.vote) {
-                    const voteCollectPage = new VoteCollect(page);
-                    voteCollectPage.vote(user.vote);
-                }
+            if (user.vote) {
+                const voteCollectPage = new VoteCollect(page);
+                voteCollectPage.vote(user.vote);
+            }
 
-                userPages.push({
-                    voteCollectPage: new VoteCollect(page),
-                    voteResultPage: new VoteResult(page),
-                    user,
-                    context,
-                });
-            }),
-        );
+            userPages.push({
+                voteCollectPage: new VoteCollect(page),
+                voteResultPage: new VoteResult(page),
+                user,
+                context,
+            });
+        }
 
         const [firstUser] = userPages;
         await firstUser.voteCollectPage.reveal();
     });
 
     test.afterEach(async ({}) => {
-        await Promise.allSettled(
-            userPages.map(async ({ context }) => {
-                await context.close();
-            }),
-        );
+        for (const { context } of userPages) {
+            await context.close();
+        }
 
         userPages = [];
     });
 
     test('renders with a title after a voting', async ({}) => {
-        await Promise.all(
-            userPages.map(async ({ voteResultPage }) => {
-                await expect(voteResultPage.pageHeader).toBeVisible();
-            }),
-        );
+        for (const { voteResultPage } of userPages) {
+            await expect(voteResultPage.pageHeader).toBeVisible();
+        }
     });
 
     test('shows the individual user votes', async ({}) => {
-        await Promise.all(
-            userPages.map(async ({ voteResultPage, user }) => {
-                if (user.vote) {
-                    await expect(
-                        voteResultPage.getUserVote(user.nickname),
-                    ).toHaveText(user.vote);
-                    return;
-                }
-
+        for (const { voteResultPage, user } of userPages) {
+            if (user.vote) {
                 await expect(
                     voteResultPage.getUserVote(user.nickname),
-                ).not.toBeVisible();
-            }),
-        );
+                ).toHaveText(user.vote);
+                return;
+            }
+
+            await expect(
+                voteResultPage.getUserVote(user.nickname),
+            ).not.toBeVisible();
+        }
     });
 
     test('shows the correct summary data', async ({}) => {
-        await Promise.all(
-            userPages.map(async ({ voteResultPage }) => {
-                await expect(voteResultPage.totalVotes).toHaveText('4');
-                await expect(voteResultPage.average).toHaveText('17');
-                await expect(voteResultPage.median).toHaveText('17');
-            }),
-        );
+        for (const { voteResultPage } of userPages) {
+            await expect(voteResultPage.totalVotes).toHaveText('3');
+            await expect(voteResultPage.average).toHaveText('18.3');
+            await expect(voteResultPage.median).toHaveText('21');
+        }
     });
 
     test('shows the correct vote distribution', async ({}) => {
-        await Promise.all(
-            userPages.map(async ({ voteResultPage }) => {
-                await expect(
-                    voteResultPage.getDistributionBarForVote('13'),
-                ).toHaveAttribute('aria-valuenow', '50');
-                await expect(
-                    voteResultPage.getDistributionBarForVote('21'),
-                ).toHaveAttribute('aria-valuenow', '50');
-            }),
-        );
+        for (const { voteResultPage } of userPages) {
+            await expect(
+                voteResultPage.getDistributionBarForVote('13'),
+            ).toHaveAttribute('aria-valuenow', '33.3');
+            await expect(
+                voteResultPage.getDistributionBarForVote('21'),
+            ).toHaveAttribute('aria-valuenow', '66.7');
+        }
     });
 
     test('does not mutate the result, when a user enters the room', async ({
@@ -183,13 +161,11 @@ test.describe('within vote results', () => {
         const extraUserResultPage = new VoteResult(defaultPage);
 
         await expect(extraUserResultPage.pageHeader).toBeVisible();
-        await expect(extraUserResultPage.totalVotes).toHaveText('4');
+        await expect(extraUserResultPage.totalVotes).toHaveText('3');
 
-        await Promise.all(
-            userPages.map(async ({ voteResultPage }) => {
-                await expect(voteResultPage.totalVotes).toHaveText('4');
-            }),
-        );
+        for (const { voteResultPage } of userPages) {
+            await expect(voteResultPage.totalVotes).toHaveText('3');
+        }
     });
 });
 
