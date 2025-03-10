@@ -12,32 +12,12 @@ import (
 )
 
 func BindRoomRealtimeHooks(app core.App) {
+	server := room.ServerFromAppStore(app)
+	server.OnIncomingMessage(room.RoomRevealMessage, room.RoomResetMessage).BindFunc(func(me *room.MessageEvent) error {
+		return onStateMessage(me, app)
+	})
+
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
-		server := room.ServerFromAppStore(se.App)
-		server.OnClientConnected().BindFunc(func(ce *room.ClientEvent) error {
-			se.App.Logger().Debug("Connection estabilished with client", slog.String("client", ce.Client.Id))
-			ce.Client.Room.Broadcast() <- room.NewMessageWithData(room.UserConnectedMessage,
-				&room.UserConnected{
-					Id:       ce.Client.Id,
-					Nickname: ce.Client.Record.GetString("nickname"),
-				},
-			)
-			return nil
-		})
-
-		server.OnClientDisconnected().BindFunc(func(ce *room.ClientEvent) error {
-			se.App.Logger().Debug("Connection closed for client", slog.String("client", ce.Client.Id))
-			ce.Client.Room.Broadcast() <- room.NewMessageWithData(
-				room.UserDisconnectedMessage,
-				&room.UserConnected{
-					Id:       ce.Client.Id,
-					Nickname: ce.Client.Record.GetString("nickname"),
-				},
-			)
-
-			return nil
-		})
-
 		sub := se.Router.Group("/api/ws").
 			Bind(apis.SkipSuccessActivityLog()).
 			Bind(RequireWebsocketAuth())
@@ -77,15 +57,6 @@ func roomWebsocketHandler(e *core.RequestEvent) error {
 	}
 
 	client.JoinRoom(serverRoom)
-
-	// TODO: implement pub/sub broker (redis or other solution)
-	client.OnIncomingMessage(room.RoomRevealMessage, room.RoomResetMessage).BindFunc(func(me *room.MessageEvent) error {
-		return onStateMessage(me, e.App)
-	})
-
-	client.OnIncomingMessage(room.UserKickMessage).BindFunc(func(me *room.MessageEvent) error {
-		return onKickUser(me, e.App)
-	})
 
 	return e.Next()
 }

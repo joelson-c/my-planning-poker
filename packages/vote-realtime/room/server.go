@@ -25,6 +25,8 @@ type RoomServer struct {
 	onRoomDeleted        *hook.Hook[*RoomEvent]
 	onClientConnected    *hook.Hook[*ClientEvent]
 	onClientDisconnected *hook.Hook[*ClientEvent]
+	onIncomingMessage    *hook.Hook[*MessageEvent]
+	onOutboundMessage    *hook.Hook[*MessageEvent]
 }
 
 // NewRoomServer initializes and returns a new Room Server instance.
@@ -37,6 +39,8 @@ func NewRoomServer() *RoomServer {
 		onRoomDeleted:        new(hook.Hook[*RoomEvent]),
 		onClientConnected:    new(hook.Hook[*ClientEvent]),
 		onClientDisconnected: new(hook.Hook[*ClientEvent]),
+		onIncomingMessage:    new(hook.Hook[*MessageEvent]),
+		onOutboundMessage:    new(hook.Hook[*MessageEvent]),
 	}
 }
 
@@ -118,6 +122,14 @@ func (r *RoomServer) Register() chan *Client {
 
 func (r *RoomServer) Unregister() chan *Client {
 	return r.register
+}
+
+func (r *RoomServer) OnIncomingMessage(tags ...string) *hook.TaggedHook[*MessageEvent] {
+	return hook.NewTaggedHook(r.onIncomingMessage, tags...)
+}
+
+func (r *RoomServer) OnOutboundMessage(tags ...string) *hook.TaggedHook[*MessageEvent] {
+	return hook.NewTaggedHook(r.onOutboundMessage, tags...)
 }
 
 func (r *RoomServer) registerClient(client *Client) {

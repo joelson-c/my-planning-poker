@@ -81,10 +81,10 @@ type GenericError struct {
 	Error string `json:"error"`
 }
 
-type UserConnected struct {
+type UserConnection struct {
 	Id       string `json:"id"`
 	Nickname string `json:"nickname"`
-	Observer string `json:"observer"`
+	Observer bool   `json:"observer"`
 }
 
 type UserUpdated struct {

@@ -29,94 +29,21 @@ type RemovedUserPayload struct {
 }
 
 func BindUserRealtimeHooks(app core.App) {
-	app.OnRecordAfterUpdateSuccess(models.CollectionNameVoteUsers).BindFunc(afterUserUpdated)
-	app.OnRecordAfterDeleteSuccess(models.CollectionNameVoteUsers).BindFunc(afterUserDeleted)
-
-	/* payload := &KickUserPayload{}
-	err := json.Unmarshal(e.Message.Data, payload)
-	if err != nil {
-		return err
-	}
-
-	if payload.TargetUser == "" {
-		return fmt.Errorf("Missing target user in payload")
-	}
-
-	user := e.Client.Get(WebsocketClientAuthKey).(*core.Record)
-	if payload.TargetUser == user.Id {
-		return fmt.Errorf("Cannot kick yourself")
-	}
-
-	targetUser, err := e.App.FindRecordById(models.CollectionNameVoteUsers, payload.TargetUser)
-	if err != nil {
-		e.Client.Send(&realtimeSocket.Message{
-			Name: e.Message.Name + "_ERROR",
-			Data: json.RawMessage(`{"error": "` + err.Error() + `"}`),
-		})
-
-		return err
-	}
-
-	if targetUser.GetString("room") != user.GetString("room") {
-		e.Client.Send(&realtimeSocket.Message{
-			Name: e.Message.Name + "_ERROR",
-			Data: json.RawMessage(`{"error": "Target user is not in the room you're in."}`),
-		})
-
-		return fmt.Errorf("Trying to kick a user from a different room")
-	}
-
-	if !targetUser.GetBool("active") {
-		e.Client.Send(&realtimeSocket.Message{
-			Name: e.Message.Name + "_ERROR",
-			Data: json.RawMessage(`{"error": "Target user is not active"}`),
-		})
-
-		return fmt.Errorf("Target user is not active")
-	}
-
-	client, _ := getSocketUserByRecord(app, targetUser)
-	if client != nil {
-		client.Connection().WriteMessage(
-			websocket.CloseMessage,
-			websocket.FormatCloseMessage(CloseUserKickedFromRoom, "User was kicked from the room"),
-		)
-
-		app.WebsocketBroker().Unregister(client.Id())
-	}
-
-	if client == nil {
-		// The user is not connected to the websocket, but still appears in the room user list
-		targetUser.Set("active", false)
-		if err := e.App.Save(targetUser); err != nil {
-			return err
-		}
-	}
-
-	msgPayload, err := json.Marshal(RemovedUserPayload{
-		Id:       targetUser.Id,
-		Nickname: targetUser.GetString("nickname"),
+	server := room.ServerFromAppStore(app)
+	server.OnIncomingMessage(room.UserKickMessage).BindFunc(func(e *room.MessageEvent) error {
+		return onKickUser(e, app)
 	})
 
-	if err != nil {
-		return err
-	}
+	server.OnClientConnected().BindFunc(func(ce *room.ClientEvent) error {
+		return onUserConnected(ce, app)
+	})
 
-	e.App.WebsocketBroker().BroadcastMessage(
-		&realtimeSocket.Message{
-			Name: "WS_USER_REMOVED",
-			Data: json.RawMessage(msgPayload),
-		},
-		targetUser.GetString("room"),
-		WebsocketChunkSize,
-	)
+	server.OnClientDisconnected().BindFunc(func(ce *room.ClientEvent) error {
+		return onUserDisconnected(ce, app)
+	})
 
-	e.App.Logger().Info(
-		"Removed user from room",
-		slog.String("room", user.GetString("room")),
-		slog.String("requester", user.Id),
-		slog.String("targetUser", targetUser.Id),
-	) */
+	app.OnRecordAfterUpdateSuccess(models.CollectionNameVoteUsers).BindFunc(afterUserUpdated)
+	app.OnRecordAfterDeleteSuccess(models.CollectionNameVoteUsers).BindFunc(afterUserDeleted)
 }
 
 func afterUserUpdated(e *core.RecordEvent) error {
@@ -171,6 +98,16 @@ func onKickUser(e *room.MessageEvent, app core.App) error {
 		return err
 	}
 
+	if targetUser.Id == e.Client.Id {
+		err = fmt.Errorf("Trying to kick self")
+		e.Client.SendMessage() <- room.NewMessageWithData(
+			room.GenericErrorMessage,
+			&room.GenericError{Error: err.Error()},
+		)
+
+		return err
+	}
+
 	if targetUser.GetString("room") != e.Client.Room.Id {
 		err = fmt.Errorf("Trying to kick a user from a different room")
 		e.Client.SendMessage() <- room.NewMessageWithData(
@@ -181,22 +118,65 @@ func onKickUser(e *room.MessageEvent, app core.App) error {
 		return err
 	}
 
-	if !targetUser.GetBool("active") {
-		err = fmt.Errorf("Target user is not active")
-
-		e.Client.SendMessage() <- room.NewMessageWithData(
-			room.GenericErrorMessage,
-			&room.GenericError{Error: err.Error()},
-		)
-
-		return err
+	if targetUser.GetBool("active") {
+		targetUser.Set("active", false)
+		if err := app.Save(targetUser); err != nil {
+			return fmt.Errorf("Failed to inactivate target user: %v", err)
+		}
 	}
 
-	if err := app.Delete(targetUser); err != nil {
-		return fmt.Errorf("Failed to delete target user: %v", err)
+	targetClient := e.Client.Room.GetClientById(targetUser.Id)
+	if targetClient == nil {
+		return fmt.Errorf("Failed to find target client")
 	}
+
+	targetClient.DisconnectWithMessage(
+		websocket.FormatCloseMessage(CloseUserKickedFromRoom, "User was kicked from the room"),
+	)
 
 	e.Client.Room.Broadcast() <- e.Message
+
+	return e.Next()
+}
+
+func onUserConnected(e *room.ClientEvent, app core.App) error {
+	app.Logger().Debug("Connection estabilished with client", slog.String("client", e.Client.Id))
+
+	e.Client.Record.Set("active", true)
+	if err := app.UnsafeWithoutHooks().Save(e.Client.Record); err != nil {
+		e.Client.DisconnectWithMessage(
+			websocket.FormatCloseMessage(websocket.CloseInternalServerErr, "Failed to update user record"),
+		)
+
+		return fmt.Errorf("Failed to update user record after client connection: %v", err)
+	}
+
+	e.Client.Room.Broadcast() <- room.NewMessageWithData(room.UserConnectedMessage,
+		&room.UserConnection{
+			Id:       e.Client.Id,
+			Nickname: e.Client.Record.GetString("nickname"),
+			Observer: e.Client.Record.GetBool("observer"),
+		},
+	)
+	return e.Next()
+}
+
+func onUserDisconnected(e *room.ClientEvent, app core.App) error {
+	app.Logger().Debug("Connection closed for client", slog.String("client", e.Client.Id))
+
+	e.Client.Record.Set("active", false)
+	if err := app.UnsafeWithoutHooks().Save(e.Client.Record); err != nil {
+		return fmt.Errorf("Failed to update user record after client disconnection: %v", err)
+	}
+
+	e.Client.Room.Broadcast() <- room.NewMessageWithData(
+		room.UserDisconnectedMessage,
+		&room.UserConnection{
+			Id:       e.Client.Id,
+			Nickname: e.Client.Record.GetString("nickname"),
+			Observer: e.Client.Record.GetBool("observer"),
+		},
+	)
 
 	return e.Next()
 }

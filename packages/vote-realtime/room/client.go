@@ -7,7 +7,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/hook"
 )
 
 const (
@@ -38,32 +37,28 @@ var upgrader = websocket.Upgrader{
 }
 
 type Client struct {
-	Id                string
-	Server            *RoomServer
-	Room              *Room
-	Record            *core.Record
-	conn              *websocket.Conn
-	send              chan []byte
-	sendClose         chan []byte
-	sendCloseAck      chan bool
-	sendMessage       chan *Message
-	onIncomingMessage *hook.Hook[*MessageEvent]
-	onOutboundMessage *hook.Hook[*MessageEvent]
+	Id           string
+	Server       *RoomServer
+	Room         *Room
+	Record       *core.Record
+	conn         *websocket.Conn
+	send         chan []byte
+	sendClose    chan []byte
+	sendCloseAck chan bool
+	sendMessage  chan *Message
 }
 
 // newClient initializes and returns a new WebsocketClient instance.
 func newClient(record *core.Record, server *RoomServer, conn *websocket.Conn) *Client {
 	return &Client{
-		Id:                record.Id,
-		Server:            server,
-		Record:            record,
-		conn:              conn,
-		send:              make(chan []byte, bufferSize),
-		sendClose:         make(chan []byte),
-		sendCloseAck:      make(chan bool),
-		sendMessage:       make(chan *Message),
-		onIncomingMessage: new(hook.Hook[*MessageEvent]),
-		onOutboundMessage: new(hook.Hook[*MessageEvent]),
+		Id:           record.Id,
+		Server:       server,
+		Record:       record,
+		conn:         conn,
+		send:         make(chan []byte, bufferSize),
+		sendClose:    make(chan []byte),
+		sendCloseAck: make(chan bool),
+		sendMessage:  make(chan *Message),
 	}
 }
 
@@ -80,14 +75,6 @@ func ServeWs(record *core.Record, server *RoomServer, w http.ResponseWriter, r *
 	go client.readPump()
 
 	return client, nil
-}
-
-func (c *Client) OnIncomingMessage(tags ...string) *hook.TaggedHook[*MessageEvent] {
-	return hook.NewTaggedHook(c.onIncomingMessage, tags...)
-}
-
-func (c *Client) OnOutboundMessage(tags ...string) *hook.TaggedHook[*MessageEvent] {
-	return hook.NewTaggedHook(c.onOutboundMessage, tags...)
 }
 
 func (c *Client) SendMessage() chan *Message {
@@ -179,7 +166,7 @@ func (c *Client) writePump() {
 			return
 
 		case message := <-c.sendMessage:
-			c.OnOutboundMessage().Trigger(&MessageEvent{Message: message, Client: c}, func(me *MessageEvent) error {
+			c.Server.OnOutboundMessage().Trigger(&MessageEvent{Message: message, Client: c}, func(me *MessageEvent) error {
 				c.send <- message.Encode()
 				return nil
 			})
@@ -196,5 +183,5 @@ func (c *Client) handleIncomingMessage(jsonMessage []byte) {
 	var message Message
 	message.Decode(jsonMessage)
 
-	c.OnIncomingMessage().Trigger(&MessageEvent{Message: &message, Client: c})
+	c.Server.OnIncomingMessage().Trigger(&MessageEvent{Message: &message, Client: c})
 }
