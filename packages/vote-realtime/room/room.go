@@ -65,7 +65,17 @@ func (r *Room) publishRoomMessage(message *Message) {
 		// Do not use client.SendMessage to avoid multiple message encoding
 		client.Server.OnOutboundMessage().Trigger(&MessageEvent{Client: client, Message: message}, func(me *MessageEvent) error {
 			client.send <- encoded
-			return nil
+			return me.Next()
 		})
 	}
+}
+
+func (r *Room) close() {
+	for k := range r.clients {
+		delete(r.clients, k)
+	}
+
+	close(r.broadcast)
+	close(r.register)
+	close(r.unregister)
 }

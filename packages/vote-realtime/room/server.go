@@ -97,15 +97,21 @@ func (r *RoomServer) CloseRoom(id string) error {
 		return fmt.Errorf("Room with ID %s not found", id)
 	}
 
-	return r.OnRoomCreated().Trigger(&RoomEvent{Room: item.room}, func(re *RoomEvent) error {
-		item.cancel()
+	item.cancel()
+
+	return r.OnRoomDeleted().Trigger(&RoomEvent{Room: item.room}, func(re *RoomEvent) error {
+		item.room.close()
 		delete(r.rooms, id)
-		return nil
+		return re.Next()
 	})
 }
 
 func (r *RoomServer) OnRoomCreated() *hook.Hook[*RoomEvent] {
 	return r.onRoomCreated
+}
+
+func (r *RoomServer) OnRoomDeleted() *hook.Hook[*RoomEvent] {
+	return r.onRoomDeleted
 }
 
 func (r *RoomServer) OnClientConnected() *hook.Hook[*ClientEvent] {
