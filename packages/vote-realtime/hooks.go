@@ -2,11 +2,10 @@ package main
 
 import (
 	"github.com/joelson-c/vote-realtime/apis"
-	"github.com/joelson-c/vote-realtime/core"
+	"github.com/pocketbase/pocketbase/core"
 )
 
-func bindAppHooks(app core.RealtimeApp) {
-	apis.BindWebsocketHooks(app)
+func bindAppHooks(app core.App) {
 	apis.BindRoomRealtimeHooks(app)
 	apis.BindUserRealtimeHooks(app)
 	apis.BindRoomHooks(app)

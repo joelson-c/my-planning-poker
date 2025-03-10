@@ -3,13 +3,17 @@ package main
 import (
 	"log"
 
-	"github.com/joelson-c/vote-realtime/core"
 	_ "github.com/joelson-c/vote-realtime/migrations"
+	"github.com/joelson-c/vote-realtime/room"
+	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 )
 
 func main() {
-	app := core.NewRealtimeApp()
+	app := pocketbase.New()
+	roomServer := room.NewRoomServer()
+	roomServer.ToAppStore(app)
+	go roomServer.Run()
 	bindAppHooks(app)
 
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
