@@ -7,29 +7,11 @@
 }
 
 realtime.{$DOMAIN} {
-	@adminPanel path /_/ /_
-
-	handle @adminPanel {
-		@denied not remote_ip private_ranges
-		abort @denied
-	}
-
 	handle {
 		reverse_proxy realtime:8090 {
 			transport http {
 				read_timeout 360s
 			}
-		}
-	}
-}
-
-http://{$REALTIME_ADMIN_ADDRESS} {
-	@adminResources not path /api/*
-	rewrite @adminResources /_{uri}
-
-	reverse_proxy realtime:8090 {
-		transport http {
-			read_timeout 360s
 		}
 	}
 }

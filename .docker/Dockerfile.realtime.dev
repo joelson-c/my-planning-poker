@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.23 AS build
+FROM golang:1.24 AS build
 
 WORKDIR /usr/src/app
 COPY go.mod go.sum ./
@@ -15,14 +15,12 @@ COPY . .
 ENV GOCACHE=/root/.cache/go-build
 RUN --mount=type=cache,target="/root/.cache/go-build" \
     --mount=type=cache,target=/go/pkg/mod/ \
-    CGO_ENABLED=0 GOOS=linux go build -gcflags "all=-N -l" -o /usr/local/bin/realtime
+    CGO_ENABLED=0 GOOS=linux go build -gcflags "all=-N -l" -o bin/vote-server cmd/server/main.go
 
 FROM debian:12 AS release
 WORKDIR /usr/src/app
-COPY --from=build /usr/local/bin/realtime /usr/src/app/realtime
+COPY --from=build /usr/src/app/bin/vote-server /usr/src/app/vote-server
 COPY --from=build /go/bin/dlv /usr/local/bin/dlv
-RUN /usr/src/app/realtime superuser upsert dev@myplanningpoker.dev dev12345
 
-VOLUME /usr/src/app/pb_data
 EXPOSE 8090 4000
-ENTRYPOINT [ "dlv", "--listen=:4000", "--headless=true", "--accept-multiclient", "exec", "realtime", "--continue", "--", "serve", "--http=0.0.0.0:8090", "--dev" ]
+ENTRYPOINT [ "dlv", "--listen=:4000", "--headless=true", "--accept-multiclient", "exec", "vote-server", "--continue", "--", "--redis=redis:6379", "--listen=:8090" ]
