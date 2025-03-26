@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/coder/websocket"
 	"github.com/joelson-c/my-planning-poker/internal/client"
@@ -13,6 +14,8 @@ type roomPayload struct {
 	SessionId string `json:"sessionId"`
 	RoomId    string `json:"roomId"`
 }
+
+const disconnectionTimeout = time.Minute
 
 func (s *Server) HandleRoomSocket(w http.ResponseWriter, r *http.Request) {
 	sessionId := r.PathValue("session")
@@ -35,7 +38,7 @@ func (s *Server) HandleRoomSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer s.app.SessionHandler.Delete(session)
+	defer s.app.SessionHandler.SetTTL(session, disconnectionTimeout)
 
 	_, ok = s.app.RoomHandler.GetById(session.RoomId)
 	if !ok {
@@ -55,6 +58,13 @@ func (s *Server) HandleRoomSocket(w http.ResponseWriter, r *http.Request) {
 	client := client.New(c)
 	ctx := context.Background()
 
+	session.ClientId = client.Id()
+	err = s.app.SessionHandler.Save(session)
+	if err != nil {
+		log.Printf("client: failed to update session with client id: %v", err)
+		return
+	}
+
 	err = s.app.ClientHandler.Register(client)
 	if err != nil {
 		log.Printf("client: failed to register client information: %v", err)
@@ -68,8 +78,6 @@ func (s *Server) HandleRoomSocket(w http.ResponseWriter, r *http.Request) {
 		log.Printf("client: failed to create client session: %v", err)
 		return
 	}
-
-	defer s.app.SessionHandler.Delete(session)
 
 	dataChan, errChan := client.Run(ctx)
 	for {

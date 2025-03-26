@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/joelson-c/my-planning-poker/internal/application"
-	"github.com/joelson-c/my-planning-poker/internal/room"
 )
 
 type startPayload struct {
@@ -38,10 +37,10 @@ func (s *Server) HandleStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var userRoom application.Room
+	var userRoom *application.Room
 	if p.RoomId == "" {
-		userRoom = room.New()
-		err := s.app.RoomHandler.Create(userRoom)
+		userRoom = application.NewRoom()
+		err := s.app.RoomHandler.Save(userRoom)
 
 		if err != nil {
 			log.Printf("sess start: error while creating a new room: %v", err)
@@ -59,7 +58,7 @@ func (s *Server) HandleStart(w http.ResponseWriter, r *http.Request) {
 		userRoom = sessionRoom
 	}
 
-	session := application.NewSession(p.Nickname, userRoom.Id(), p.Observer)
+	session := application.NewSession(p.Nickname, userRoom.Id, p.Observer)
 	err = s.app.SessionHandler.Save(session)
 	if err != nil {
 		log.Printf("sess start: error saving the new client session: %v", err)
@@ -79,7 +78,7 @@ func (s *Server) HandleStart(w http.ResponseWriter, r *http.Request) {
 
 	response := &startResponse{
 		SessionId: session.Id,
-		RoomId:    userRoom.Id(),
+		RoomId:    userRoom.Id,
 	}
 
 	json.NewEncoder(w).Encode(response)
