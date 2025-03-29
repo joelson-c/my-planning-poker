@@ -3,9 +3,10 @@ package application
 import "github.com/joelson-c/my-planning-poker/internal/models"
 
 type MessageHandlerData struct {
-	App    Application
-	Client *models.Client
-	Msg    *models.Message
+	App     Application
+	Client  *models.Client
+	Msg     *models.Message
+	Session *Session
 }
 
 type MessageHandler func(d *MessageHandlerData) error

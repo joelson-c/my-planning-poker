@@ -14,9 +14,9 @@ const (
 )
 
 type Message struct {
-	Id   string
-	Type MessageType
-	Data map[string]any
+	Id   string         `json:"id"`
+	Type MessageType    `json:"type"`
+	Data map[string]any `json:"data"`
 }
 
 func NewMessage(t MessageType, d map[string]any) *Message {

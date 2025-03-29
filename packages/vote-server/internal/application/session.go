@@ -12,6 +12,7 @@ type Session struct {
 	Nickname string `redis:"nickname"`
 	Observer bool   `redis:"observer"`
 	RoomId   string `redis:"roomId"`
+	Vote     string `redis:"vote"`
 }
 
 func NewSession(nickname string, roomId string, observer bool) *Session {
@@ -20,6 +21,7 @@ func NewSession(nickname string, roomId string, observer bool) *Session {
 		Nickname: nickname,
 		RoomId:   roomId,
 		Observer: observer,
+		Vote:     "",
 	}
 }
 

@@ -115,9 +115,10 @@ func (s *Server) HandleRoomSocket(w http.ResponseWriter, r *http.Request) {
 		select {
 		case m := <-dataChan:
 			d := &application.MessageHandlerData{
-				App:    s.app,
-				Client: client,
-				Msg:    m,
+				App:     s.app,
+				Client:  client,
+				Msg:     m,
+				Session: session,
 			}
 			s.app.MessageRouter().Dispatch(d)
 		case err := <-errChan:
