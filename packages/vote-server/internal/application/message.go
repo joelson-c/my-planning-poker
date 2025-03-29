@@ -1,17 +1,16 @@
 package application
 
-import "encoding/json"
+import "github.com/joelson-c/my-planning-poker/internal/models"
 
-type Message struct {
-	Id   string
-	Type int
-	Data map[string]any
+type MessageHandlerData struct {
+	App    Application
+	Client *models.Client
+	Msg    *models.Message
 }
 
-func (m *Message) UnmarshalJSON(b []byte) error {
-	return json.Unmarshal(b, m)
-}
+type MessageHandler func(d *MessageHandlerData) error
 
-func (m *Message) MarshalJSON() ([]byte, error) {
-	return json.Marshal(m)
+type MessageRouter interface {
+	HandleFunc(t models.MessageType, h MessageHandler)
+	Dispatch(d *MessageHandlerData)
 }

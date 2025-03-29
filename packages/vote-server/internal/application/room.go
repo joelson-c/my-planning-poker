@@ -1,21 +1,12 @@
 package application
 
-import gonanoid "github.com/matoous/go-nanoid/v2"
-
-type Room struct {
-	Id string `redis:"id"`
-}
-
-const roomIdLength = 18
-
-func NewRoom() *Room {
-	return &Room{
-		Id: gonanoid.Must(roomIdLength),
-	}
-}
+import "github.com/joelson-c/my-planning-poker/internal/models"
 
 type RoomHandler interface {
-	Save(r *Room) error
-	Delete(r *Room) error
-	GetById(id string) (*Room, bool)
+	Save(r *models.Room) error
+	Delete(r *models.Room) error
+	GetById(id string) (*models.Room, bool)
+	RegisterClient(r *models.Room, c *models.Client) error
+	UnregisterClient(r *models.Room, c *models.Client) error
+	GetClientIds(r *models.Room) ([]string, error)
 }

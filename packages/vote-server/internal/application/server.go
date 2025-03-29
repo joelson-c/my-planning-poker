@@ -1,7 +1,9 @@
 package application
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type Server interface {
-	RegisterRoutes(app *Application, mux *http.ServeMux)
+	RegisterRoutes(mux *http.ServeMux)
 }

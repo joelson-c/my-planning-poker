@@ -1,17 +1,9 @@
 package application
 
-import (
-	"github.com/coder/websocket"
-)
-
-type Client interface {
-	Id() string
-	Conn() *websocket.Conn
-	Send() chan *Message
-}
+import "github.com/joelson-c/my-planning-poker/internal/models"
 
 type ClientHandler interface {
-	Register(c Client) error
-	Unregister(c Client) error
-	GetById(id string) (Client, bool)
+	Register(c *models.Client) error
+	Unregister(c *models.Client) error
+	GetById(id string) (*models.Client, bool)
 }
