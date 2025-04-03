@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/joelson-c/my-planning-poker/internal/application"
+	"github.com/joelson-c/my-planning-poker/internal/models"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -22,11 +23,11 @@ func NewSession(redis *redis.Client) application.SessionHandler {
 	}
 }
 
-func (h *Session) GetById(id string) (*application.Session, bool) {
+func (h *Session) GetById(id string) (*models.Session, bool) {
 	ctx := context.Background()
 	cmd := h.redis.HGetAll(ctx, h.keyFromId(id))
 
-	var session application.Session
+	var session models.Session
 	if err := cmd.Scan(&session); err != nil {
 		log.Printf("session: unable to get by id: %v", err)
 		return nil, false
@@ -39,25 +40,25 @@ func (h *Session) GetById(id string) (*application.Session, bool) {
 	return &session, true
 }
 
-func (h *Session) Save(s *application.Session) error {
+func (h *Session) Save(s *models.Session) error {
 	ctx := context.Background()
 	cmd := h.redis.HSet(ctx, h.keyFromSession(s), s)
 	return cmd.Err()
 }
 
-func (h *Session) SetTTL(s *application.Session, ttl time.Duration) error {
+func (h *Session) SetTTL(s *models.Session, ttl time.Duration) error {
 	ctx := context.Background()
 	cmd := h.redis.Expire(ctx, h.keyFromSession(s), ttl)
 	return cmd.Err()
 }
 
-func (h *Session) ClearTTL(s *application.Session) error {
+func (h *Session) ClearTTL(s *models.Session) error {
 	ctx := context.Background()
 	cmd := h.redis.Persist(ctx, h.keyFromSession(s))
 	return cmd.Err()
 }
 
-func (h *Session) Delete(s *application.Session) error {
+func (h *Session) Delete(s *models.Session) error {
 	ctx := context.Background()
 	cmd := h.redis.Del(ctx, h.keyFromSession(s))
 	return cmd.Err()
@@ -67,6 +68,6 @@ func (h *Session) keyFromId(id string) string {
 	return fmt.Sprintf("session:%s", id)
 }
 
-func (h *Session) keyFromSession(s *application.Session) string {
+func (h *Session) keyFromSession(s *models.Session) string {
 	return fmt.Sprintf("session:%s", s.Id)
 }

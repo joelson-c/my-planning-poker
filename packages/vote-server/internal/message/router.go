@@ -37,7 +37,7 @@ func (r *Router) Dispatch(d *application.MessageHandlerData) {
 
 	for _, h := range handlers {
 		if err := h(d); err != nil {
-			log.Printf("message: error in message handling (message type: '%d')", d.Msg.Type)
+			log.Printf("message: error in message handling (message type: '%d') - %v", d.Msg.Type, err)
 			return
 		}
 	}

@@ -56,7 +56,7 @@ func (s *Server) HandleRoomSocket(w http.ResponseWriter, r *http.Request) {
 
 	defer c.CloseNow()
 
-	client := models.NewClient(c)
+	client := models.NewClient(c, sessionId)
 	ctx := context.Background()
 
 	session.ClientId = client.Id

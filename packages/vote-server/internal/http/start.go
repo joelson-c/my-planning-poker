@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/joelson-c/my-planning-poker/internal/application"
 	"github.com/joelson-c/my-planning-poker/internal/models"
 )
 
@@ -59,7 +58,7 @@ func (s *Server) HandleStart(w http.ResponseWriter, r *http.Request) {
 		userRoom = sessionRoom
 	}
 
-	session := application.NewSession(p.Nickname, userRoom.Id, p.Observer)
+	session := models.NewSession(p.Nickname, userRoom.Id, p.Observer)
 	err = s.app.SessionHandler().Save(session)
 	if err != nil {
 		log.Printf("sess start: error saving the new client session: %v", err)

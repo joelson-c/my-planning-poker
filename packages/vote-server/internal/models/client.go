@@ -22,14 +22,16 @@ const (
 
 type Client struct {
 	Id             string
+	SessionId      string
 	conn           *websocket.Conn
 	send           chan *Message
 	publishLimiter *rate.Limiter
 }
 
-func NewClient(c *websocket.Conn) *Client {
+func NewClient(c *websocket.Conn, sessionId string) *Client {
 	return &Client{
 		Id:             gonanoid.Must(),
+		SessionId:      sessionId,
 		conn:           c,
 		send:           make(chan *Message, messageBufferSize),
 		publishLimiter: rate.NewLimiter(rate.Every(publishLimit), publishBurstLimit),

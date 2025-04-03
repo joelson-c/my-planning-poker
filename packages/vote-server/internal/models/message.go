@@ -11,6 +11,7 @@ const (
 	VoteMessage
 	RevealMessage
 	ResetMessage
+	ResultMessage
 )
 
 type Message struct {

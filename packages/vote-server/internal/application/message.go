@@ -6,7 +6,7 @@ type MessageHandlerData struct {
 	App     Application
 	Client  *models.Client
 	Msg     *models.Message
-	Session *Session
+	Session *models.Session
 }
 
 type MessageHandler func(d *MessageHandlerData) error

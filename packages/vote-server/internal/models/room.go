@@ -7,19 +7,13 @@ import (
 	gonanoid "github.com/matoous/go-nanoid/v2"
 )
 
-type RoomState = int
 type CardPack = int
 
 type Room struct {
-	Id       string    `redis:"id"`
-	State    RoomState `redis:"state"`
-	CardPack CardPack  `redis:"pack"`
+	Id         string   `redis:"id"`
+	IsRevealed bool     `redis:"state"`
+	CardPack   CardPack `redis:"pack"`
 }
-
-const (
-	VotingState RoomState = iota
-	RevealState
-)
 
 const (
 	FibonacciPack CardPack = iota
@@ -29,9 +23,9 @@ const roomIdLength = 18
 
 func NewRoom() *Room {
 	return &Room{
-		Id:       gonanoid.Must(roomIdLength),
-		State:    VotingState,
-		CardPack: FibonacciPack,
+		Id:         gonanoid.Must(roomIdLength),
+		IsRevealed: false,
+		CardPack:   FibonacciPack,
 	}
 }
 
