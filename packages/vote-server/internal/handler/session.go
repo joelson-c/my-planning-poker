@@ -24,7 +24,9 @@ func NewSession(redis *redis.Client) application.SessionHandler {
 }
 
 func (h *Session) GetById(id string) (*models.Session, bool) {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	cmd := h.redis.HGetAll(ctx, h.keyFromId(id))
 
 	session := new(models.Session)
@@ -41,25 +43,33 @@ func (h *Session) GetById(id string) (*models.Session, bool) {
 }
 
 func (h *Session) Save(s *models.Session) error {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	cmd := h.redis.HSet(ctx, h.keyFromId(s.Id), s)
 	return cmd.Err()
 }
 
 func (h *Session) SetTTL(s *models.Session, ttl time.Duration) error {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	cmd := h.redis.Expire(ctx, h.keyFromId(s.Id), ttl)
 	return cmd.Err()
 }
 
 func (h *Session) ClearTTL(s *models.Session) error {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	cmd := h.redis.Persist(ctx, h.keyFromId(s.Id))
 	return cmd.Err()
 }
 
 func (h *Session) Delete(s *models.Session) error {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	cmd := h.redis.Del(ctx, h.keyFromId(s.Id))
 	return cmd.Err()
 }
