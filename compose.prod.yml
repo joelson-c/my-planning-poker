@@ -1,0 +1,25 @@
+name: my-planning-poker
+
+services:
+    frontend:
+        image: ghcr.io/joelson-c/planning-poker-frontend
+        pull_policy: always
+        restart: always
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - caddy_data:/data
+            - caddy_config:/config
+
+    realtime:
+        image: ghcr.io/joelson-c/planning-poker-realtime
+        pull_policy: always
+        restart: always
+        volumes:
+            - pb_data:/var/www/app/pb_data
+
+volumes:
+    caddy_data:
+    caddy_config:
+    pb_data:

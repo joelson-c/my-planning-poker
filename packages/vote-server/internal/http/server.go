@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"time"
@@ -34,6 +35,13 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	log.Println("server: registering routes")
 	mux.HandleFunc("GET /room/{session}", s.HandleRoomSocket)
 	mux.HandleFunc("POST /start", s.HandleStart)
+
+	// pprof
+	mux.HandleFunc("GET /debug/pprof/", pprof.Index)
+	mux.HandleFunc("GET /debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("GET /debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("GET /debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("GET /debug/pprof/trace", pprof.Trace)
 }
 
 func (s *Server) Run(ctx context.Context) error {

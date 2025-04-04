@@ -29,5 +29,5 @@ func NewMessage(t MessageType, d map[string]any) *Message {
 }
 
 func (m *Message) IsValid() bool {
-	return m.Id == "" || m.Type == UnknownMessage
+	return m.Id != "" && m.Type != UnknownMessage
 }

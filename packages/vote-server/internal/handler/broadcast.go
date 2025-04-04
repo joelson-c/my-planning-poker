@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"slices"
+
 	"github.com/joelson-c/my-planning-poker/internal/application"
 	"github.com/joelson-c/my-planning-poker/internal/models"
 )
+
+const clientChunkSize = 16
 
 type Broadcast struct {
 	application.BroadcastHandler
@@ -31,13 +35,17 @@ func (h *Broadcast) BroadcastForRoom(r *models.Room, m *models.Message) error {
 		return err
 	}
 
-	for _, id := range ids {
-		client, ok := h.clientHandler.GetById(id)
-		if !ok {
-			continue
-		}
+	for chunk := range slices.Chunk(ids, clientChunkSize) {
+		go func() {
+			for _, id := range chunk {
+				client, ok := h.clientHandler.GetById(id)
+				if !ok {
+					continue
+				}
 
-		client.SendMessage(m)
+				client.SendMessage(m)
+			}
+		}()
 	}
 
 	return nil

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	publishLimit      = time.Millisecond * 100
+	publishLimit      = time.Millisecond * 200
 	publishBurstLimit = 8
 	messageBufferSize = 16
 	readTimeout       = time.Minute * 2
@@ -38,60 +38,44 @@ func NewClient(c *websocket.Conn, sessionId string) *Client {
 	}
 }
 
-func (c *Client) Run(ctx context.Context) (<-chan *Message, <-chan error) {
-	dataChan := make(chan *Message)
-	errorChan := make(chan error)
-
-	go c.read(ctx, dataChan, errorChan)
-	go c.write(ctx, errorChan)
-
-	return dataChan, errorChan
-}
-
 func (c *Client) SendMessage(m *Message) {
 	select {
 	case c.send <- m:
 	default:
 		log.Printf("client: slow reader detected: %v", c.Id)
+		c.conn.Close(websocket.StatusPolicyViolation, "connection too slow to keep up with messages")
 	}
 }
 
-func (c *Client) read(ctx context.Context, m chan<- *Message, e chan<- error) {
-	readCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
+func (c *Client) Read(ctx context.Context, m chan<- *Message, e chan<- error) {
 	for {
-		t, b, err := c.conn.Read(readCtx)
+		err := c.publishLimiter.Wait(ctx)
 		if err != nil {
-			log.Printf("client: failed to read message: %v", err)
 			e <- err
 			return
 		}
 
-		time.AfterFunc(readTimeout, cancel)
+		t, b, err := c.conn.Read(ctx)
+		if err != nil {
+			e <- err
+			return
+		}
 
 		if t == websocket.MessageText {
 			var msg Message
 			if err := json.Unmarshal(b, &msg); err != nil {
-				log.Printf("client: failed to unmarshal json messaged: %v", err)
 				e <- err
 				return
 			}
 
 			if msg.IsValid() {
-				log.Printf("client: rcvd invalid message: %v", msg)
-				continue
+				m <- &msg
 			}
-
-			m <- &msg
 		}
 	}
 }
 
-func (c *Client) write(ctx context.Context, e chan<- error) {
-	writeCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
+func (c *Client) Write(ctx context.Context, e chan<- error) {
 	timer := time.NewTicker(pingInterval)
 	defer timer.Stop()
 
@@ -100,18 +84,17 @@ func (c *Client) write(ctx context.Context, e chan<- error) {
 		case m := <-c.send:
 			b, err := json.Marshal(m)
 			if err != nil {
-				log.Printf("client: failed to marshal json message to send: %v", err)
 				e <- err
 				return
 			}
 
-			c.conn.Write(writeCtx, websocket.MessageText, b)
+			c.conn.Write(ctx, websocket.MessageText, b)
+			b = nil
 		case <-ctx.Done():
 			return
 		case <-timer.C:
-			err := c.conn.Ping(writeCtx)
+			err := c.conn.Ping(ctx)
 			if err != nil {
-				log.Printf("client: failed to ping client: %v", err)
 				e <- err
 				return
 			}

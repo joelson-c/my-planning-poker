@@ -23,22 +23,28 @@ func NewRoom(redis *redis.Client) application.RoomHandler {
 }
 
 func (h *Room) Save(r *models.Room) error {
-	ctx := context.Background()
-	cmd := h.redis.HSet(ctx, h.keyFromRoom(r), r)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	cmd := h.redis.HSet(ctx, h.keyFromId(r.Id), r)
 	return cmd.Err()
 }
 
 func (h *Room) Delete(r *models.Room) error {
-	ctx := context.Background()
-	cmd := h.redis.Unlink(ctx, h.keyFromRoom(r))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	cmd := h.redis.Unlink(ctx, h.keyFromId(r.Id))
 	return cmd.Err()
 }
 func (h *Room) GetById(id string) (*models.Room, bool) {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	cmd := h.redis.HGetAll(ctx, h.keyFromId(id))
 
-	var room models.Room
-	if err := cmd.Scan(&room); err != nil {
+	room := new(models.Room)
+	if err := cmd.Scan(room); err != nil {
 		log.Printf("room: unable to get by id: %v", err)
 		return nil, false
 	}
@@ -47,24 +53,30 @@ func (h *Room) GetById(id string) (*models.Room, bool) {
 		return nil, false
 	}
 
-	return &room, true
+	return room, true
 }
 
 func (h *Room) RegisterClient(r *models.Room, c *models.Client) error {
-	ctx := context.Background()
-	cmd := h.redis.SAdd(ctx, h.keyForClients(r), c.Id)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	cmd := h.redis.SAdd(ctx, h.keyForClients(r.Id), c.Id)
 	return cmd.Err()
 }
 
 func (h *Room) UnregisterClient(r *models.Room, c *models.Client) error {
-	ctx := context.Background()
-	cmd := h.redis.SRem(ctx, h.keyForClients(r), c.Id)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	cmd := h.redis.SRem(ctx, h.keyForClients(r.Id), c.Id)
 	return cmd.Err()
 }
 
 func (h *Room) GetClientIds(r *models.Room) ([]string, error) {
-	ctx := context.Background()
-	ids, err := h.redis.SMembers(ctx, h.keyForClients(r)).Result()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	ids, err := h.redis.SMembers(ctx, h.keyForClients(r.Id)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -76,10 +88,6 @@ func (h *Room) keyFromId(id string) string {
 	return fmt.Sprintf("room:%s", id)
 }
 
-func (h *Room) keyFromRoom(r *models.Room) string {
-	return fmt.Sprintf("room:%s", r.Id)
-}
-
-func (h *Room) keyForClients(r *models.Room) string {
-	return fmt.Sprintf("room:%s:clients", r.Id)
+func (h *Room) keyForClients(id string) string {
+	return fmt.Sprintf("room:%s:clients", id)
 }

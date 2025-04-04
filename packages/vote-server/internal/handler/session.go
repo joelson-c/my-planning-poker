@@ -27,8 +27,8 @@ func (h *Session) GetById(id string) (*models.Session, bool) {
 	ctx := context.Background()
 	cmd := h.redis.HGetAll(ctx, h.keyFromId(id))
 
-	var session models.Session
-	if err := cmd.Scan(&session); err != nil {
+	session := new(models.Session)
+	if err := cmd.Scan(session); err != nil {
 		log.Printf("session: unable to get by id: %v", err)
 		return nil, false
 	}
@@ -37,37 +37,33 @@ func (h *Session) GetById(id string) (*models.Session, bool) {
 		return nil, false
 	}
 
-	return &session, true
+	return session, true
 }
 
 func (h *Session) Save(s *models.Session) error {
 	ctx := context.Background()
-	cmd := h.redis.HSet(ctx, h.keyFromSession(s), s)
+	cmd := h.redis.HSet(ctx, h.keyFromId(s.Id), s)
 	return cmd.Err()
 }
 
 func (h *Session) SetTTL(s *models.Session, ttl time.Duration) error {
 	ctx := context.Background()
-	cmd := h.redis.Expire(ctx, h.keyFromSession(s), ttl)
+	cmd := h.redis.Expire(ctx, h.keyFromId(s.Id), ttl)
 	return cmd.Err()
 }
 
 func (h *Session) ClearTTL(s *models.Session) error {
 	ctx := context.Background()
-	cmd := h.redis.Persist(ctx, h.keyFromSession(s))
+	cmd := h.redis.Persist(ctx, h.keyFromId(s.Id))
 	return cmd.Err()
 }
 
 func (h *Session) Delete(s *models.Session) error {
 	ctx := context.Background()
-	cmd := h.redis.Del(ctx, h.keyFromSession(s))
+	cmd := h.redis.Del(ctx, h.keyFromId(s.Id))
 	return cmd.Err()
 }
 
 func (h *Session) keyFromId(id string) string {
 	return fmt.Sprintf("session:%s", id)
-}
-
-func (h *Session) keyFromSession(s *models.Session) string {
-	return fmt.Sprintf("session:%s", s.Id)
 }

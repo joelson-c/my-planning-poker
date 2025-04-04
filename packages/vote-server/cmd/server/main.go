@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 
+	_ "net/http/pprof"
+
 	"github.com/joelson-c/my-planning-poker/cmd/server/config"
 	"github.com/joelson-c/my-planning-poker/internal/application/base"
 	"github.com/joelson-c/my-planning-poker/internal/http"

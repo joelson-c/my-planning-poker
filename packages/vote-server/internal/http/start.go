@@ -81,5 +81,10 @@ func (s *Server) HandleStart(w http.ResponseWriter, r *http.Request) {
 		RoomId:    userRoom.Id,
 	}
 
-	json.NewEncoder(w).Encode(response)
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Printf("sess start: error encoding response: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

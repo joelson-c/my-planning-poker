@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/coder/websocket"
@@ -16,7 +17,7 @@ type roomPayload struct {
 	RoomId    string `json:"roomId"`
 }
 
-const disconnectionTimeout = time.Minute
+const disconnectionTimeout = time.Minute * 2
 
 func (s *Server) HandleRoomSocket(w http.ResponseWriter, r *http.Request) {
 	sessionId := r.PathValue("session")
@@ -57,7 +58,6 @@ func (s *Server) HandleRoomSocket(w http.ResponseWriter, r *http.Request) {
 	defer c.CloseNow()
 
 	client := models.NewClient(c, sessionId)
-	ctx := context.Background()
 
 	session.ClientId = client.Id
 	err = s.app.SessionHandler().Save(session)
@@ -110,10 +110,27 @@ func (s *Server) HandleRoomSocket(w http.ResponseWriter, r *http.Request) {
 		)
 	}()
 
-	dataChan, errChan := client.Run(ctx)
+	dc := make(chan *models.Message)
+	ec := make(chan error)
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		defer wg.Done()
+		client.Read(ctx, dc, ec)
+	}()
+
+	go func() {
+		defer wg.Done()
+		client.Write(ctx, ec)
+	}()
+
 	for {
 		select {
-		case m := <-dataChan:
+		case m := <-dc:
 			d := &application.MessageHandlerData{
 				App:     s.app,
 				Client:  client,
@@ -121,11 +138,9 @@ func (s *Server) HandleRoomSocket(w http.ResponseWriter, r *http.Request) {
 				Session: session,
 			}
 			s.app.MessageRouter().Dispatch(d)
-		case err := <-errChan:
+		case err := <-ec:
 			log.Printf("client: stopping client: %v", err)
-			return
-		case <-ctx.Done():
-			log.Printf("client: stopping client, context is done")
+			cancel()
 			return
 		}
 	}
