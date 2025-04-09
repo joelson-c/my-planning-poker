@@ -1,0 +1,8 @@
+edition = "2023";
+
+package session;
+option go_package = "github.com/joelson-c/votecoms/session";
+
+message Token {
+    string value = 1;
+}

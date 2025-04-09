@@ -1,0 +1,12 @@
+edition = "2023";
+
+package session;
+option go_package = "github.com/joelson-c/votecoms/session";
+
+import "session/session.proto";
+import "session/token.proto";
+
+message SessionResponse {
+    Session session = 1;
+    Token token = 2;
+}

@@ -1,0 +1,10 @@
+edition = "2023";
+
+package session;
+option go_package = "github.com/joelson-c/votecoms/session";
+
+message Session {
+  string nickname = 1;
+  bool observer = 2;
+  string room_id = 3;
+}

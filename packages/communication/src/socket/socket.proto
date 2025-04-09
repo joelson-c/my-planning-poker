@@ -1,0 +1,12 @@
+edition = "2023";
+
+package socket;
+option go_package = "github.com/joelson-c/votecoms/socket";
+
+import "socket/join_room.proto";
+
+message Socket {
+  oneof message {
+    JoinRoom join_room = 1;
+  }
+}
