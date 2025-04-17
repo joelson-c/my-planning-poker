@@ -1,33 +1,18 @@
-## Project: "Server"
+# Server
 
-### Generated with
+To start your Phoenix server:
 
--   Types for the network messaging: true
--   Enabled Observer (http://localhost:9911): true
--   Loggers: colored
+  * Run `mix setup` to install and setup dependencies
+  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
 
-### Supervision Tree
+Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-Applications
+Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
--   `Vote{}` github.com/joelson-c/voteserver//github.com/joelson-c/voteserver//apps/vote/vote.go
-    -   `RoomSup{}` github.com/joelson-c/voteserver//github.com/joelson-c/voteserver//apps/vote/roomsup.go
-    -   `SessionSup{}` github.com/joelson-c/voteserver//github.com/joelson-c/voteserver//apps/vote/sessionsup.go
+## Learn more
 
-Process list that is starting by node directly
-
--   `VoteWeb{}` github.com/joelson-c/voteserver//github.com/joelson-c/voteserver//cmd/voteweb.go
-
-Messages are generated for the networking in github.com/joelson-c/voteserver//github.com/joelson-c/voteserver//types.go
-
--   `MyMsg1{}`
-
-#### Used command
-
-This project has been generated with the `ergo` tool. To install this tool, use the following command:
-
-`$ go install ergo.services/tools/ergo@latest`
-
-Below the command that was used to generate this project:
-
-`$ ergo -init Server -path server -with-app Vote -with-msg MyMsg1 -with-logger colored -with-observer -with-web VoteWeb{port:4001} -with-sup Vote:RoomSup -with-sup Vote:SessionSup `
+  * Official website: https://www.phoenixframework.org/
+  * Guides: https://hexdocs.pm/phoenix/overview.html
+  * Docs: https://hexdocs.pm/phoenix
+  * Forum: https://elixirforum.com/c/phoenix-forum
+  * Source: https://github.com/phoenixframework/phoenix
