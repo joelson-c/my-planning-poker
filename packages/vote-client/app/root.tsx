@@ -12,9 +12,7 @@ import { Toaster } from './components/ui/toaster';
 import styles from './tailwind.css?url';
 import { GenericError } from './components/errors/GenericError';
 import { Header } from './components/Header';
-import { UserKickedError } from './lib/errors/UserKickedError';
 import { RouteError } from './components/errors/RouteError';
-import { DisconnectionError } from './components/errors/DisconnectionError';
 import { FullPageLoader } from './components/FullPageLoader';
 
 export function links() {
@@ -36,10 +34,6 @@ export function links() {
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     if (isRouteErrorResponse(error)) {
         return <RouteError error={error} />;
-    }
-
-    if (error instanceof UserKickedError) {
-        return <DisconnectionError />;
     }
 
     return <GenericError />;

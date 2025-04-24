@@ -4,7 +4,7 @@ defmodule Server.GameState do
 
   @spec start_link(Room.id()) :: GenServer.on_start()
   def start_link(room_id) do
-    GenServer.start_link(__MODULE__, %Room{}, name: via_tuple(room_id))
+    GenServer.start_link(__MODULE__, %Room{id: room_id}, name: via_tuple(room_id))
   end
 
   @spec via_tuple(Room.id()) :: tuple()
@@ -56,7 +56,7 @@ defmodule Server.GameState do
   @spec get_average(Room.id()) :: float()
   def get_average(room_id) do
     votes = get_numeric_votes(room_id)
-    Enum.sum(votes) / length(votes)
+    Enum.sum(votes) / max(length(votes), 1)
   end
 
   @spec get_median(Room.id()) :: number()
@@ -107,7 +107,7 @@ defmodule Server.GameState do
   end
 
   def handle_call(:get_room_data, _from, state) do
-    {:reply, state, Map.drop(state, ["votes"])}
+    {:reply, Map.drop(state, [:votes]), state}
   end
 
   def handle_call(:get_votes, _from, state) do

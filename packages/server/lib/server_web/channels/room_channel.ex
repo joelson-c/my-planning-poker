@@ -3,14 +3,10 @@ defmodule ServerWeb.RoomChannel do
   alias ServerWeb.Presence
   require Logger
 
+  intercept ["state_changed"]
+
   @impl true
   def join("room:" <> room_id, %{"observer" => observer}, socket) do
-    Logger.info("received join request to room",
-      id: room_id,
-      nickname: socket.assigns.nickname,
-      observer: observer
-    )
-
     case DynamicSupervisor.start_child(Server.GameSupervisor, {Server.GameState, room_id}) do
       {:ok, _pid} -> :ok
       {:error, {:already_started, _pid}} -> :ok
@@ -18,19 +14,15 @@ defmodule ServerWeb.RoomChannel do
     end
 
     send(self(), :after_join)
-    state = Server.GameState.get_room_data(room_id)
+    room = Server.GameState.get_room_data(room_id)
 
-    {:ok, %{state: state}, socket |> assign(:room_id, room_id) |> assign(:observer, observer)}
+    {:ok, %{room: room, id: socket.id},
+     socket |> assign(:room_id, room_id) |> assign(:observer, observer)}
   end
 
   @impl true
   def handle_in("vote", %{"value" => vote}, socket) do
     %{room_id: room_id, nickname: nickname} = socket.assigns
-
-    Logger.info("user has voted in room", %{
-      "nickname" => nickname,
-      "vote" => vote
-    })
 
     :ok = Server.GameState.set_vote(room_id, %{nickname: nickname, vote: vote})
 
@@ -47,16 +39,7 @@ defmodule ServerWeb.RoomChannel do
       when target == "voting" or target == "reveal" do
     %{room_id: room_id} = socket.assigns
 
-    Logger.info("changing room state", %{
-      "target" => target,
-      "room_id" => room_id
-    })
-
     Server.GameState.update_status(room_id, String.to_existing_atom(target))
-
-    if target == "voting" do
-      reset_room(socket)
-    end
 
     state = Server.GameState.get_room_data(room_id)
     broadcast!(socket, "state_changed", state)
@@ -90,6 +73,7 @@ defmodule ServerWeb.RoomChannel do
   def handle_info(:after_join, socket) do
     {:ok, _} =
       Presence.track(socket, socket.assigns.nickname, %{
+        socket_id: socket.id,
         online_at: inspect(System.system_time(:second)),
         observer: socket.assigns[:observer],
         voted: false
@@ -99,16 +83,27 @@ defmodule ServerWeb.RoomChannel do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_out("state_changed", payload, socket) do
+    %{status: status} = payload
+
+    if status == :voting do
+      reset_room(socket)
+
+      {:ok, _} =
+        Presence.update(socket, socket.assigns.nickname, %{
+          voted: false
+        })
+    end
+
+    push(socket, "state_changed", payload)
+
+    {:noreply, socket}
+  end
+
   defp reset_room(socket) do
     %{room_id: room_id} = socket.assigns
 
     Server.GameState.reset(room_id)
-
-    for {key, _presence} <- Presence.list(socket) do
-      {:ok, _} =
-        Presence.update(socket, key, %{
-          voted: false
-        })
-    end
   end
 end
