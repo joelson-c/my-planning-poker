@@ -7,14 +7,14 @@ defmodule ServerWeb.RoomChannel do
 
   @impl true
   def join("room:" <> room_id, %{"observer" => observer}, socket) do
-    case DynamicSupervisor.start_child(Server.GameSupervisor, {Server.GameState, room_id}) do
+    case DynamicSupervisor.start_child(Game.Supervisor, {Game.State, room_id}) do
       {:ok, _pid} -> :ok
       {:error, {:already_started, _pid}} -> :ok
       error -> error
     end
 
     send(self(), :after_join)
-    room = Server.GameState.get_room_data(room_id)
+    room = Game.State.get_room_data(room_id)
 
     {:ok, %{room: room, id: socket.id},
      socket |> assign(:room_id, room_id) |> assign(:observer, observer)}
@@ -24,7 +24,7 @@ defmodule ServerWeb.RoomChannel do
   def handle_in("vote", %{"value" => vote}, socket) do
     %{room_id: room_id, nickname: nickname} = socket.assigns
 
-    :ok = Server.GameState.set_vote(room_id, %{nickname: nickname, vote: vote})
+    :ok = Game.State.set_vote(room_id, socket.id, %{nickname: nickname, vote: vote})
 
     {:ok, _} =
       Presence.update(socket, nickname, %{
@@ -36,12 +36,12 @@ defmodule ServerWeb.RoomChannel do
 
   @impl true
   def handle_in("change_state", %{"target" => target}, socket)
-      when target == "voting" or target == "reveal" do
+      when target in ["voting", "reveal"] do
     %{room_id: room_id} = socket.assigns
 
-    Server.GameState.update_status(room_id, String.to_existing_atom(target))
+    Game.State.update_status(room_id, String.to_existing_atom(target))
 
-    state = Server.GameState.get_room_data(room_id)
+    state = Game.State.get_room_data(room_id)
     broadcast!(socket, "state_changed", state)
 
     {:noreply, socket}
@@ -50,13 +50,13 @@ defmodule ServerWeb.RoomChannel do
   @impl true
   def handle_in("results", _payload, socket) do
     %{room_id: room_id} = socket.assigns
+    votes = Game.State.get_votes(room_id)
 
-    with true <- Server.GameState.show_results?(room_id),
-         total <- Server.GameState.get_total_votes(room_id),
-         votes <- Server.GameState.get_votes(room_id),
-         distribution <- Server.GameState.get_distribution(room_id),
-         average <- Server.GameState.get_average(room_id),
-         median <- Server.GameState.get_median(room_id) do
+    with true <- Game.State.show_results?(room_id),
+         total <- Game.Result.get_total_votes(votes),
+         distribution <- Game.Result.get_distribution(votes),
+         average <- Game.Result.get_average(votes),
+         median <- Game.Result.get_median(votes) do
       {:reply,
        {:ok,
         %{
@@ -84,26 +84,25 @@ defmodule ServerWeb.RoomChannel do
   end
 
   @impl true
-  def handle_out("state_changed", payload, socket) do
-    %{status: status} = payload
+  def handle_out("state_changed", %{status: status} = payload, socket) when status == :voting do
+    %{room_id: room_id, nickname: nickname} = socket.assigns
 
-    if status == :voting do
-      reset_room(socket)
+    :ok = Game.State.reset(room_id)
 
-      {:ok, _} =
-        Presence.update(socket, socket.assigns.nickname, %{
-          voted: false
-        })
-    end
+    {:ok, _} =
+      Presence.update(socket, nickname, %{
+        voted: false
+      })
 
     push(socket, "state_changed", payload)
 
     {:noreply, socket}
   end
 
-  defp reset_room(socket) do
-    %{room_id: room_id} = socket.assigns
+  @impl true
+  def handle_out("state_changed", %{status: status} = payload, socket) when status == :reveal do
+    push(socket, "state_changed", payload)
 
-    Server.GameState.reset(room_id)
+    {:noreply, socket}
   end
 end

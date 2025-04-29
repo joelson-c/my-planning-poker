@@ -59,4 +59,17 @@ defmodule ServerWeb.RoomChannelTest do
       "Test" => %{metas: [%{observer: false, voted: false}]}
     }
   end
+
+  test "does not duplicate user votes", %{socket: socket} do
+    push(socket, "vote", %{"value" => "13"})
+    push(socket, "vote", %{"value" => "21"})
+    push(socket, "change_state", %{"target" => "reveal"})
+    ref = push(socket, "results")
+
+    assert_reply ref,
+                 :ok,
+                 %{
+                   "votes" => [%{nickname: "Test", vote: "21"}]
+                 }
+  end
 end

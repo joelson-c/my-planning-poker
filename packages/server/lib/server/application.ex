@@ -19,8 +19,8 @@ defmodule Server.Application do
       # Start to serve requests, typically the last entry
       ServerWeb.Endpoint,
       ServerWeb.Presence,
-      {Registry, keys: :unique, name: Server.GameRegistry},
-      {DynamicSupervisor, name: Server.GameSupervisor, strategy: :one_for_one}
+      {Registry, keys: :unique, name: Game.Registry},
+      {DynamicSupervisor, name: Game.Supervisor, strategy: :one_for_one}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

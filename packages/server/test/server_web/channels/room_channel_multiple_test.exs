@@ -41,4 +41,21 @@ defmodule ServerWeb.RoomChannelMultipleTest do
     push(socket2, "change_state", payload)
     assert_broadcast "state_changed", %Room{status: :reveal}
   end
+
+  test "does not duplicate user votes", %{socket: [socket1, socket2]} do
+    push(socket1, "vote", %{"value" => "13"})
+    push(socket1, "vote", %{"value" => "21"})
+    push(socket2, "vote", %{"value" => "13"})
+    push(socket1, "change_state", %{"target" => "reveal"})
+    ref = push(socket1, "results")
+
+    assert_reply ref,
+                 :ok,
+                 %{
+                   "votes" => [
+                     %{nickname: "Test 1", vote: "21"},
+                     %{nickname: "Test 2", vote: "13"}
+                   ]
+                 }
+  end
 end

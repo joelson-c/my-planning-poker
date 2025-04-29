@@ -5,6 +5,6 @@ defmodule Server.Room do
   @type distribution :: %{String.t() => non_neg_integer()}
 
   @derive {Jason.Encoder, except: [:votes]}
-  defstruct [:id, votes: [], status: :voting]
-  @type t :: %__MODULE__{id: id(), votes: [vote()], status: status()}
+  defstruct [:id, votes: %{}, status: :voting]
+  @type t :: %__MODULE__{id: id(), votes: %{term() => vote()}, status: status()}
 end
