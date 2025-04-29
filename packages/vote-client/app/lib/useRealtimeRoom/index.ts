@@ -1,10 +1,19 @@
-import { useEffect, useOptimistic, useReducer, useTransition } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useOptimistic,
+    useReducer,
+    useTransition,
+} from 'react';
 import type {
     InboundMessage,
     OutboundMessage,
+    Presence,
 } from '../realtimeWorker/messages';
 import type { JoinSchema } from '~/components/room-login/schema';
 import { reducer } from './state';
+import { useNavigate } from 'react-router';
+import { toast } from '../useToast';
 
 const worker = new Worker(new URL('../realtimeWorker', import.meta.url), {
     type: 'module',
@@ -33,6 +42,7 @@ export function useRealtimeRoom({
     );
 
     const [, startTransition] = useTransition();
+    const navigate = useNavigate();
 
     useEffect(() => {
         sendMessage({
@@ -49,59 +59,76 @@ export function useRealtimeRoom({
         };
     }, [nickname, roomId, isObserver]);
 
-    function onWorkerMessage(evt: MessageEvent<OutboundMessage>) {
-        if (import.meta.env.DEV) {
-            console.log('Message received from worker: %o', evt.data);
-        }
+    const onWorkerMessage = useCallback(
+        (evt: MessageEvent<OutboundMessage>) => {
+            if (import.meta.env.DEV) {
+                console.log('Message received from worker: %o', evt.data);
+            }
 
-        switch (evt.data.type) {
-            case 'connected':
-                dispatch({ type: 'set_status', status: evt.data.status });
-                dispatch({ type: 'client_connection', isConnected: true });
-                break;
-            case 'error':
-                console.error(
-                    'received error from worker: %o',
-                    evt.data.payload,
-                );
+            switch (evt.data.type) {
+                case 'connected':
+                    dispatch({ type: 'set_status', status: evt.data.status });
+                    dispatch({ type: 'client_connection', isConnected: true });
+                    break;
+                case 'error':
+                    console.error(
+                        'received error from worker: %o',
+                        evt.data.payload,
+                    );
 
-                dispatch({ type: 'error', error: evt.data.payload });
-                break;
-            case 'presence_sync':
-                dispatch({ type: 'sync_presence', presence: evt.data.payload });
-                break;
-            case 'vote_response':
-                dispatch({ type: 'vote', value: evt.data.payload });
-                break;
-            case 'state_changed':
-                if (evt.data.status === 'voting') {
-                    dispatch({ type: 'set_result', result: undefined });
-                    dispatch({ type: 'vote', value: undefined });
-                }
+                    dispatch({ type: 'error', error: evt.data.payload });
+                    break;
+                case 'presence_sync':
+                    dispatch({
+                        type: 'sync_presence',
+                        presence: evt.data.payload,
+                    });
+                    break;
+                case 'vote_response':
+                    dispatch({ type: 'vote', value: evt.data.payload });
+                    break;
+                case 'state_changed':
+                    if (evt.data.status === 'voting') {
+                        dispatch({ type: 'set_result', result: undefined });
+                        dispatch({ type: 'vote', value: undefined });
+                    }
 
-                dispatch({
-                    type: 'set_status',
-                    status: evt.data.status,
-                });
+                    dispatch({
+                        type: 'set_status',
+                        status: evt.data.status,
+                    });
 
-                break;
-            case 'room_result':
-                dispatch({ type: 'set_result', result: evt.data });
-                break;
-            default:
-                console.warn(
-                    'Unknown Message received from worker: %o',
-                    evt.data,
-                );
-                break;
-        }
-    }
+                    break;
+                case 'room_result':
+                    dispatch({ type: 'set_result', result: evt.data });
+                    break;
+                case 'room_closed':
+                    navigate('/', { replace: true });
+
+                    break;
+
+                case 'user_removed':
+                    toast({
+                        description: `${evt.data.payload.srcNickname} removed ${evt.data.payload.dstNickname} from room.`,
+                    });
+
+                    break;
+                default:
+                    console.warn(
+                        'Unknown Message received from worker: %o',
+                        evt.data,
+                    );
+                    break;
+            }
+        },
+        [navigate],
+    );
 
     useEffect(() => {
         worker.addEventListener('message', onWorkerMessage);
 
         return () => worker.removeEventListener('message', onWorkerMessage);
-    }, []);
+    }, [onWorkerMessage]);
 
     useEffect(() => {
         if (state.status !== 'reveal') {
@@ -136,6 +163,13 @@ export function useRealtimeRoom({
         });
     }
 
+    function dispatchUserRemove(user: Presence) {
+        sendMessage({
+            type: 'remove_user',
+            payload: user,
+        });
+    }
+
     return {
         ...state,
         vote: optimisticVote,
@@ -143,5 +177,6 @@ export function useRealtimeRoom({
         dispatchVote,
         dispatchReveal,
         dispatchReset,
+        dispatchUserRemove,
     };
 }

@@ -23,6 +23,15 @@ self.onmessage = (e: MessageEvent<InboundMessage>) => {
                     sendMessage({ type: 'error', payload });
                 });
 
+                channel.onClose((payload) => {
+                    if (typeof payload === 'string' && payload === 'leave') {
+                        // Ignore normal leave events
+                        return;
+                    }
+
+                    sendMessage({ type: 'room_closed' });
+                });
+
                 realtime.presence.onSync(() =>
                     sendMessage({
                         type: 'presence_sync',
@@ -41,6 +50,19 @@ self.onmessage = (e: MessageEvent<InboundMessage>) => {
                 channel.on('state_changed', ({ status }) => {
                     sendMessage({ type: 'state_changed', status });
                 });
+
+                channel.on(
+                    'user_removed',
+                    ({ src_nickname, dest_nickname }) => {
+                        sendMessage({
+                            type: 'user_removed',
+                            payload: {
+                                srcNickname: src_nickname,
+                                dstNickname: dest_nickname,
+                            },
+                        });
+                    },
+                );
             } catch (error) {
                 sendMessage({ type: 'error', payload: error });
             }
@@ -75,6 +97,10 @@ self.onmessage = (e: MessageEvent<InboundMessage>) => {
             channel?.push('results', {}).receive('ok', (result) => {
                 sendMessage({ type: 'room_result', ...result });
             });
+
+            break;
+        case 'remove_user':
+            channel?.push('remove_user', { user_id: e.data.payload.id });
 
             break;
         default:

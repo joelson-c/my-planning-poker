@@ -14,9 +14,11 @@ defmodule ServerWeb.RoomChannelTest do
     %{socket: socket}
   end
 
-  test "sends the room presence after joining", %{socket: _socket} do
+  test "sends the room presence after joining", %{socket: socket} do
+    socket_id = socket.id
+
     assert_push "presence_state", %{
-      "Test" => %{metas: [%{observer: false, voted: false}]}
+      ^socket_id => %{metas: [%{nickname: "Test", observer: false, voted: false}]}
     }
   end
 
@@ -55,8 +57,10 @@ defmodule ServerWeb.RoomChannelTest do
 
     assert_broadcast "state_changed", %Room{status: :voting}
 
+    socket_id = socket.id
+
     assert_push "presence_state", %{
-      "Test" => %{metas: [%{observer: false, voted: false}]}
+      ^socket_id => %{metas: [%{observer: false, voted: false}]}
     }
   end
 

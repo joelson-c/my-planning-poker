@@ -3,7 +3,7 @@ defmodule ServerWeb.RoomChannel do
   alias ServerWeb.Presence
   require Logger
 
-  intercept ["state_changed"]
+  intercept ["state_changed", "remove_user"]
 
   @impl true
   def join("room:" <> room_id, %{"observer" => observer}, socket) do
@@ -16,8 +16,13 @@ defmodule ServerWeb.RoomChannel do
     send(self(), :after_join)
     room = Game.State.get_room_data(room_id)
 
-    {:ok, %{room: room, id: socket.id},
-     socket |> assign(:room_id, room_id) |> assign(:observer, observer)}
+    {
+      :ok,
+      %{room: room, id: socket.id},
+      socket
+      |> assign(:room_id, room_id)
+      |> assign(:observer, observer)
+    }
   end
 
   @impl true
@@ -27,9 +32,13 @@ defmodule ServerWeb.RoomChannel do
     :ok = Game.State.set_vote(room_id, socket.id, %{nickname: nickname, vote: vote})
 
     {:ok, _} =
-      Presence.update(socket, nickname, %{
-        voted: true
-      })
+      Presence.update(
+        socket,
+        socket.id,
+        get_socket_meta(socket, %{
+          voted: true
+        })
+      )
 
     {:reply, {:ok, %{"value" => vote}}, socket |> assign(:vote, vote)}
   end
@@ -70,29 +79,34 @@ defmodule ServerWeb.RoomChannel do
   end
 
   @impl true
-  def handle_info(:after_join, socket) do
-    {:ok, _} =
-      Presence.track(socket, socket.assigns.nickname, %{
-        socket_id: socket.id,
-        online_at: inspect(System.system_time(:second)),
-        observer: socket.assigns[:observer],
-        voted: false
-      })
+  def handle_in("remove_user", %{"user_id" => dest_id}, socket) do
+    %{room_id: room_id, nickname: nickname} = socket.assigns
 
-    push(socket, "presence_state", Presence.list(socket))
+    if Game.State.get_status(room_id) == :voting do
+      broadcast(socket, "remove_user", %{
+        src_nickname: nickname,
+        src_id: socket.id,
+        dest_id: dest_id
+      })
+    end
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_out("state_changed", %{status: status} = payload, socket) when status == :voting do
-    %{room_id: room_id, nickname: nickname} = socket.assigns
+    %{room_id: room_id} = socket.assigns
 
     :ok = Game.State.reset(room_id)
 
     {:ok, _} =
-      Presence.update(socket, nickname, %{
-        voted: false
-      })
+      Presence.update(
+        socket,
+        socket.id,
+        get_socket_meta(socket, %{
+          voted: false
+        })
+      )
 
     push(socket, "state_changed", payload)
 
@@ -104,5 +118,47 @@ defmodule ServerWeb.RoomChannel do
     push(socket, "state_changed", payload)
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_out(
+        "remove_user",
+        %{src_id: src_id, dest_id: dest_id, src_nickname: src_nickname},
+        socket
+      )
+      when src_id != dest_id and dest_id == socket.id do
+    %{nickname: nickname, room_id: room_id} = socket.assigns
+
+    :ok = Game.State.remove_vote(room_id, socket.id)
+    broadcast_from(socket, "user_removed", %{src_nickname: src_nickname, dest_nickname: nickname})
+    {:stop, {:shutdown, "You have been removed from the channel"}, socket}
+  end
+
+  @impl true
+  def handle_out("remove_user", %{src_id: src_id, dest_id: dest_id}, socket)
+      when src_id != dest_id,
+      do: {:noreply, socket}
+
+  @impl true
+  def handle_info(:after_join, %Phoenix.Socket{id: id} = socket) do
+    {:ok, _} = Presence.track(socket, id, get_socket_meta(socket))
+
+    push(socket, "presence_state", Presence.list(socket))
+
+    {:noreply, socket}
+  end
+
+  defp get_socket_meta(
+         %Phoenix.Socket{assigns: %{nickname: nickname, observer: observer}},
+         extra_metas \\ %{}
+       ) do
+    Map.merge(
+      %{
+        nickname: nickname,
+        observer: observer,
+        voted: false
+      },
+      extra_metas
+    )
   end
 end

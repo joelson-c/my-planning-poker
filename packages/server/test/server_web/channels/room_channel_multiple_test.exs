@@ -19,13 +19,17 @@ defmodule ServerWeb.RoomChannelMultipleTest do
     %{socket: [socket1, socket2]}
   end
 
-  test "sends the room presence after joining", %{socket: _socket} do
-    assert_push "presence_state", %{
-      "Test 1" => %{metas: [%{observer: false, voted: false}]}
-    }
+  test "sends the room presence after joining", %{socket: [socket1, socket2]} do
+    socket1_id = socket1.id
 
     assert_push "presence_state", %{
-      "Test 2" => %{metas: [%{observer: false, voted: false}]}
+      ^socket1_id => %{metas: [%{nickname: "Test 1", observer: false, voted: false}]}
+    }
+
+    socket2_id = socket2.id
+
+    assert_push "presence_state", %{
+      ^socket2_id => %{metas: [%{nickname: "Test 2", observer: false, voted: false}]}
     }
   end
 
@@ -33,7 +37,7 @@ defmodule ServerWeb.RoomChannelMultipleTest do
     payload = %{"value" => "13"}
     ref = push(socket1, "vote", payload)
     assert_reply ref, :ok, ^payload
-    assert_push "presence_diff", %{joins: %{"Test 1" => %{metas: [%{voted: true}]}}}
+    assert_push "presence_diff", %{joins: %{}}
   end
 
   test "changes the room state", %{socket: [_socket1, socket2]} do
@@ -51,10 +55,28 @@ defmodule ServerWeb.RoomChannelMultipleTest do
 
     assert_reply ref,
                  :ok,
+                 %{"votes" => [%{}, %{}]}
+  end
+
+  test "removes a user and clear its data", %{socket: [socket1, socket2]} do
+    Process.unlink(socket2.channel_pid)
+    Process.monitor(socket2.channel_pid)
+
+    push(socket1, "vote", %{"value" => "5"})
+    push(socket2, "vote", %{"value" => "13"})
+    push(socket1, "remove_user", %{"user_id" => socket2.id})
+
+    assert_broadcast "user_removed", %{src_nickname: "Test 1", dest_nickname: "Test 2"}
+    assert_receive {:DOWN, _, _, _, {:shutdown, "You have been removed from the channel"}}
+
+    push(socket1, "change_state", %{"target" => "reveal"})
+    ref = push(socket1, "results")
+
+    assert_reply ref,
+                 :ok,
                  %{
                    "votes" => [
-                     %{nickname: "Test 1", vote: "21"},
-                     %{nickname: "Test 2", vote: "13"}
+                     %{nickname: "Test 1", vote: "5"}
                    ]
                  }
   end

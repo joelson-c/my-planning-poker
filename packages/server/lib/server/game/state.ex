@@ -43,6 +43,14 @@ defmodule Game.State do
     end
   end
 
+  @spec remove_vote(Room.id(), term()) :: :ok | {:error, term()}
+  def remove_vote(room_id, user_id) do
+    case get_status(room_id) do
+      :voting -> GenServer.call(via_tuple(room_id), {:remove_vote, user_id})
+      _ -> {:error, "room is not in voting state: #{get_status(room_id)}"}
+    end
+  end
+
   @spec show_results?(Room.id()) :: boolean()
   def show_results?(room_id) do
     case get_status(room_id) do
@@ -80,6 +88,12 @@ defmodule Game.State do
 
   def handle_call({:set_vote, user_id, vote}, _from, state) do
     new_state = %{state | votes: put_in(state.votes, [user_id], vote)}
+    {:reply, :ok, new_state}
+  end
+
+  def handle_call({:remove_vote, user_id}, _from, state) do
+    {_, votes} = pop_in(state.votes, [user_id])
+    new_state = %{state | votes: votes}
     {:reply, :ok, new_state}
   end
 

@@ -69,12 +69,30 @@ export type GetResults = {
     type: 'get_results';
 };
 
+export type RemoveUser = {
+    type: 'remove_user';
+    payload: Presence;
+};
+
+export type UserRemoved = {
+    type: 'user_removed';
+    payload: {
+        srcNickname: string;
+        dstNickname: string;
+    };
+};
+
+export type RoomClosed = {
+    type: 'room_closed';
+};
+
 export type InboundMessage =
     | InitMessage
     | Disconnect
     | GetResults
     | ChangeStatus
-    | Vote;
+    | Vote
+    | RemoveUser;
 
 export type OutboundMessage =
     | ConnectedToChannel
@@ -82,4 +100,6 @@ export type OutboundMessage =
     | PresenceSync
     | StateChanged
     | RoomResult
-    | VoteResponse;
+    | VoteResponse
+    | UserRemoved
+    | RoomClosed;

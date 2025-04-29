@@ -3,7 +3,6 @@ import type { Route } from './+types';
 import { redirect } from 'react-router';
 import type { LoginSchemas } from '~/components/room-login/schema';
 import { useRealtimeRoom } from '~/lib/useRealtimeRoom';
-import type { Presence } from '~/lib/realtimeWorker/messages';
 import { Header } from './Header';
 import { VoteCard } from './VoteCard';
 import { RepositoryBanner } from '~/components/repository/RepositoryBanner';
@@ -38,6 +37,7 @@ export default function VoteCollect({
         dispatchVote,
         dispatchReveal,
         dispatchReset,
+        dispatchUserRemove,
     } = useRealtimeRoom({
         joinData: { nickname, roomId, isObserver },
     });
@@ -47,8 +47,6 @@ export default function VoteCollect({
     }
 
     const hasRevealed = status === 'reveal';
-
-    function onUserRemove(user: Presence) {}
 
     return (
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
@@ -66,7 +64,7 @@ export default function VoteCollect({
                 {hasRevealed && result && <ResultCard result={result} />}
             </div>
             {!hasRevealed && (
-                <UserCard users={presence} onUserRemove={onUserRemove} />
+                <UserCard users={presence} onUserRemove={dispatchUserRemove} />
             )}
         </div>
     );
