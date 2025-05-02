@@ -1,42 +1,25 @@
-name: my-planning-poker-dev
-
 services:
     frontend:
-        image: node:lts
-        user: node
-        working_dir: /usr/src/app/packages/vote-client
-        volumes:
-            - ./:/usr/src/app
-        entrypoint: ['npm', 'run', 'dev', '--', '--host']
+        build:
+            context: ./packages/vote-client
+            args:
+                - BACKEND_ENDPOINT=https://${REALTIME_HOST}
         environment:
-            - VITE_BACKEND_ENDPOINT=https://localhost/realtime
+            - DOMAIN=${ROOT_HOST-:localhost}
+            - REALTIME_UPSTREAM=realtime:4000
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - caddy_data:/data
+            - caddy_config:/config
 
     realtime:
         build:
             context: ./packages/vote-server
-            dockerfile: ../../.docker/Dockerfile.realtime.dev
-        develop:
-            watch:
-                - action: rebuild
-                  path: ./packages/vote-server
-                  target: /usr/src/app
-        ports:
-            - 4000:4000
-
-    redis:
-        image: redis:7.4
-        ports:
-            - 6379:6379
-
-    proxy:
-        image: caddy:2.9
-        volumes:
-            - caddy_data:/data
-            - caddy_config:/config
-            - ./.docker/caddy/conf-dev:/etc/caddy
-        ports:
-            - 80:80
-            - 443:443
+        environment:
+            - PHX_HOST=${ROOT_HOST-:localhost}
+            - SECRET_KEY_BASE=${SECRET_KEY_BASE}
 
 volumes:
     caddy_data:
