@@ -6,6 +6,7 @@ import { LoginForm } from '../../components/room-login/LoginForm';
 import { Button } from '~/components/ui/button';
 import { createSchema } from '~/components/room-login/schema';
 import { nanoid } from 'nanoid';
+import { pushJoinRoomEvent } from '~/lib/analytics/events';
 
 export function meta() {
     return [{ title: 'My Planning Poker' }];
@@ -26,7 +27,10 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     const inputData = formDataToObject(await request.formData());
     const create = createSchema.parse({ roomId: '', ...inputData });
     localStorage.setItem('joinData', JSON.stringify(create));
-    return redirect(`/room/${nanoid()}`);
+
+    const roomId = nanoid();
+    pushJoinRoomEvent(roomId);
+    return redirect(`/room/${roomId}`);
 }
 
 export default function RoomCreate({

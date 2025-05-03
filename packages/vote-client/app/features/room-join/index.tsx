@@ -5,6 +5,7 @@ import { formDataToObject } from '~/lib/utils';
 import { LoginForm } from '~/components/room-login/LoginForm';
 import { Button } from '~/components/ui/button';
 import { joinSchema } from '~/components/room-login/schema';
+import { pushJoinRoomEvent } from '~/lib/analytics/events';
 
 export function meta() {
     return [{ title: 'Join Planning Poker Room' }];
@@ -25,6 +26,8 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     const inputData = formDataToObject(await request.formData());
     const login = joinSchema.parse(inputData);
     localStorage.setItem('joinData', JSON.stringify(login));
+
+    pushJoinRoomEvent(login.roomId);
     return redirect(`/room/${login.roomId}`);
 }
 

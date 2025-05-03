@@ -8,6 +8,8 @@ import { VoteCard } from './VoteCard';
 import { RepositoryBanner } from '~/components/repository/RepositoryBanner';
 import { UserCard } from './UserCard';
 import { ResultCard } from './ResultCard';
+import { useEffect } from 'react';
+import { pushVoteEndEvent, pushVoteStartEvent } from '~/lib/analytics/events';
 
 export function meta() {
     return [{ title: 'Planning Poker Room' }];
@@ -20,6 +22,8 @@ export async function clientLoader({
     if (!joinData) {
         return redirect(`/join/${roomId}`);
     }
+
+    localStorage.removeItem('joinData');
 
     return JSON.parse(joinData) as LoginSchemas;
 }
@@ -42,11 +46,24 @@ export default function VoteCollect({
         joinData: { nickname, roomId, isObserver },
     });
 
+    const hasRevealed = status === 'reveal';
+
+    useEffect(() => {
+        if (!isConnected) {
+            return;
+        }
+
+        if (hasRevealed) {
+            pushVoteEndEvent(roomId);
+            return;
+        }
+
+        pushVoteStartEvent(roomId);
+    }, [hasRevealed, isConnected, roomId]);
+
     if (!isConnected) {
         return <FullPageLoader message="Connecting..." />;
     }
-
-    const hasRevealed = status === 'reveal';
 
     return (
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">

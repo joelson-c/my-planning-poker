@@ -1,9 +1,12 @@
 import { Share2 } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { Button } from '~/components/ui/button';
+import { pushShareEvent } from '~/lib/analytics/events';
 import { toast } from '~/lib/useToast';
 
 async function copyRoomToClipboard(roomId: string) {
+    pushShareEvent(roomId);
+
     const roomLink = `${window.location.origin}/join/${roomId}`;
     try {
         await navigator.clipboard.writeText(roomLink);

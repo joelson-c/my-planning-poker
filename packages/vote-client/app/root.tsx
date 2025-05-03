@@ -14,6 +14,7 @@ import { GenericError } from './components/errors/GenericError';
 import { Header } from './components/Header';
 import { RouteError } from './components/errors/RouteError';
 import { FullPageLoader } from './components/FullPageLoader';
+import { TagManagerHead } from './components/analytics/TagManagerHead';
 
 export function links() {
     return [
@@ -54,6 +55,7 @@ export function Layout({ children }: PropsWithChildren) {
                 />
                 <Meta />
                 <Links />
+                <TagManagerHead />
             </head>
             <body>
                 <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">

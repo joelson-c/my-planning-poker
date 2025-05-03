@@ -14,6 +14,7 @@ import type { JoinSchema } from '~/components/room-login/schema';
 import { reducer } from './state';
 import { useNavigate } from 'react-router';
 import { toast } from '../useToast';
+import { pushVoteEvent } from '../analytics/events';
 
 const worker = new Worker(new URL('../realtimeWorker', import.meta.url), {
     type: 'module',
@@ -139,6 +140,8 @@ export function useRealtimeRoom({
     }, [state.status]);
 
     function dispatchVote(payload: string) {
+        pushVoteEvent(roomId, payload);
+
         startTransition(() => {
             addOptimisticVote(payload);
 
