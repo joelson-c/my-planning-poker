@@ -5,12 +5,11 @@ import type { UserOptions } from 'tests/fixtures/user';
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.resolve(import.meta.dirname, '.env') });
 
-const PORT = process.env.PORT || 80;
-const baseURL = `http://localhost:${PORT}`;
+const baseURL = process.env.E2E_URL;
 
 type Options = UserOptions;
 

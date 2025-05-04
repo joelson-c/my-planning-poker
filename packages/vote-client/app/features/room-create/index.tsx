@@ -27,6 +27,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     const inputData = formDataToObject(await request.formData());
     const create = createSchema.parse({ roomId: '', ...inputData });
     localStorage.setItem('joinData', JSON.stringify(create));
+    localStorage.setItem('lastNickname', create.nickname);
 
     const roomId = nanoid();
     pushJoinRoomEvent(roomId);

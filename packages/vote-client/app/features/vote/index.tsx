@@ -76,7 +76,11 @@ export default function VoteCollect({
                 />
                 {hasRevealed && <RepositoryBanner />}
                 {!hasRevealed && (
-                    <VoteCard currentVote={vote} onVote={dispatchVote} />
+                    <VoteCard
+                        currentVote={vote}
+                        onVote={dispatchVote}
+                        isObserver={isObserver}
+                    />
                 )}
                 {hasRevealed && result && <ResultCard result={result} />}
             </div>

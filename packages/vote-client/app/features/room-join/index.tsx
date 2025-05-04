@@ -26,6 +26,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     const inputData = formDataToObject(await request.formData());
     const login = joinSchema.parse(inputData);
     localStorage.setItem('joinData', JSON.stringify(login));
+    localStorage.setItem('lastNickname', login.nickname);
 
     pushJoinRoomEvent(login.roomId);
     return redirect(`/room/${login.roomId}`);

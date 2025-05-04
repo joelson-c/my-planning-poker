@@ -50,7 +50,6 @@ export class VoteCollect {
 
     async reveal() {
         this.revalCardsButton.click();
-        await this.page.waitForURL('**/room/*/result');
     }
 
     getVoteButton(vote: string) {

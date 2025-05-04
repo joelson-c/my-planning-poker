@@ -17,16 +17,14 @@ defmodule Game.Result do
 
   @spec get_median([Room.vote()]) :: number()
   def get_median(votes) do
-    numeric_votes = get_numeric_votes(votes)
+    numeric_votes = Enum.sort(get_numeric_votes(votes))
     vote_length = length(numeric_votes)
     middle_value = floor(vote_length / 2)
 
     case rem(vote_length, 2) do
       0 ->
-        div(
-          Enum.at(numeric_votes, middle_value, 0) + Enum.at(numeric_votes, middle_value + 1, 0),
-          2
-        )
+        (Enum.at(numeric_votes, middle_value - 1, 0) +
+           Enum.at(numeric_votes, middle_value, 0)) / 2
 
       1 ->
         Enum.at(numeric_votes, middle_value, 0)
