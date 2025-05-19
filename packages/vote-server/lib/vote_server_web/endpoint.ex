@@ -60,6 +60,10 @@ defmodule VoteServerWeb.Endpoint do
     config =
       Application.get_env(:vote_server, VoteServer.RateLimiter)
 
+    apply_rate_limit(config, conn)
+  end
+
+  defp apply_rate_limit(config, conn) when is_list(config) do
     key = "web_requests:#{:inet.ntoa(conn.remote_ip)}"
 
     case VoteServer.RateLimiter.hit(key, config[:scale], config[:limit]) do
@@ -72,5 +76,9 @@ defmodule VoteServerWeb.Endpoint do
         |> send_resp(429, [])
         |> halt()
     end
+  end
+
+  defp apply_rate_limit(_config, conn) do
+    conn
   end
 end
