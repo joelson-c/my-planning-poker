@@ -20,7 +20,8 @@ defmodule VoteServer.Application do
       VoteServerWeb.Endpoint,
       VoteServerWeb.Presence,
       {Registry, keys: :unique, name: Game.Registry},
-      {DynamicSupervisor, name: Game.Supervisor, strategy: :one_for_one}
+      {DynamicSupervisor, name: Game.Supervisor, strategy: :one_for_one},
+      VoteServer.RateLimiter
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

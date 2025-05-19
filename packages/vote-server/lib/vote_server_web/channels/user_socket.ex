@@ -34,8 +34,11 @@ defmodule VoteServerWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl true
-  def connect(%{"nickname" => nickname}, socket, _connect_info) do
-    {:ok, assign(socket, :nickname, nickname)}
+  def connect(%{"nickname" => nickname}, socket, connect_info) do
+    {:ok,
+     socket
+     |> assign(:nickname, nickname)
+     |> assign(:ip, RemoteIp.from(connect_info[:x_headers]))}
   end
 
   # Socket IDs are topics that allow you to identify all sockets for a given user:
