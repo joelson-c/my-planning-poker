@@ -1,6 +1,6 @@
-defmodule ServerWeb.RoomChannel do
-  use ServerWeb, :channel
-  alias ServerWeb.Presence
+defmodule VoteServerWeb.RoomChannel do
+  use VoteServerWeb, :channel
+  alias VoteServerWeb.Presence
   require Logger
 
   intercept ["state_changed", "remove_user"]

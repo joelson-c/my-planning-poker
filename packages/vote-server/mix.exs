@@ -1,4 +1,4 @@
-defmodule Server.MixProject do
+defmodule VoteServer.MixProject do
   use Mix.Project
 
   def project do
@@ -18,7 +18,7 @@ defmodule Server.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Server.Application, []},
+      mod: {VoteServer.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end

@@ -1,4 +1,4 @@
-defmodule Server.Room do
+defmodule VoteServer.Room do
   @type status :: :voting | :reveal
   @type id :: String.t()
   @type vote :: %{nickname: String.t(), vote: String.t()}

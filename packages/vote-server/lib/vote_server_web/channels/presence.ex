@@ -1,4 +1,4 @@
-defmodule ServerWeb.Presence do
+defmodule VoteServerWeb.Presence do
   @moduledoc """
   Provides presence tracking to channels and processes.
 
@@ -7,5 +7,5 @@ defmodule ServerWeb.Presence do
   """
   use Phoenix.Presence,
     otp_app: :vote_server,
-    pubsub_server: Server.PubSub
+    pubsub_server: VoteServer.PubSub
 end

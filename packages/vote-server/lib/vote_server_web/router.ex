@@ -1,11 +1,11 @@
-defmodule ServerWeb.Router do
-  use ServerWeb, :router
+defmodule VoteServerWeb.Router do
+  use VoteServerWeb, :router
 
   pipeline :api do
     plug(:accepts, ["json"])
   end
 
-  scope "/api", ServerWeb do
+  scope "/api", VoteServerWeb do
     pipe_through(:api)
   end
 
@@ -21,7 +21,7 @@ defmodule ServerWeb.Router do
     scope "/dev" do
       pipe_through([:fetch_session, :protect_from_forgery])
 
-      live_dashboard("/dashboard", metrics: ServerWeb.Telemetry)
+      live_dashboard("/dashboard", metrics: VoteServerWeb.Telemetry)
       forward("/mailbox", Plug.Swoosh.MailboxPreview)
     end
   end

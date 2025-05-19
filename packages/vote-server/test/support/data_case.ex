@@ -1,4 +1,4 @@
-defmodule Server.DataCase do
+defmodule VoteServer.DataCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -10,7 +10,7 @@ defmodule Server.DataCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use Server.DataCase, async: true`, although
+  by setting `use VoteServer.DataCase, async: true`, although
   this option is not recommended for other databases.
   """
 
@@ -18,17 +18,17 @@ defmodule Server.DataCase do
 
   using do
     quote do
-      alias Server.Repo
+      alias VoteServer.Repo
 
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import Server.DataCase
+      import VoteServer.DataCase
     end
   end
 
   setup tags do
-    Server.DataCase.setup_sandbox(tags)
+    VoteServer.DataCase.setup_sandbox(tags)
     :ok
   end
 
@@ -36,7 +36,7 @@ defmodule Server.DataCase do
   Sets up the sandbox based on the test tags.
   """
   def setup_sandbox(tags) do
-    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Server.Repo, shared: not tags[:async])
+    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(VoteServer.Repo, shared: not tags[:async])
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
   end
 

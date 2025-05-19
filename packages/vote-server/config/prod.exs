@@ -1,7 +1,7 @@
 import Config
 
 # Configures Swoosh API Client
-config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: Server.Finch
+config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: VoteServer.Finch
 
 # Disable Swoosh Local Memory Storage
 config :swoosh, local: false

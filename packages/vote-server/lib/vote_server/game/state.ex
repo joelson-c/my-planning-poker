@@ -1,5 +1,5 @@
 defmodule Game.State do
-  alias Server.Room
+  alias VoteServer.Room
   use GenServer
 
   @spec start_link(Room.id()) :: GenServer.on_start()

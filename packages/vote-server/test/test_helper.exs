@@ -1,2 +1,2 @@
 ExUnit.start()
-# Ecto.Adapters.SQL.Sandbox.mode(Server.Repo, :manual)
+# Ecto.Adapters.SQL.Sandbox.mode(VoteServer.Repo, :manual)

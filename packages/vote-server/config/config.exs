@@ -11,14 +11,14 @@ config :vote_server,
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint
-config :vote_server, ServerWeb.Endpoint,
+config :vote_server, VoteServerWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [json: ServerWeb.ErrorJSON],
+    formats: [json: VoteServerWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: Server.PubSub,
+  pubsub_server: VoteServer.PubSub,
   live_view: [signing_salt: "pEgS+uVm"]
 
 # Configures the mailer
@@ -28,7 +28,7 @@ config :vote_server, ServerWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :vote_server, Server.Mailer, adapter: Swoosh.Adapters.Local
+config :vote_server, VoteServer.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configures Elixir's Logger
 config :logger, :console,

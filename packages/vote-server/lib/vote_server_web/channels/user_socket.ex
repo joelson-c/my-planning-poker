@@ -1,4 +1,4 @@
-defmodule ServerWeb.UserSocket do
+defmodule VoteServerWeb.UserSocket do
   use Phoenix.Socket
 
   # A Socket handler
@@ -8,9 +8,9 @@ defmodule ServerWeb.UserSocket do
 
   ## Channels
   # Uncomment the following line to define a "room:*" topic
-  # pointing to the `ServerWeb.RoomChannel`:
+  # pointing to the `VoteServerWeb.RoomChannel`:
   #
-  channel "room:*", ServerWeb.RoomChannel
+  channel "room:*", VoteServerWeb.RoomChannel
   #
   # To create a channel file, use the mix task:
   #
@@ -45,7 +45,7 @@ defmodule ServerWeb.UserSocket do
   # Would allow you to broadcast a "disconnect" event and terminate
   # all active sockets and channels for a given user:
   #
-  #     Elixir.ServerWeb.Endpoint.broadcast("user_socket:#{user.id}", "disconnect", %{})
+  #     Elixir.VoteServerWeb.Endpoint.broadcast("user_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
   @impl true

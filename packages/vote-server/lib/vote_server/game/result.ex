@@ -1,5 +1,5 @@
 defmodule Game.Result do
-  alias Server.Room
+  alias VoteServer.Room
 
   @spec get_total_votes([Room.vote()]) :: non_neg_integer()
   def get_total_votes(votes), do: length(votes)

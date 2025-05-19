@@ -1,6 +1,6 @@
-defmodule Server do
+defmodule VoteServer do
   @moduledoc """
-  Server keeps the contexts that define your domain
+  VoteServer keeps the contexts that define your domain
   and business logic.
 
   Contexts are also responsible for managing your data, regardless

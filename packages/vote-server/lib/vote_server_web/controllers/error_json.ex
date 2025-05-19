@@ -1,4 +1,4 @@
-defmodule ServerWeb.ErrorJSON do
+defmodule VoteServerWeb.ErrorJSON do
   @moduledoc """
   This module is invoked by your endpoint in case of errors on JSON requests.
 
@@ -9,7 +9,7 @@ defmodule ServerWeb.ErrorJSON do
   # you may add your own clauses, such as:
   #
   # def render("500.json", _assigns) do
-  #   %{errors: %{detail: "Internal Server Error"}}
+  #   %{errors: %{detail: "Internal VoteServer Error"}}
   # end
 
   # By default, Phoenix returns the status message from

@@ -1,7 +1,7 @@
-defmodule ServerWeb.RoomChannelTest do
-  alias ServerWeb.UserSocket
-  alias Server.Room
-  use ServerWeb.ChannelCase, async: true
+defmodule VoteServerWeb.RoomChannelTest do
+  alias VoteServerWeb.UserSocket
+  alias VoteServer.Room
+  use VoteServerWeb.ChannelCase, async: true
 
   describe "when a single user votes" do
     setup [:setup_single_user]

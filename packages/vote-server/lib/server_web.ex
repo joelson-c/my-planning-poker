@@ -1,12 +1,12 @@
-defmodule ServerWeb do
+defmodule VoteServerWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, components, channels, and so on.
 
   This can be used in your application as:
 
-      use ServerWeb, :controller
-      use ServerWeb, :html
+      use VoteServerWeb, :controller
+      use VoteServerWeb, :html
 
   The definitions below will be executed for every controller,
   component, etc, so keep them short and clean, focused
@@ -39,9 +39,9 @@ defmodule ServerWeb do
     quote do
       use Phoenix.Controller,
         formats: [:html, :json],
-        layouts: [html: ServerWeb.Layouts]
+        layouts: [html: VoteServerWeb.Layouts]
 
-      use Gettext, backend: ServerWeb.Gettext
+      use Gettext, backend: VoteServerWeb.Gettext
 
       import Plug.Conn
 
@@ -52,9 +52,9 @@ defmodule ServerWeb do
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,
-        endpoint: ServerWeb.Endpoint,
-        router: ServerWeb.Router,
-        statics: ServerWeb.static_paths()
+        endpoint: VoteServerWeb.Endpoint,
+        router: VoteServerWeb.Router,
+        statics: VoteServerWeb.static_paths()
     end
   end
 

@@ -1,4 +1,4 @@
-defmodule ServerWeb.ConnCase do
+defmodule VoteServerWeb.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -11,7 +11,7 @@ defmodule ServerWeb.ConnCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use ServerWeb.ConnCase, async: true`, although
+  by setting `use VoteServerWeb.ConnCase, async: true`, although
   this option is not recommended for other databases.
   """
 
@@ -20,14 +20,14 @@ defmodule ServerWeb.ConnCase do
   using do
     quote do
       # The default endpoint for testing
-      @endpoint ServerWeb.Endpoint
+      @endpoint VoteServerWeb.Endpoint
 
-      use ServerWeb, :verified_routes
+      use VoteServerWeb, :verified_routes
 
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
-      import ServerWeb.ConnCase
+      import VoteServerWeb.ConnCase
     end
   end
 end

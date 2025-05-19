@@ -1,4 +1,4 @@
-defmodule Server.Application do
+defmodule VoteServer.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -8,24 +8,24 @@ defmodule Server.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      ServerWeb.Telemetry,
-      # Server.Repo,
+      VoteServerWeb.Telemetry,
+      # VoteServer.Repo,
       {DNSCluster, query: Application.get_env(:vote_server, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: Server.PubSub},
+      {Phoenix.PubSub, name: VoteServer.PubSub},
       # Start the Finch HTTP client for sending emails
-      {Finch, name: Server.Finch},
-      # Start a worker by calling: Server.Worker.start_link(arg)
-      # {Server.Worker, arg},
+      {Finch, name: VoteServer.Finch},
+      # Start a worker by calling: VoteServer.Worker.start_link(arg)
+      # {VoteServer.Worker, arg},
       # Start to serve requests, typically the last entry
-      ServerWeb.Endpoint,
-      ServerWeb.Presence,
+      VoteServerWeb.Endpoint,
+      VoteServerWeb.Presence,
       {Registry, keys: :unique, name: Game.Registry},
       {DynamicSupervisor, name: Game.Supervisor, strategy: :one_for_one}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Server.Supervisor]
+    opts = [strategy: :one_for_one, name: VoteServer.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
@@ -33,7 +33,7 @@ defmodule Server.Application do
   # whenever the application is updated.
   @impl true
   def config_change(changed, _new, removed) do
-    ServerWeb.Endpoint.config_change(changed, removed)
+    VoteServerWeb.Endpoint.config_change(changed, removed)
     :ok
   end
 end

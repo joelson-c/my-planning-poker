@@ -1,4 +1,4 @@
-defmodule ServerWeb.Endpoint do
+defmodule VoteServerWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :vote_server
 
   # The session will be stored in the cookie and signed,
@@ -16,7 +16,7 @@ defmodule ServerWeb.Endpoint do
     longpoll: [connect_info: [session: @session_options]]
   )
 
-  socket("/room", ServerWeb.UserSocket,
+  socket("/room", VoteServerWeb.UserSocket,
     websocket: true,
     longpool: false
   )
@@ -29,7 +29,7 @@ defmodule ServerWeb.Endpoint do
     at: "/",
     from: :vote_server,
     gzip: false,
-    only: ServerWeb.static_paths()
+    only: VoteServerWeb.static_paths()
   )
 
   # Code reloading can be explicitly enabled under the
@@ -56,5 +56,5 @@ defmodule ServerWeb.Endpoint do
   plug(Plug.MethodOverride)
   plug(Plug.Head)
   plug(Plug.Session, @session_options)
-  plug(ServerWeb.Router)
+  plug(VoteServerWeb.Router)
 end
