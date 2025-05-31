@@ -1,17 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
-import type { UserOptions } from 'tests/fixtures/user';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-import dotenv from 'dotenv';
-import path from 'path';
-dotenv.config({ path: path.resolve(import.meta.dirname, '.env') });
+import type { Options } from 'tests/fixtures';
 
-const baseURL = process.env.E2E_URL;
-
-type Options = UserOptions;
+const baseURL = process.env.E2E_URL || 'http://localhost:5173';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -27,7 +18,7 @@ export default defineConfig<Options>({
     /* Opt out of parallel tests on CI. */
     workers: process.env.CI ? 1 : undefined,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-    reporter: 'html',
+    reporter: process.env.CI ? 'dot' : 'line',
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         /* Base URL to use in actions like `await page.goto('/')`. */
@@ -35,7 +26,7 @@ export default defineConfig<Options>({
         ignoreHTTPSErrors: true,
 
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-        trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
+        trace: 'on-first-retry',
     },
 
     /* Configure projects for major browsers */
@@ -44,35 +35,15 @@ export default defineConfig<Options>({
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
         },
-
-        // {
-        //    name: 'firefox',
-        //    use: { ...devices['Desktop Firefox'] },
-        // },
-
-        // {
-        //    name: 'webkit',
-        //    use: { ...devices['Desktop Safari'] },
-        // },
-
-        /* Test against mobile viewports. */
         {
             name: 'Mobile Chrome',
             use: { ...devices['Pixel 5'] },
         },
-        {
-            name: 'Mobile Safari',
-            use: { ...devices['iPhone 12'] },
-        },
-
-        /* Test against branded browsers. */
-        // {
-        //   name: 'Microsoft Edge',
-        //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-        // },
-        // {
-        //   name: 'Google Chrome',
-        //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-        // },
     ],
+
+    webServer: {
+        command: 'npm run preview -- --port 5173',
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+    },
 });

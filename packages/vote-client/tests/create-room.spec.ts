@@ -3,7 +3,7 @@ import { test } from './fixtures';
 import { faker } from '@faker-js/faker';
 
 test('renders with a title and create room button', async ({
-    createRoomPage,
+    createRoom: createRoomPage,
 }) => {
     await createRoomPage.goto();
 
@@ -11,13 +11,13 @@ test('renders with a title and create room button', async ({
     await expect(createRoomPage.createRoomButton).toBeVisible();
 });
 
-test('has a join room link', async ({ createRoomPage }) => {
+test('has a join room link', async ({ createRoom: createRoomPage }) => {
     await createRoomPage.goto();
     await createRoomPage.joinRoom();
 });
 
 test('displays an error message when the nickname is too short', async ({
-    createRoomPage,
+    createRoom: createRoomPage,
 }) => {
     await createRoomPage.goto();
     await createRoomPage.sendCreateForm('');
@@ -25,7 +25,7 @@ test('displays an error message when the nickname is too short', async ({
     await expect(createRoomPage.nicknameAlert).toBeVisible();
 });
 
-test('create a new room', async ({ createRoomPage }) => {
+test('create a new room', async ({ createRoom: createRoomPage }) => {
     await createRoomPage.goto();
     await createRoomPage.sendCreateForm(faker.internet.username());
     const roomId = await createRoomPage.waitForRoom();
@@ -33,7 +33,9 @@ test('create a new room', async ({ createRoomPage }) => {
     expect(roomId).toBeTruthy();
 });
 
-test('remembers the last nickname used', async ({ createRoomPage }) => {
+test('remembers the last nickname used', async ({
+    createRoom: createRoomPage,
+}) => {
     const nickname = faker.internet.username();
 
     await createRoomPage.goto();

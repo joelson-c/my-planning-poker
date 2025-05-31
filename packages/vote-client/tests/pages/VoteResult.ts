@@ -1,4 +1,5 @@
-import { type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+import { VoteCollect } from './VoteCollect';
 
 export class VoteResult {
     readonly pageHeader: Locator;
@@ -31,7 +32,8 @@ export class VoteResult {
     }
 
     async reset() {
-        this.resetRoomButton.click();
-        await this.page.waitForURL('**/room/*');
+        await this.resetRoomButton.click();
+        const voteCollect = new VoteCollect(this.page);
+        await voteCollect.pageHeader.waitFor({ state: 'visible' });
     }
 }

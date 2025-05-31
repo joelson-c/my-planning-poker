@@ -2,20 +2,22 @@ import { expect } from '@playwright/test';
 import { test } from './fixtures';
 import { faker } from '@faker-js/faker';
 
-test('renders with a title and join room button', async ({ joinRoomPage }) => {
+test('renders with a title and join room button', async ({
+    joinRoom: joinRoomPage,
+}) => {
     await joinRoomPage.goto();
 
     await expect(joinRoomPage.pageHeader).toBeVisible();
     await expect(joinRoomPage.joinRoomButton).toBeVisible();
 });
 
-test('has a create room link', async ({ joinRoomPage }) => {
+test('has a create room link', async ({ joinRoom: joinRoomPage }) => {
     await joinRoomPage.goto();
     await joinRoomPage.createRoom();
 });
 
 test('displays an error message when the nickname is too short', async ({
-    joinRoomPage,
+    joinRoom: joinRoomPage,
 }) => {
     await joinRoomPage.goto();
     await joinRoomPage.sendJoinForm({ nickname: 'a' });
@@ -24,7 +26,7 @@ test('displays an error message when the nickname is too short', async ({
 });
 
 test('displays an error message when the room id is too short', async ({
-    joinRoomPage,
+    joinRoom: joinRoomPage,
 }) => {
     await joinRoomPage.goto();
     await joinRoomPage.sendJoinForm({
@@ -36,8 +38,8 @@ test('displays an error message when the room id is too short', async ({
 });
 
 test('joins a created room, specifying the room id in form', async ({
-    room,
-    joinRoomPage,
+    roomId: room,
+    joinRoom: joinRoomPage,
 }) => {
     await joinRoomPage.goto();
     await joinRoomPage.sendJoinForm({
@@ -47,7 +49,10 @@ test('joins a created room, specifying the room id in form', async ({
     await joinRoomPage.waitForRoom();
 });
 
-test('remembers the last nickname used', async ({ room, joinRoomPage }) => {
+test('remembers the last nickname used', async ({
+    roomId: room,
+    joinRoom: joinRoomPage,
+}) => {
     const nickname = faker.internet.username();
 
     await joinRoomPage.goto();
@@ -59,15 +64,18 @@ test('remembers the last nickname used', async ({ room, joinRoomPage }) => {
 });
 
 test('joins a created room, specifying the room id in URL', async ({
-    room,
-    joinRoomPage,
+    roomId: room,
+    joinRoom: joinRoomPage,
 }) => {
     await joinRoomPage.goto(room);
     await joinRoomPage.sendJoinForm({ nickname: faker.internet.username() });
     await joinRoomPage.waitForRoom();
 });
 
-test('joins a created room, as observer', async ({ room, joinRoomPage }) => {
+test('joins a created room, as observer', async ({
+    roomId: room,
+    joinRoom: joinRoomPage,
+}) => {
     await joinRoomPage.goto(room);
     await joinRoomPage.sendJoinForm({
         nickname: faker.internet.username(),

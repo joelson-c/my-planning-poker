@@ -1,6 +1,8 @@
 import { mergeTests } from '@playwright/test';
 
-import { test as roomFixture } from './room';
-import { test as userFixture } from './user';
+import { type Options as UserOptions } from './user';
+import { test as roomTest } from './room';
 
-export const test = mergeTests(roomFixture, userFixture);
+export type Options = UserOptions;
+
+export const test = mergeTests(roomTest);

@@ -1,30 +1,60 @@
-import { test as base } from '@playwright/test';
+import { test as base } from './user';
 import { faker } from '@faker-js/faker';
 import { CreateRoom } from 'tests/pages/CreateRoom';
 import { JoinRoom } from 'tests/pages/JoinRoom';
 import { VoteCollect } from 'tests/pages/VoteCollect';
 
 type Fixtures = {
-    createRoomPage: CreateRoom;
-    joinRoomPage: JoinRoom;
-    voteCollectPage: VoteCollect;
-    room: string;
+    createRoom: CreateRoom;
+    joinRoom: JoinRoom;
+    voteCollectWithMultipleUsers: VoteCollect[];
+    voteCollectWithSingleUser: VoteCollect;
+    roomId: string;
 };
 
 export const test = base.extend<Fixtures>({
-    createRoomPage: async ({ page }, use) => {
-        await use(new CreateRoom(page));
+    createRoom: async ({ page }, use) => {
+        const createRoom = new CreateRoom(page);
+        await createRoom.goto();
+        await use(createRoom);
     },
-    joinRoomPage: async ({ page }, use) => {
-        await use(new JoinRoom(page));
+    joinRoom: async ({ page, roomId }, use) => {
+        const joinRoom = new JoinRoom(page);
+        await joinRoom.goto(roomId);
+        await use(joinRoom);
     },
-    voteCollectPage: async ({ page }, use) => {
+    voteCollectWithMultipleUsers: async (
+        { pageWithVoteUsers, roomId },
+        use,
+    ) => {
+        const voteCollectPages = await Promise.all(
+            pageWithVoteUsers.map(async ([page, user]) => {
+                const joinRoom = new JoinRoom(page);
+                await joinRoom.goto(roomId);
+                await joinRoom.sendJoinForm(user);
+                await joinRoom.waitForRoom();
+
+                return new VoteCollect(page);
+            }),
+        );
+
+        await use(voteCollectPages);
+    },
+    voteCollectWithSingleUser: async (
+        { pageWithVoteUser: [page, user], roomId },
+        use,
+    ) => {
+        const joinRoom = new JoinRoom(page);
+        await joinRoom.goto(roomId);
+        await joinRoom.sendJoinForm(user);
+        await joinRoom.waitForRoom();
+
         await use(new VoteCollect(page));
     },
-    room: async ({ createRoomPage }, use) => {
-        await createRoomPage.goto();
-        await createRoomPage.sendCreateForm(faker.internet.username());
-        const roomId = await createRoomPage.waitForRoom();
-        await use(roomId);
-    },
+    roomId: [
+        async ({}, use) => {
+            await use(faker.string.alphanumeric({ length: 12 }));
+        },
+        { box: true },
+    ],
 });

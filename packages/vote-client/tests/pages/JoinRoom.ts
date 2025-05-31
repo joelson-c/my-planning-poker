@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 export class JoinRoom {
     readonly pageHeader: Locator;

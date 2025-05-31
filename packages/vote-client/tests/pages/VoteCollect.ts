@@ -1,4 +1,5 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+import { VoteResult } from './VoteResult';
 
 export class VoteCollect {
     readonly pageHeader: Locator;
@@ -27,8 +28,7 @@ export class VoteCollect {
 
     async vote(vote: string) {
         const voteButton = this.getVoteButton(vote);
-        await voteButton.check();
-        await expect(voteButton).toBeChecked();
+        await voteButton.click();
     }
 
     async share(): Promise<string> {
@@ -36,10 +36,10 @@ export class VoteCollect {
             .context()
             .grantPermissions(['clipboard-read', 'clipboard-write']);
 
-        this.shareRoomButton.click();
-        await expect(
-            this.page.getByText('Room link copied!', { exact: true }),
-        ).toBeVisible();
+        await this.shareRoomButton.click();
+        await this.page
+            .getByText('Room link copied!', { exact: true })
+            .waitFor({ state: 'visible' });
 
         const copiedValue = await this.page.evaluate(() =>
             navigator.clipboard.readText(),
@@ -49,7 +49,11 @@ export class VoteCollect {
     }
 
     async reveal() {
-        this.revalCardsButton.click();
+        await this.revalCardsButton.click();
+        const voteResult = this.getVoteResultPage();
+        await voteResult.pageHeader.waitFor({
+            state: 'visible',
+        });
     }
 
     getVoteButton(vote: string) {
@@ -80,5 +84,9 @@ export class VoteCollect {
         return this.getUserListItem(nickname).getByRole('button', {
             name: 'Open Menu',
         });
+    }
+
+    getVoteResultPage() {
+        return new VoteResult(this.page);
     }
 }
