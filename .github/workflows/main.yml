@@ -15,12 +15,10 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - dockerfile: ./.docker/Dockerfile.frontend
-                      image: ${{ github.actor }}/planning-poker-frontend
-                      context: .
-                    - dockerfile: ./.docker/Dockerfile.realtime
-                      image: ${{ github.actor }}/planning-poker-realtime
-                      context: ./packages/vote-realtime
+                    - image: ${{ github.actor }}/planning-poker-frontend
+                      context: ./packages/vote-client
+                    - image: ${{ github.actor }}/planning-poker-realtime
+                      context: ./packages/vote-server
         permissions:
             contents: read
             packages: write
@@ -50,12 +48,9 @@ jobs:
               uses: docker/build-push-action@v6
               with:
                   context: ${{ matrix.context }}
-                  file: ${{ matrix.dockerfile }}
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
-                  secrets: |
-                      "session-secret=${{ secrets.SESSION_SECRET }}"
 
             - name: Generate artifact attestation
               uses: actions/attest-build-provenance@v2
