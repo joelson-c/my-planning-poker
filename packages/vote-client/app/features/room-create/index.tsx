@@ -1,12 +1,12 @@
 import type { Route } from './+types';
 import { Link, redirect } from 'react-router';
 import { LoginCard } from '../../components/room-login/LoginCard';
-import { roomCreateSchema } from '../../lib/roomFormSchema';
 import { formDataToObject } from '~/lib/utils';
 import { LoginForm } from '../../components/room-login/LoginForm';
 import { Button } from '~/components/ui/button';
-import { backendClient } from '~/lib/backend/client';
-import { authWithRoomAndUserId } from '~/lib/backend/auth';
+import { createSchema } from '~/components/room-login/schema';
+import { nanoid } from 'nanoid';
+import { pushJoinRoomEvent } from '~/lib/analytics/events';
 
 export function meta() {
     return [{ title: 'My Planning Poker' }];
@@ -25,20 +25,13 @@ export async function clientLoader({
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
     const inputData = formDataToObject(await request.formData());
-    const joinData = roomCreateSchema.parse(inputData);
+    const create = createSchema.parse({ roomId: '', ...inputData });
+    localStorage.setItem('joinData', JSON.stringify(create));
+    localStorage.setItem('lastNickname', create.nickname);
 
-    const room = await backendClient.collection('voteRooms').create({
-        cardType: ['FIBONACCI'],
-        state: ['VOTING'],
-    });
-
-    localStorage.setItem('lastNickname', joinData.nickname);
-    const { record } = await authWithRoomAndUserId({
-        ...joinData,
-        roomId: room.id,
-    });
-
-    return redirect(`/room/${record.room}`);
+    const roomId = nanoid();
+    pushJoinRoomEvent(roomId);
+    return redirect(`/room/${roomId}`);
 }
 
 export default function RoomCreate({
@@ -46,15 +39,14 @@ export default function RoomCreate({
 }: Route.ComponentProps) {
     return (
         <LoginCard title="Create a Room">
-            <div className="flex flex-col gap-4">
-                <LoginForm
-                    prevNickname={prevNickname}
-                    schema={roomCreateSchema}
-                />
-                <Button variant="link" asChild>
-                    <Link to="/join">Join a Room</Link>
-                </Button>
-            </div>
+            <LoginForm
+                defaultValues={{
+                    nickname: prevNickname || '',
+                }}
+            />
+            <Button variant="link" asChild>
+                <Link to="/join">Join a Room</Link>
+            </Button>
         </LoginCard>
     );
 }

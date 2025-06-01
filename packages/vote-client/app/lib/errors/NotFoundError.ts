@@ -1,7 +1,6 @@
-export class NotFoundError extends Response {
+export class NotFoundError extends Error {
     constructor() {
-        super('The resource was not found.', {
-            status: 404,
-        });
+        super('The resource was not found.');
+        this.name = 'NotFoundError';
     }
 }

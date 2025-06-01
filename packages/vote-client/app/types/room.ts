@@ -1,7 +1,11 @@
 import type { RecordModel } from 'pocketbase';
 
 export type CardType = 'FIBONACCI' | 'SIZES';
-export type RoomState = 'VOTING' | 'REVEAL';
+
+export enum RoomState {
+    VOTING = 'VOTING',
+    REVEAL = 'REVEAL',
+}
 
 export interface Room extends RecordModel {
     cardType: CardType;

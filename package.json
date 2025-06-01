@@ -11,6 +11,7 @@
         "dev:client": "npm run -w @planningpoker/vote-client dev",
         "build:client": "npm run -w @planningpoker/vote-client build",
         "preview:client": "npm run -w @planningpoker/vote-client preview",
+        "e2e:client": "npm run -w @planningpoker/vote-client e2e",
         "prepare": "node .husky/install.mjs",
         "commit": "commit"
     },
@@ -20,12 +21,13 @@
         "packages/*"
     ],
     "devDependencies": {
-        "@commitlint/cli": "^19.5.0",
-        "@commitlint/config-conventional": "^19.5.0",
-        "@commitlint/config-lerna-scopes": "^19.5.0",
-        "@commitlint/prompt-cli": "^19.5.0",
-        "@faker-js/faker": "^9.0.3",
-        "husky": "^9.1.6",
-        "typescript": "^5.6.2"
+        "@commitlint/cli": "^19.8.1",
+        "@commitlint/config-conventional": "^19.8.1",
+        "@commitlint/config-lerna-scopes": "^19.8.1",
+        "@commitlint/prompt-cli": "^19.8.1",
+        "@faker-js/faker": "^9.8.0",
+        "husky": "^9.1.7",
+        "typescript": "^5.8.3",
+        "vitest": "^3.1.4"
     }
 }

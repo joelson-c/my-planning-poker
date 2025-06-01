@@ -12,9 +12,9 @@ import { Toaster } from './components/ui/toaster';
 import styles from './tailwind.css?url';
 import { GenericError } from './components/errors/GenericError';
 import { Header } from './components/Header';
-import { UserDisconnectError } from './lib/errors/UserDisconnectError';
 import { RouteError } from './components/errors/RouteError';
-import { DisconnectionError } from './components/errors/DisconnectionError';
+import { FullPageLoader } from './components/FullPageLoader';
+import { TagManagerHead } from './components/analytics/TagManagerHead';
 
 export function links() {
     return [
@@ -37,11 +37,11 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         return <RouteError error={error} />;
     }
 
-    if (error instanceof UserDisconnectError) {
-        return <DisconnectionError />;
-    }
-
     return <GenericError />;
+}
+
+export function HydrateFallback() {
+    return <FullPageLoader />;
 }
 
 export function Layout({ children }: PropsWithChildren) {
@@ -55,6 +55,7 @@ export function Layout({ children }: PropsWithChildren) {
                 />
                 <Meta />
                 <Links />
+                <TagManagerHead />
             </head>
             <body>
                 <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">

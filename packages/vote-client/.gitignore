@@ -5,3 +5,10 @@ node_modules
 /public/build
 .env
 .react-router/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth

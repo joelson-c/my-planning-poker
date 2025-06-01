@@ -1,0 +1,26 @@
+services:
+    frontend:
+        build:
+            context: ./packages/vote-client
+            args:
+                - BACKEND_ENDPOINT=https://${REALTIME_HOST}
+        environment:
+            - DOMAIN=${ROOT_HOST-:localhost}
+            - REALTIME_UPSTREAM=realtime:4000
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - caddy_data:/data
+            - caddy_config:/config
+
+    realtime:
+        build:
+            context: ./packages/vote-server
+        environment:
+            - PHX_HOST=${ROOT_HOST-:localhost}
+            - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+
+volumes:
+    caddy_data:
+    caddy_config:

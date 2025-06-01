@@ -1,80 +1,149 @@
-# Planning Poker Estimation System
+# My Planning Poker
 
-## Overview
+## 📌 Introduction
 
-This repository contains a Planning Poker Estimation System, a collaborative tool designed for agile development teams to streamline the estimation process. The system utilizes Docker Compose to manage both development and production environments. Two Docker Compose files are included:
+My Planning Poker is a modern agile estimation tool designed to help teams collaboratively estimate the effort required for tasks. It leverages a real-time tech stack to provide seamless collaboration and accurate result aggregation.
 
--   **docker-compose.yml:** Configures development containers.
--   **docker-compose.production.yml:** Configures production containers using Dockerfiles to maintain isolation.
+## 🚀 Features
 
-## Development Workflow
+-   🔄 **Real-time collaboration** powered by WebSockets
+-   👥 **Support for large teams**
+-   📊 **Dynamic result aggregation**
+-   🌐 **Scalable architecture with modern technologies**
 
-### Prerequisites
+## 🖥️ Tech Stack
 
--   Docker (v23+) and Docker Compose (v2.16+) installed on your machine.
+-   **Frontend**: React with TypeScript
+-   **Backend**: Elixir with Phoenix Framework
+-   **Real-time Communication**: WebSockets
+-   **Containerization**: Docker
 
-### Starting the Development Environment
+## 📂 Project Structure
 
-1. Clone the repository:
+```
+/my-planning-poker
+│── /packages
+│    ├── /vote-client   # Frontend application
+│    ├── /vote-server   # Backend services
+│── /docs               # Documentation files
+│── .env.example        # Environment variable example file
+│── docker-compose.yml  # Docker setup
+│── README.md           # This file
+```
 
-    ```bash
-    git clone https://github.com/joelson-c/my-planning-poker.git
-    ```
-
-2. Navigate to the project directory:
-
-    ```bash
-    cd my-planning-poker
-    ```
-
-3. Create a `.env` file in repository root (use the `.env.example` file as model)
-
-4. Start the development environment:
-
-    ```bash
-    docker compose watch
-    ```
-
-5. Access the application at https://localhost.
-
-## Production Workflow
+## ⚡ Getting Started
 
 ### Prerequisites
 
--   Docker (v23+) and Docker Compose (v2.16+) installed on your machine.
+Ensure you have the following installed:
 
-### Starting the Production Environment
+-   [Node.js 22+](https://nodejs.org/)
+-   [Elixir 1.18.3 with Erlang/OTP 27](https://elixir-lang.org/)
+-   [Docker 28+](https://www.docker.com/)
 
-1. Clone the repository:
+### Quick Start
+
+1. **Clone the repository**:
 
     ```bash
     git clone https://github.com/joelson-c/my-planning-poker.git
-    ```
-
-2. Navigate to the project directory:
-
-    ```bash
     cd my-planning-poker
     ```
 
-3. Start the production environment:
+2. **Set up environment variables**:
 
     ```bash
-    docker compose -f docker-compose.production.yml up -d
+    cp .env.example .env
     ```
 
-4. Access the application at https://localhost. Note that an SSL certificate is required.
+3. **Generate a secret key** and add it to the `.env` file:
 
-## Contributing
+    ```bash
+    openssl rand -hex 32 | sed 's/^/SECRET_KEY_BASE=/' | tee -a .env
+    ```
 
-We welcome contributions from the community. If you have ideas for improvements, feature requests, or find any issues, feel free to open an [issue](https://github.com/joelson-c/my-planning-poker/issues) or submit a [pull request](https://github.com/joelson-c/my-planning-poker/pulls).
+4. **Start Docker containers**:
 
-## License
+    ```bash
+    docker compose up
+    ```
 
-This project is licensed under the [MIT License](LICENSE).
+5. **Access the application** at `https://localhost`.
 
-## Acknowledgments
+## 🛠️ Local Development
 
-Special thanks to the open-source community for their contributions and inspiration.
+To run the application in development mode, install the client and server dependencies locally.
 
-Happy Planning Poker Estimations! 🚀
+Refer to the [Phoenix Framework](https://www.phoenixframework.org) and [React Router](https://reactrouter.com/home) documentation for further instructions and API references.
+
+1. **Install dependencies**:
+
+    ```bash
+    pwd # <...>/my-planning-poker
+    npm install
+    cd packages/vote-server
+    mix deps.get
+    ```
+
+2. **Run each package individually**:
+
+    - **vote-server**:
+
+        ```bash
+        cd packages/vote-server
+        mix phx.server
+        ```
+
+    - **vote-client**:
+
+        ```bash
+        cd packages/vote-client
+        cp .env.example .env
+        npm run dev
+        ```
+
+### Running Tests
+
+-   **Server tests**:
+
+    ```bash
+    cd packages/vote-server
+    mix test
+    ```
+
+-   **End-to-End (E2E) tests**:
+
+    1. Ensure both `vote-client` and `vote-server` are running.
+    2. Add the `E2E_URL` to the `.env` file in the `vote-client` folder, pointing to the local `vote-client` instance (default: `E2E_URL=http://localhost:5173`).
+
+    ```bash
+    cd packages/vote-client
+    npm run e2e
+    ```
+
+## 🎮 Usage
+
+1. **Create a session**
+2. **Invite participants** by sharing the session link
+3. **Vote on tasks**
+4. **View results** and reach consensus
+
+## 🤝 Contributing
+
+We welcome contributions! To contribute:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Commit your changes (`git commit -m 'Add new feature'`).
+4. Push to the branch (`git push origin feature-branch`).
+5. Open a Pull Request.
+
+For detailed guidelines, see the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+
+## 📜 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## 📧 Contact
+
+For any inquiries, feel free to reach out via [GitHub Issues](https://github.com/joelson-c/my-planning-poker/issues).

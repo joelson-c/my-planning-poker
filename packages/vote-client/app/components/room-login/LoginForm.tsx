@@ -1,49 +1,44 @@
-import type { SubmitHandler } from 'react-hook-form';
+import type { DefaultValues, SubmitHandler } from 'react-hook-form';
+import { createSchema, joinSchema, type LoginSchemas } from './schema';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, useSubmit } from 'react-router';
-import {
-    roomCreateSchema,
-    roomJoinSchema,
-    type RoomCreateSchema,
-    type RoomJoinShema,
-} from '~/lib/roomFormSchema';
 import { Label } from '~/components/ui/label';
 import { Input } from '~/components/ui/input';
 import { Switch } from '~/components/ui/switch';
 import { Button } from '~/components/ui/button';
+import { InputError } from '../InputError';
 
 interface LoginFormProps {
     roomId?: string;
-    prevNickname?: string | null;
-    schema: typeof roomJoinSchema | typeof roomCreateSchema;
+    defaultValues: DefaultValues<LoginSchemas>;
+    isJoining?: boolean;
 }
 
-export function LoginForm({ roomId, prevNickname, schema }: LoginFormProps) {
-    const submit = useSubmit();
-
+export function LoginForm({
+    roomId,
+    defaultValues,
+    isJoining = false,
+}: LoginFormProps) {
     const {
         register,
         handleSubmit,
         control,
         formState: { errors },
-    } = useForm<RoomCreateSchema & RoomJoinShema>({
-        resolver: zodResolver(schema),
+    } = useForm({
+        resolver: zodResolver(isJoining ? joinSchema : createSchema),
         criteriaMode: 'all',
         defaultValues: {
-            roomId: roomId || '',
-            nickname: prevNickname || '',
+            ...defaultValues,
+            nickname: defaultValues.nickname || '',
+            roomId: defaultValues.roomId || '',
         },
     });
 
-    const onSubmit: SubmitHandler<Record<string, unknown>> = async (
-        _,
-        event,
-    ) => {
+    const submit = useSubmit();
+    const onSubmit: SubmitHandler<LoginSchemas> = async (_, event) => {
         await submit(event!.target);
     };
-
-    const isJoining = schema === roomJoinSchema;
 
     return (
         <Form method="post" onSubmit={handleSubmit(onSubmit)}>
@@ -54,13 +49,10 @@ export function LoginForm({ roomId, prevNickname, schema }: LoginFormProps) {
                         id="nickname"
                         placeholder="Enter your nickname"
                         aria-invalid={errors.nickname ? 'true' : 'false'}
+                        aria-errormessage="nickname-error"
                         {...register('nickname')}
                     />
-                    {errors.nickname && (
-                        <p className="text-sm text-red-500" role="alert">
-                            {errors.nickname.message}
-                        </p>
-                    )}
+                    <InputError error={errors.nickname} id="nickname-error" />
                 </div>
                 {isJoining && (
                     <>
@@ -70,14 +62,11 @@ export function LoginForm({ roomId, prevNickname, schema }: LoginFormProps) {
                                 id="roomId"
                                 readOnly={!!roomId}
                                 aria-invalid={errors.roomId ? 'true' : 'false'}
+                                aria-errormessage="roomId-error"
                                 {...register('roomId')}
                             />
                         </div>
-                        {errors.roomId && (
-                            <p className="text-sm text-red-500" role="alert">
-                                {errors.roomId.message}
-                            </p>
-                        )}
+                        <InputError error={errors.roomId} id="roomId-error" />
                     </>
                 )}
                 <div className="flex items-center space-x-2">
